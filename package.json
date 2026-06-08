@@ -11,9 +11,11 @@
     "db:migrate": "pnpm --filter @agent-mail/central migrate",
     "dev:central": "pnpm --filter @agent-mail/central dev",
     "dev:host": "pnpm --filter @agent-mail/host dev",
+    "dev:web": "pnpm --filter @agent-mail/web dev",
     "test": "pnpm -r test",
     "test:central": "pnpm --filter @agent-mail/central test",
-    "test:host": "pnpm --filter @agent-mail/host test"
+    "test:host": "pnpm --filter @agent-mail/host test",
+    "test:web": "pnpm --filter @agent-mail/web test"
   },
   "devDependencies": {
     "@types/node": "^25.9.2",

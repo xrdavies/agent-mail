@@ -25,6 +25,7 @@ import {
 } from "@agent-mail/shared";
 import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import type { Context } from "hono";
 import type { z } from "zod";
 
@@ -329,6 +330,8 @@ const maybeAssertTaskArtifactCompletion = async (db: Database, task: TaskRow, ne
 
 export const createApp = (db: Database) => {
   const app = new Hono();
+
+  app.use("/api/*", cors());
 
   app.onError((error, c) => {
     if (error instanceof ApiError) {
