@@ -10,8 +10,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "pnpm --filter @agent-mail/central migrate",
     "dev:central": "pnpm --filter @agent-mail/central dev",
+    "dev:host": "pnpm --filter @agent-mail/host dev",
     "test": "pnpm -r test",
-    "test:central": "pnpm --filter @agent-mail/central test"
+    "test:central": "pnpm --filter @agent-mail/central test",
+    "test:host": "pnpm --filter @agent-mail/host test"
   },
   "devDependencies": {
     "@types/node": "^25.9.2",

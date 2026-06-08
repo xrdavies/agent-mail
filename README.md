@@ -5,8 +5,8 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
 ## Current workspace
 
 - `apps/central`: Hono control-plane service with Drizzle/Postgres persistence
+- `apps/host`: machine-local daemon for registration, local session registry, heartbeat, and runtime status
 - `packages/shared`: shared enums, payload schemas, and response contracts
-- `apps/host`: reserved for the Phase 3 Agent Host daemon
 - `apps/web`: reserved for the Phase 7 operator UI
 
 ## Local development
@@ -17,10 +17,11 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
    docker compose up -d
    ```
 
-2. Use the central env file:
+2. Use the central and host env files:
 
    ```bash
    cp apps/central/.env.example apps/central/.env
+   cp apps/host/.env.example apps/host/.env
    ```
 
 3. Generate and apply migrations:
@@ -36,7 +37,13 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
    pnpm dev:central
    ```
 
-5. Run verification:
+5. Run the host daemon in a second terminal:
+
+   ```bash
+   pnpm dev:host
+   ```
+
+6. Run verification:
 
    ```bash
    pnpm test
