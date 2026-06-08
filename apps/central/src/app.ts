@@ -533,6 +533,14 @@ export const createApp = (db: Database) => {
     const payload = await parseJson(c, sessionHeartbeatRequestSchema);
     const session = await getSession(db, c.req.param("session_id"));
 
+    if (session.session_status === "cleared") {
+      throw new ApiError(
+        409,
+        "session_cleared",
+        `Session ${session.session_id} has been cleared and cannot receive heartbeats.`
+      );
+    }
+
     if (session.mailbox !== payload.mailbox) {
       throw new ApiError(
         409,
@@ -939,4 +947,3 @@ export const createApp = (db: Database) => {
 
   return app;
 };
-

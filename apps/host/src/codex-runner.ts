@@ -9,6 +9,8 @@ export type CodexTurnInput = {
   mcpUrl: string;
   sessionId?: string | null;
   codexBin?: string;
+  gitUserName?: string;
+  gitUserEmail?: string;
 };
 
 export type CodexTurnResult = {
@@ -23,17 +25,22 @@ type ProcessExecutor = (input: {
   args: string[];
   cwd: string;
   stdin: string;
+  env?: NodeJS.ProcessEnv;
 }) => Promise<{
   exitCode: number;
   stdout: string;
   stderr: string;
 }>;
 
-const defaultExecutor: ProcessExecutor = async ({ cmd, args, cwd, stdin }) =>
+const defaultExecutor: ProcessExecutor = async ({ cmd, args, cwd, stdin, env }) =>
   new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       cwd,
-      stdio: "pipe"
+      stdio: "pipe",
+      env: {
+        ...process.env,
+        ...env
+      }
     });
 
     let stdout = "";
@@ -127,7 +134,21 @@ export class CodexRunner {
       cmd: input.codexBin ?? this.codexBin,
       args,
       cwd: input.workspacePath,
-      stdin: input.prompt
+      stdin: input.prompt,
+      env: {
+        ...(input.gitUserName
+          ? {
+              GIT_AUTHOR_NAME: input.gitUserName,
+              GIT_COMMITTER_NAME: input.gitUserName
+            }
+          : {}),
+        ...(input.gitUserEmail
+          ? {
+              GIT_AUTHOR_EMAIL: input.gitUserEmail,
+              GIT_COMMITTER_EMAIL: input.gitUserEmail
+            }
+          : {})
+      }
     });
 
     if (result.exitCode !== 0) {
@@ -146,4 +167,3 @@ export class CodexRunner {
     };
   }
 }
-

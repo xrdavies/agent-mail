@@ -383,6 +383,11 @@ export class HostService {
         return this.sendSessionHeartbeatForMailbox(mailboxState);
       }
 
+      if (error instanceof CentralApiError && error.code === "session_cleared") {
+        await this.markSessionCleared(mailboxState.mailbox);
+        return;
+      }
+
       this.recordError(error, `session_heartbeat:${mailboxState.mailbox}`);
     }
   }

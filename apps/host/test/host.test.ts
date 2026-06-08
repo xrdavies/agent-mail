@@ -216,6 +216,26 @@ git_user_email = "pm.aster@agents.local"
     expect(Object.keys(persistedState.mailboxes)).toContain("pm.aster@agents.local");
   });
 
+  it("clears local session bindings when central marks a session cleared", async () => {
+    const { service } = await createService();
+
+    await service.bindSession({
+      mailbox: "pm.aster@agents.local",
+      session_id: "codex-session-pm-001",
+      session_status: "idle"
+    });
+
+    await service.getClient().clearSession("codex-session-pm-001", {
+      mailbox: "pm.aster@agents.local",
+      requested_by: "human-user",
+      force: false
+    });
+
+    await service.sendSessionHeartbeats();
+
+    expect(service.getCurrentSession("pm.aster@agents.local")).toBeNull();
+  });
+
   it("bootstraps a mailbox through MCP and persists the real Codex session id", async () => {
     await createCodexSessionHome("/Users/me/worktrees/pm-aster", "codex-session-pm-001");
     const { service, centralApp } = await createService();

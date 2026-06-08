@@ -140,6 +140,16 @@ export class CentralApiClient {
     );
   }
 
+  getSession(sessionId: string) {
+    return this.request(
+      `/api/v1/sessions/${encodeURIComponent(sessionId)}`,
+      {
+        method: "GET"
+      },
+      sessionSchema.parse
+    );
+  }
+
   sendSessionHeartbeat(sessionId: string, payload: Parameters<typeof sessionHeartbeatRequestSchema.parse>[0]) {
     const body = sessionHeartbeatRequestSchema.parse(payload);
 

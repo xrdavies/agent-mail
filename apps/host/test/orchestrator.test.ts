@@ -103,9 +103,15 @@ describe("CodexRunner", () => {
     const tempDir = await mkdtemp(join(tmpdir(), "agent-mail-runner-"));
     resources.push({ tempDir });
 
-    const calls: Array<{ cmd: string; args: string[]; cwd: string; stdin: string }> = [];
-    const runner = new CodexRunner(async ({ cmd, args, cwd, stdin }) => {
-      calls.push({ cmd, args, cwd, stdin });
+    const calls: Array<{
+      cmd: string;
+      args: string[];
+      cwd: string;
+      stdin: string;
+      env?: NodeJS.ProcessEnv;
+    }> = [];
+    const runner = new CodexRunner(async ({ cmd, args, cwd, stdin, env }) => {
+      calls.push({ cmd, args, cwd, stdin, env });
       const outputPath = args[args.indexOf("-o") + 1];
       await writeFile(outputPath, "OK\n", "utf8");
 
@@ -120,7 +126,9 @@ describe("CodexRunner", () => {
       workspacePath: "/Users/me/worktrees/pm-aster",
       prompt: "bootstrap prompt",
       outputFile: join(tempDir, "exec.txt"),
-      mcpUrl: "http://127.0.0.1:8788/mcp"
+      mcpUrl: "http://127.0.0.1:8788/mcp",
+      gitUserName: "Aster",
+      gitUserEmail: "pm.aster@agents.local"
     });
 
     expect(execResult.sessionId).toBe("session-123");
@@ -129,6 +137,8 @@ describe("CodexRunner", () => {
     expect(calls[0].args).toContain("exec");
     expect(calls[0].args).toContain("--dangerously-bypass-approvals-and-sandbox");
     expect(calls[0].args).toContain(`mcp_servers.agent_mail_host.url="http://127.0.0.1:8788/mcp"`);
+    expect(calls[0].env?.GIT_AUTHOR_NAME).toBe("Aster");
+    expect(calls[0].env?.GIT_AUTHOR_EMAIL).toBe("pm.aster@agents.local");
 
     await runner.runTurn({
       workspacePath: "/Users/me/worktrees/pm-aster",

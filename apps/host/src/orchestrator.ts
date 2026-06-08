@@ -120,7 +120,23 @@ export class HostOrchestrator {
     this.runningMailboxes.add(mailbox.mailbox);
 
     try {
-      const currentSession = this.options.service.getCurrentSession(mailbox.mailbox);
+      let currentSession = this.options.service.getCurrentSession(mailbox.mailbox);
+
+      if (currentSession) {
+        try {
+          const centralSession = await this.options.service
+            .getClient()
+            .getSession(currentSession.session_id);
+
+          if (centralSession.session_status === "cleared") {
+            await this.options.service.markSessionCleared(mailbox.mailbox);
+            currentSession = null;
+          }
+        } catch {
+          await this.options.service.markSessionCleared(mailbox.mailbox);
+          currentSession = null;
+        }
+      }
 
       if (currentSession) {
         await this.options.service.updateSession(mailbox.mailbox, {
@@ -153,7 +169,9 @@ export class HostOrchestrator {
           `${mailbox.mailbox.replaceAll(/[^a-zA-Z0-9._-]/g, "_")}.last-message.txt`
         ),
         mcpUrl: `${this.options.hostBaseUrl.replace(/\/$/, "")}/mcp`,
-        sessionId: currentSession?.session_id ?? null
+        sessionId: currentSession?.session_id ?? null,
+        gitUserName: mailbox.git_user_name,
+        gitUserEmail: mailbox.git_user_email
       });
 
       await this.finalizeSuccessfulTurn(mailbox, pending.task, result);
