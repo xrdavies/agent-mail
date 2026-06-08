@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { z } from "zod";
 
 import { createHostApp } from "./app.js";
@@ -54,7 +54,7 @@ const main = async () => {
     service,
     intervalMs: env.PENDING_WORK_INTERVAL_MS,
     hostBaseUrl: env.HOST_BASE_URL,
-    stateDir: resolve(env.HOST_STATE_PATH),
+    stateDir: dirname(resolve(env.HOST_STATE_PATH)),
     codexBin: env.CODEX_BIN
   });
   orchestrator.start();

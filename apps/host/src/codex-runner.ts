@@ -105,7 +105,6 @@ export class CodexRunner {
     const args = input.sessionId
       ? [
           "exec",
-          "resume",
           "--json",
           "--dangerously-bypass-approvals-and-sandbox",
           "-C",
@@ -114,6 +113,7 @@ export class CodexRunner {
           mcpConfigArg,
           "-o",
           input.outputFile,
+          "resume",
           input.sessionId,
           "-"
         ]

@@ -1,7 +1,7 @@
-import type { ArtifactType, Task } from "@agent-mail/shared";
-import { access } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import type { Task } from "@agent-mail/shared";
+import { join } from "node:path";
 
+import { finalizeArtifactsForTask } from "./artifact-reporting.js";
 import type { HostMailboxConfig } from "./config.js";
 import { buildBootstrapExecPrompt, buildResumePrompt } from "./prompts.js";
 import type { CodexTurnResult } from "./codex-runner.js";
@@ -265,105 +265,22 @@ export class HostOrchestrator {
     task: Task,
     lastMessage: string
   ): Promise<string | null> {
-    const artifactPaths = this.extractArtifactPaths(lastMessage);
+    const artifactError = await finalizeArtifactsForTask({
+      mailbox,
+      task,
+      client: this.options.service.getClient(),
+      workspaceInspector: this.workspaceInspector,
+      artifactSourceText: lastMessage
+    });
 
-    if (artifactPaths.length === 0) {
+    if (artifactError) {
       await this.options.service.getClient().updateTaskStatus(task.task_id, {
         status: "blocked"
       });
-      return `Task ${task.task_id} requires artifacts, but the Codex turn did not report an Artifacts: line.`;
-    }
-
-    const missingPaths: string[] = [];
-
-    for (const path of artifactPaths) {
-      try {
-        await access(resolve(mailbox.workspace_path, path));
-      } catch {
-        missingPaths.push(path);
-      }
-    }
-
-    if (missingPaths.length > 0) {
-      await this.options.service.getClient().updateTaskStatus(task.task_id, {
-        status: "blocked"
-      });
-      return `Task ${task.task_id} reported missing artifact paths: ${missingPaths.join(", ")}.`;
-    }
-
-    const gitMeta = await this.workspaceInspector.inspect(mailbox.workspace_path);
-
-    for (const path of artifactPaths) {
-      await this.options.service.getClient().createArtifact({
-        task_id: task.task_id,
-        mailbox: mailbox.mailbox,
-        artifact_type: this.inferArtifactType(path),
-        path,
-        branch: gitMeta.branch,
-        commit_sha: gitMeta.commitSha
-      });
+      return artifactError;
     }
 
     return null;
-  }
-
-  private extractArtifactPaths(lastMessage: string): string[] {
-    const artifactLine = lastMessage
-      .split("\n")
-      .find((line) => line.trim().toLowerCase().startsWith("artifacts:"));
-
-    if (!artifactLine) {
-      return [];
-    }
-
-    return artifactLine
-      .slice(artifactLine.indexOf(":") + 1)
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
-  }
-
-  private inferArtifactType(path: string): ArtifactType {
-    const lowerPath = path.toLowerCase();
-
-    if (lowerPath.endsWith(".md") || lowerPath.endsWith(".txt")) {
-      return "document";
-    }
-
-    if (
-      lowerPath.includes(".test.") ||
-      lowerPath.includes(".spec.") ||
-      lowerPath.endsWith(".snap")
-    ) {
-      return "test";
-    }
-
-    if (
-      lowerPath.endsWith(".json") ||
-      lowerPath.endsWith(".yaml") ||
-      lowerPath.endsWith(".yml") ||
-      lowerPath.endsWith(".toml")
-    ) {
-      return "config";
-    }
-
-    if (lowerPath.endsWith(".sh")) {
-      return "script";
-    }
-
-    if (
-      lowerPath.endsWith(".ts") ||
-      lowerPath.endsWith(".tsx") ||
-      lowerPath.endsWith(".js") ||
-      lowerPath.endsWith(".jsx") ||
-      lowerPath.endsWith(".py") ||
-      lowerPath.endsWith(".go") ||
-      lowerPath.endsWith(".rs")
-    ) {
-      return "code";
-    }
-
-    return "other";
   }
 
   private async handleTurnFailure(

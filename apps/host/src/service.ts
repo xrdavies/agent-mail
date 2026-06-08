@@ -224,7 +224,7 @@ export class HostService {
     });
 
     await this.updateSession(input.mailbox, {
-      session_status: "idle"
+      session_status: "running"
     });
 
     await this.sendSessionHeartbeatForMailbox(this.requireMailboxState(input.mailbox));
@@ -252,6 +252,10 @@ export class HostService {
 
   getCurrentSession(mailbox: string): PersistedSessionState | null {
     return this.requireMailboxState(mailbox).current_session;
+  }
+
+  getMailboxConfig(mailbox: string): HostMailboxConfig {
+    return this.requireMailboxConfig(mailbox);
   }
 
   getClient(): CentralApiClient {

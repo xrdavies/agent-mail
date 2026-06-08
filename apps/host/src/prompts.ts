@@ -39,7 +39,8 @@ Rules:
 4. If you need another agent, create a child task and send a thread-visible delegation message.
 5. If a task requires repository output, produce the real artifact and report it explicitly.
 6. If you are blocked on human input, say so clearly in-thread and mark the task accordingly.
-7. Keep the thread coherent and avoid unnecessary delegation.`;
+7. Keep the thread coherent and avoid unnecessary delegation.
+8. Do not create git commits, branches, or pushes unless the task explicitly asks for them.`;
 
 const ROLE_PROMPTS: Record<string, string> = {
   pm: `Your job is intake, clarification, coordination, task breakdown, and final synthesis back to the human.
@@ -63,7 +64,8 @@ You should:
 You should:
 - answer backend-specific questions directly
 - produce actual repository changes for delivery tasks
-- report concrete artifact paths when you change files`,
+- report concrete artifact paths when you change files
+- stop after the requested repository change and thread reply are complete; do not add extra git workflow unless asked`,
   frontend: `Your job is frontend interaction work and UI repository changes when requested.
 
 You should:
@@ -132,7 +134,8 @@ If requiresArtifact=false:
 - answer directly from the current thread/task context and the obvious product/repo context you already have
 - if you still choose to modify files, include an Artifacts: line
 
-Use get_task_work_package first, then get_thread_delta only if needed, reply in-thread with the concrete result, and mark this task done.`;
+Use get_task_work_package first, then get_thread_delta only if needed, reply in-thread with the concrete result, and mark this task done.
+Once you have replied and updated task status, stop the current turn and let the host resume you later if more work arrives.`;
   }
 
   return `${sharedHeader}
@@ -152,6 +155,7 @@ If there are no child tasks yet:
 If there are child tasks:
 - when all child tasks are done, summarize them back to the human and mark the parent task done
 - when child tasks are still open, avoid duplicate tasks and only send a short waiting update if clearly needed
+- after creating the needed child tasks and one coordination reply, stop the current turn instead of polling repeatedly
 
 Open child task count in the current work package: ${task.openChildTaskCount}.`;
 };
@@ -192,4 +196,3 @@ export const buildResumePrompt = (
 This is a resumed mailbox session. Continue your existing work through Agent Mail MCP only.
 
 ${renderTaskOverlay(task)}`;
-

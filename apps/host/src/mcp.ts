@@ -16,7 +16,9 @@ import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/proto
 import type { CallToolResult, ServerNotification, ServerRequest } from "@modelcontextprotocol/sdk/types.js";
 
 import { CentralApiError } from "./client.js";
+import { finalizeArtifactsForTask } from "./artifact-reporting.js";
 import type { HostService } from "./service.js";
+import { WorkspaceGitInspector } from "./workspace-git.js";
 
 type ToolExtra = RequestHandlerExtra<ServerRequest, ServerNotification>;
 
@@ -98,6 +100,7 @@ const toReplyPayload = (mailbox: string, body: string, toMailbox?: string) =>
 
 export const createHostMcpServer = (service: HostService) => {
   const client = service.getClient();
+  const workspaceInspector = new WorkspaceGitInspector();
   const server = new McpServer({
     name: "agent-mail-host",
     version: "0.1.0"
@@ -338,6 +341,28 @@ export const createHostMcpServer = (service: HostService) => {
 
       try {
         requireMailbox(service, args.mailbox);
+        const workPackage = await client.getTaskWorkPackage(args.taskId);
+        const mailboxConfig = service.getMailboxConfig(args.mailbox);
+
+        if (args.status === "done" && workPackage.task.requires_artifact) {
+          const latestReply =
+            [...workPackage.new_messages]
+              .reverse()
+              .find((message) => message.from_id === args.mailbox)?.body ?? "";
+
+          const artifactError = await finalizeArtifactsForTask({
+            mailbox: mailboxConfig,
+            task: workPackage.task,
+            client,
+            workspaceInspector,
+            artifactSourceText: latestReply
+          });
+
+          if (artifactError) {
+            return textResult(artifactError, undefined, true);
+          }
+        }
+
         const task = await client.updateTaskStatus(args.taskId, {
           status: args.status
         });

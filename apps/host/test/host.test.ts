@@ -106,9 +106,9 @@ const createCodexSessionHome = async (workspacePath: string, sessionId: string) 
   process.env.CODEX_HOME = codexHome;
 };
 
-const createService = async () => {
+const createService = async (configSource?: string) => {
   const { centralFetch, app: centralApp } = await createCentralTestContext();
-  const { configPath, statePath } = await createHostFiles();
+  const { configPath, statePath } = await createHostFiles(configSource);
   const config = await loadHostConfig(configPath);
   const service = new HostService({
     config,
@@ -272,13 +272,13 @@ git_user_email = "pm.aster@agents.local"
       runtimeContext: RuntimeContext;
     }).runtimeContext;
     expect(runtimeContext.session_id).toBe("codex-session-pm-001");
-    expect(runtimeContext.session_status).toBe("idle");
+    expect(runtimeContext.session_status).toBe("running");
     expect(clientTransport.sessionId).toBe("test-transport-session");
 
     const sessionResponse = await centralApp.request("/api/v1/sessions/codex-session-pm-001");
     expect(sessionResponse.status).toBe(200);
     const session = (await sessionResponse.json()) as Session;
-    expect(session.session_status).toBe("idle");
+    expect(session.session_status).toBe("running");
 
     const contextResult = await client.callTool({
       name: "get_runtime_context",
@@ -417,5 +417,100 @@ git_user_email = "pm.aster@agents.local"
     expect(agents.map((agent) => agent.mailbox)).toEqual(
       expect.arrayContaining(["pm.aster@agents.local", "backend.coda@agents.local"])
     );
+  });
+
+  it("finalizes artifacts before MCP marks a requiresArtifact task done", async () => {
+    const backendWorkspace = await mkdtemp(join(tmpdir(), "agent-mail-backend-workspace-"));
+    resources.push({ tempDir: backendWorkspace });
+    await createCodexSessionHome(backendWorkspace, "codex-session-backend-001");
+    const { service, centralApp } = await createService(
+      `machine_id = "mac-b"
+label = "Mac B"
+
+[[mailboxes]]
+mailbox = "pm.aster@agents.local"
+name = "Aster"
+role = "pm"
+workspace_path = "/Users/me/worktrees/pm-aster"
+git_user_name = "Aster"
+git_user_email = "pm.aster@agents.local"
+
+[[mailboxes]]
+mailbox = "backend.coda@agents.local"
+name = "Coda"
+role = "backend"
+workspace_path = "${backendWorkspace}"
+git_user_name = "Coda"
+git_user_email = "backend.coda@agents.local"
+`
+    );
+    const { client } = await createMcpClientPair(service);
+
+    await client.callTool({
+      name: "bootstrap_session",
+      arguments: {
+        mailbox: "backend.coda@agents.local",
+        role: "backend",
+        name: "Coda",
+        workspacePath: backendWorkspace
+      }
+    });
+
+    const threadResponse = await centralApp.request("/api/v1/threads", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        subject: "Prepare backend runbook",
+        body: "Create backend runbook artifact.",
+        assigned_mailbox: "backend.coda@agents.local"
+      })
+    });
+    const threadPayload = (await threadResponse.json()) as {
+      thread: { thread_id: string };
+      primary_task: { task_id: string };
+    };
+
+    const taskResponse = await centralApp.request("/api/v1/tasks", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: "Write backend runbook",
+        thread_id: threadPayload.thread.thread_id,
+        parent_task_id: threadPayload.primary_task.task_id,
+        created_by_type: "agent",
+        created_by_id: "backend.coda@agents.local",
+        assignee_type: "agent",
+        assignee_mailbox: "backend.coda@agents.local",
+        requires_artifact: true,
+        status: "in_progress",
+        body: "Create RUNBOOK.md."
+      })
+    });
+    const task = (await taskResponse.json()) as { task_id: string };
+
+    await writeFile(join(backendWorkspace, "RUNBOOK.md"), "# backend runbook\n", "utf8");
+
+    await client.callTool({
+      name: "reply_thread",
+      arguments: {
+        mailbox: "backend.coda@agents.local",
+        threadId: threadPayload.thread.thread_id,
+        body: "Artifacts: RUNBOOK.md"
+      }
+    });
+
+    const result = await client.callTool({
+      name: "update_task_status",
+      arguments: {
+        mailbox: "backend.coda@agents.local",
+        taskId: task.task_id,
+        status: "done"
+      }
+    });
+
+    expect((result.structuredContent as { task: Task }).task.status).toBe("done");
+    const workPackage = await service.getClient().getTaskWorkPackage(task.task_id);
+    expect(workPackage.recent_artifacts).toHaveLength(1);
+    expect(workPackage.recent_artifacts[0].path).toBe("RUNBOOK.md");
   });
 });
