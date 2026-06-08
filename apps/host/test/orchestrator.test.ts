@@ -40,7 +40,7 @@ const createCentralTestContext = async () => {
   return { app, centralFetch };
 };
 
-const createHostFiles = async () => {
+const createHostFiles = async (workspacePath = "/Users/me/worktrees/pm-aster") => {
   const tempDir = await mkdtemp(join(tmpdir(), "agent-mail-orchestrator-"));
   const configPath = join(tempDir, "host.toml");
   const statePath = join(tempDir, "host-state.json");
@@ -54,7 +54,7 @@ label = "Mac B"
 mailbox = "pm.aster@agents.local"
 name = "Aster"
 role = "pm"
-workspace_path = "/Users/me/worktrees/pm-aster"
+workspace_path = "${workspacePath}"
 git_user_name = "Aster"
 git_user_email = "pm.aster@agents.local"
 `,
@@ -66,9 +66,9 @@ git_user_email = "pm.aster@agents.local"
   return { configPath, statePath, tempDir };
 };
 
-const createService = async () => {
+const createService = async (workspacePath = "/Users/me/worktrees/pm-aster") => {
   const { app, centralFetch } = await createCentralTestContext();
-  const { configPath, statePath, tempDir } = await createHostFiles();
+  const { configPath, statePath, tempDir } = await createHostFiles(workspacePath);
   const config = await loadHostConfig(configPath);
   const service = new HostService({
     config,
@@ -215,5 +215,86 @@ describe("HostOrchestrator", () => {
     expect(threadPayload.primary_task.task_id).toBe(
       service.getCurrentSession("pm.aster@agents.local")?.active_task_id
     );
+  });
+
+  it("records Git-backed artifacts for requiresArtifact tasks", async () => {
+    const workspacePath = await mkdtemp(join(tmpdir(), "agent-mail-workspace-"));
+    resources.push({ tempDir: workspacePath });
+    await writeFile(join(workspacePath, "RUNBOOK.md"), "# runbook\n", "utf8");
+
+    const { app, service, tempDir } = await createService(workspacePath);
+
+    const threadResponse = await app.request("/api/v1/threads", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        subject: "Prepare runbook",
+        body: "Please produce a deploy runbook.",
+        assigned_mailbox: "pm.aster@agents.local"
+      })
+    });
+    const threadPayload = (await threadResponse.json()) as {
+      thread: { thread_id: string };
+      primary_task: { task_id: string };
+    };
+
+    const artifactTaskResponse = await app.request("/api/v1/tasks", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: "Write runbook",
+        thread_id: threadPayload.thread.thread_id,
+        parent_task_id: threadPayload.primary_task.task_id,
+        created_by_type: "agent",
+        created_by_id: "pm.aster@agents.local",
+        assignee_type: "agent",
+        assignee_mailbox: "pm.aster@agents.local",
+        requires_artifact: true,
+        status: "new",
+        body: "Create RUNBOOK.md."
+      })
+    });
+    const artifactTask = (await artifactTaskResponse.json()) as { task_id: string };
+
+    await app.request(`/api/v1/tasks/${threadPayload.primary_task.task_id}/status`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "done" })
+    });
+
+    const fakeRunner = {
+      async runTurn() {
+        return {
+          sessionId: "artifact-session-001",
+          lastMessage: "Artifacts: RUNBOOK.md",
+          stdout: "",
+          stderr: ""
+        };
+      }
+    };
+
+    const orchestrator = new HostOrchestrator({
+      service,
+      intervalMs: 60_000,
+      codexRunner: fakeRunner,
+      hostBaseUrl: "http://127.0.0.1:8788",
+      stateDir: tempDir,
+      workspaceInspector: {
+        async inspect() {
+          return {
+            branch: "agent-mail/pm.aster/task_runbook",
+            commitSha: "abc123"
+          };
+        }
+      }
+    });
+
+    await orchestrator.processPendingWorkOnce();
+
+    const workPackage = await service.getClient().getTaskWorkPackage(artifactTask.task_id);
+    expect(workPackage.recent_artifacts).toHaveLength(1);
+    expect(workPackage.recent_artifacts[0].path).toBe("RUNBOOK.md");
+    expect(workPackage.recent_artifacts[0].branch).toBe("agent-mail/pm.aster/task_runbook");
+    expect(workPackage.recent_artifacts[0].commit_sha).toBe("abc123");
   });
 });

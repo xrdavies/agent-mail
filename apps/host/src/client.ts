@@ -1,10 +1,12 @@
 import {
   appendMessageRequestSchema,
   clearSessionRequestSchema,
+  createArtifactRequestSchema,
   createTaskRequestSchema,
   listTasksQuerySchema,
   type HostStatus,
   type Message,
+  artifactSchema,
   mailboxSchema,
   messageSchema,
   taskSchema,
@@ -310,6 +312,20 @@ export class CentralApiClient {
         method: "GET"
       },
       (value) => mailboxSchema.array().parse(value)
+    );
+  }
+
+  createArtifact(payload: Parameters<typeof createArtifactRequestSchema.parse>[0]) {
+    const body = createArtifactRequestSchema.parse(payload);
+
+    return this.request(
+      "/api/v1/artifacts",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      },
+      artifactSchema.parse
     );
   }
 }

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { fileURLToPath } from "node:url";
 
 import { createPostgresDatabase } from "./client.js";
 
@@ -11,9 +12,10 @@ if (!databaseUrl) {
 
 const main = async () => {
   const { client, db } = createPostgresDatabase(databaseUrl);
+  const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
   try {
-    await migrate(db, { migrationsFolder: "apps/central/drizzle" });
+    await migrate(db, { migrationsFolder });
   } finally {
     await client.end();
   }

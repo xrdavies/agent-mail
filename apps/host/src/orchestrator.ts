@@ -1,19 +1,23 @@
-import type { Task } from "@agent-mail/shared";
-import { join } from "node:path";
+import type { ArtifactType, Task } from "@agent-mail/shared";
+import { access } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
 import type { HostMailboxConfig } from "./config.js";
 import { buildBootstrapExecPrompt, buildResumePrompt } from "./prompts.js";
 import type { CodexTurnResult } from "./codex-runner.js";
 import { CodexRunner } from "./codex-runner.js";
 import type { HostService } from "./service.js";
+import { WorkspaceGitInspector } from "./workspace-git.js";
 
 type TimerHandle = ReturnType<typeof setInterval>;
 type CodexTurnRunnerLike = Pick<CodexRunner, "runTurn">;
+type WorkspaceGitInspectorLike = Pick<WorkspaceGitInspector, "inspect">;
 
 type OrchestratorOptions = {
   service: HostService;
   intervalMs: number;
   codexRunner?: CodexTurnRunnerLike;
+  workspaceInspector?: WorkspaceGitInspectorLike;
   hostBaseUrl: string;
   stateDir: string;
   codexBin?: string;
@@ -36,11 +40,13 @@ const priorityOrder: Record<Task["status"], number> = {
 
 export class HostOrchestrator {
   private readonly codexRunner: CodexTurnRunnerLike;
+  private readonly workspaceInspector: WorkspaceGitInspectorLike;
   private readonly runningMailboxes = new Set<string>();
   private timer: TimerHandle | null = null;
 
   constructor(private readonly options: OrchestratorOptions) {
     this.codexRunner = options.codexRunner ?? new CodexRunner(undefined, options.codexBin ?? "codex");
+    this.workspaceInspector = options.workspaceInspector ?? new WorkspaceGitInspector();
   }
 
   start(): void {
@@ -199,8 +205,37 @@ export class HostOrchestrator {
     }
 
     const thread = await this.options.service.getClient().getFullThread(task.thread_id);
-    const refreshedTask =
+    let refreshedTask =
       thread.related_tasks.find((candidate) => candidate.task_id === task.task_id) ?? task;
+    let latestSummary = result.lastMessage;
+
+    if (refreshedTask.requires_artifact) {
+      const artifactError = await this.reportArtifacts(mailbox, refreshedTask, result.lastMessage);
+
+      if (artifactError) {
+        latestSummary = artifactError;
+        const refreshedTasks = await this.options.service
+          .getClient()
+          .listTasks({ thread_id: task.thread_id });
+        refreshedTask =
+          refreshedTasks.find((candidate) => candidate.task_id === task.task_id) ?? {
+            ...refreshedTask,
+            status: "blocked"
+          };
+      } else if (refreshedTask.status !== "done") {
+        await this.options.service.getClient().updateTaskStatus(task.task_id, {
+          status: "done"
+        });
+        const refreshedTasks = await this.options.service
+          .getClient()
+          .listTasks({ thread_id: task.thread_id });
+        refreshedTask =
+          refreshedTasks.find((candidate) => candidate.task_id === task.task_id) ?? {
+            ...refreshedTask,
+            status: "done"
+          };
+      }
+    }
 
     let sessionStatus: "idle" | "waiting_human" | "waiting_child" = "idle";
 
@@ -220,9 +255,115 @@ export class HostOrchestrator {
       session_status: sessionStatus,
       active_task_id: refreshedTask.status === "done" ? null : refreshedTask.task_id,
       last_processed_message_id: thread.messages.at(-1)?.message_id ?? null,
-      latest_summary: result.lastMessage
+      latest_summary: latestSummary
     });
     await this.options.service.sendSessionHeartbeats();
+  }
+
+  private async reportArtifacts(
+    mailbox: HostMailboxConfig,
+    task: Task,
+    lastMessage: string
+  ): Promise<string | null> {
+    const artifactPaths = this.extractArtifactPaths(lastMessage);
+
+    if (artifactPaths.length === 0) {
+      await this.options.service.getClient().updateTaskStatus(task.task_id, {
+        status: "blocked"
+      });
+      return `Task ${task.task_id} requires artifacts, but the Codex turn did not report an Artifacts: line.`;
+    }
+
+    const missingPaths: string[] = [];
+
+    for (const path of artifactPaths) {
+      try {
+        await access(resolve(mailbox.workspace_path, path));
+      } catch {
+        missingPaths.push(path);
+      }
+    }
+
+    if (missingPaths.length > 0) {
+      await this.options.service.getClient().updateTaskStatus(task.task_id, {
+        status: "blocked"
+      });
+      return `Task ${task.task_id} reported missing artifact paths: ${missingPaths.join(", ")}.`;
+    }
+
+    const gitMeta = await this.workspaceInspector.inspect(mailbox.workspace_path);
+
+    for (const path of artifactPaths) {
+      await this.options.service.getClient().createArtifact({
+        task_id: task.task_id,
+        mailbox: mailbox.mailbox,
+        artifact_type: this.inferArtifactType(path),
+        path,
+        branch: gitMeta.branch,
+        commit_sha: gitMeta.commitSha
+      });
+    }
+
+    return null;
+  }
+
+  private extractArtifactPaths(lastMessage: string): string[] {
+    const artifactLine = lastMessage
+      .split("\n")
+      .find((line) => line.trim().toLowerCase().startsWith("artifacts:"));
+
+    if (!artifactLine) {
+      return [];
+    }
+
+    return artifactLine
+      .slice(artifactLine.indexOf(":") + 1)
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+  }
+
+  private inferArtifactType(path: string): ArtifactType {
+    const lowerPath = path.toLowerCase();
+
+    if (lowerPath.endsWith(".md") || lowerPath.endsWith(".txt")) {
+      return "document";
+    }
+
+    if (
+      lowerPath.includes(".test.") ||
+      lowerPath.includes(".spec.") ||
+      lowerPath.endsWith(".snap")
+    ) {
+      return "test";
+    }
+
+    if (
+      lowerPath.endsWith(".json") ||
+      lowerPath.endsWith(".yaml") ||
+      lowerPath.endsWith(".yml") ||
+      lowerPath.endsWith(".toml")
+    ) {
+      return "config";
+    }
+
+    if (lowerPath.endsWith(".sh")) {
+      return "script";
+    }
+
+    if (
+      lowerPath.endsWith(".ts") ||
+      lowerPath.endsWith(".tsx") ||
+      lowerPath.endsWith(".js") ||
+      lowerPath.endsWith(".jsx") ||
+      lowerPath.endsWith(".py") ||
+      lowerPath.endsWith(".go") ||
+      lowerPath.endsWith(".rs")
+    ) {
+      return "code";
+    }
+
+    return "other";
   }
 
   private async handleTurnFailure(
