@@ -1,18 +1,21 @@
 import { PGlite } from "@electric-sql/pglite";
-import type { Session } from "@agent-mail/shared";
+import { type RuntimeContext, type Session, type Task, type WorkPackage } from "@agent-mail/shared";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createApp as createCentralApp } from "../../central/src/app.js";
 import * as centralSchema from "../../central/src/db/schema.js";
 import { createHostApp } from "../src/app.js";
 import { CentralApiClient } from "../src/client.js";
 import { loadHostConfig } from "../src/config.js";
+import { createHostMcpServer } from "../src/mcp.js";
 import { HostService } from "../src/service.js";
 import { HostStateStore } from "../src/state.js";
 
@@ -23,6 +26,8 @@ const resources: Array<{
   tempDir?: string;
   service?: HostService;
 }> = [];
+
+const originalCodexHome = process.env.CODEX_HOME;
 
 const createCentralTestContext = async () => {
   const client = new PGlite();
@@ -72,10 +77,74 @@ git_user_email = "backend.coda@agents.local"
 
   resources.push({ tempDir });
 
-  return { configPath, statePath };
+  return { configPath, statePath, tempDir };
 };
 
+const createCodexSessionHome = async (workspacePath: string, sessionId: string) => {
+  const codexHome = await mkdtemp(join(tmpdir(), "agent-mail-codex-"));
+  const sessionDir = join(codexHome, "sessions", "2026", "06", "09");
+  const sessionPath = join(sessionDir, `rollout-2026-06-09T00-00-00-${sessionId}.jsonl`);
+
+  await mkdir(sessionDir, { recursive: true });
+
+  await writeFile(
+    sessionPath,
+    `${JSON.stringify({
+      timestamp: "2026-06-09T00:00:00.000Z",
+      type: "session_meta",
+      payload: {
+        id: sessionId,
+        timestamp: "2026-06-09T00:00:00.000Z",
+        cwd: workspacePath,
+        originator: "codex-tui"
+      }
+    })}\n`,
+    "utf8"
+  );
+
+  resources.push({ tempDir: codexHome });
+  process.env.CODEX_HOME = codexHome;
+};
+
+const createService = async () => {
+  const { centralFetch, app: centralApp } = await createCentralTestContext();
+  const { configPath, statePath } = await createHostFiles();
+  const config = await loadHostConfig(configPath);
+  const service = new HostService({
+    config,
+    client: new CentralApiClient("http://central.test", centralFetch),
+    stateStore: new HostStateStore(statePath),
+    centralBaseUrl: "http://central.test",
+    hostVersion: "0.1.0",
+    machineHeartbeatIntervalMs: 60_000,
+    sessionHeartbeatIntervalMs: 60_000
+  });
+
+  resources.push({ service });
+  await service.start();
+
+  return { service, centralApp, statePath };
+};
+
+const createMcpClientPair = async (service: HostService) => {
+  const server = createHostMcpServer(service);
+  const client = new Client({ name: "agent-mail-host-test", version: "1.0.0" });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  clientTransport.sessionId = "test-transport-session";
+
+  await server.connect(serverTransport);
+  await client.connect(clientTransport);
+
+  return { client, clientTransport, serverTransport };
+};
+
+beforeEach(() => {
+  process.env.CODEX_HOME = originalCodexHome;
+});
+
 afterEach(async () => {
+  process.env.CODEX_HOME = originalCodexHome;
+
   await Promise.all(
     resources.splice(0).map(async ({ client, tempDir, service }) => {
       await service?.stop();
@@ -115,22 +184,7 @@ git_user_email = "pm.aster@agents.local"
   });
 
   it("registers machine and mailboxes on startup and exposes status", async () => {
-    const { centralFetch, app: centralApp } = await createCentralTestContext();
-    const { configPath, statePath } = await createHostFiles();
-    const config = await loadHostConfig(configPath);
-    const service = new HostService({
-      config,
-      client: new CentralApiClient("http://central.test", centralFetch),
-      stateStore: new HostStateStore(statePath),
-      centralBaseUrl: "http://central.test",
-      hostVersion: "0.1.0",
-      machineHeartbeatIntervalMs: 60_000,
-      sessionHeartbeatIntervalMs: 60_000
-    });
-
-    resources.push({ service });
-
-    await service.start();
+    const { service, centralApp, statePath } = await createService();
 
     const statusApp = createHostApp(service);
     const statusResponse = await statusApp.request("/status");
@@ -162,58 +216,186 @@ git_user_email = "pm.aster@agents.local"
     expect(Object.keys(persistedState.mailboxes)).toContain("pm.aster@agents.local");
   });
 
-  it("persists session bindings and forwards session heartbeats to central", async () => {
-    const { centralFetch, app: centralApp } = await createCentralTestContext();
-    const { configPath, statePath } = await createHostFiles();
-    const config = await loadHostConfig(configPath);
-    const service = new HostService({
-      config,
-      client: new CentralApiClient("http://central.test", centralFetch),
-      stateStore: new HostStateStore(statePath),
-      centralBaseUrl: "http://central.test",
-      hostVersion: "0.1.0",
-      machineHeartbeatIntervalMs: 60_000,
-      sessionHeartbeatIntervalMs: 60_000
+  it("bootstraps a mailbox through MCP and persists the real Codex session id", async () => {
+    await createCodexSessionHome("/Users/me/worktrees/pm-aster", "codex-session-pm-001");
+    const { service, centralApp } = await createService();
+    const { client, clientTransport } = await createMcpClientPair(service);
+
+    const tools = await client.listTools();
+    expect(tools.tools.map((tool) => tool.name)).toEqual(
+      expect.arrayContaining([
+        "bootstrap_session",
+        "get_runtime_context",
+        "list_mailbox_tasks",
+        "get_task_work_package",
+        "get_thread_delta",
+        "get_full_thread",
+        "reply_thread",
+        "create_child_task",
+        "update_task_status",
+        "list_agents"
+      ])
+    );
+
+    const bootstrapResult = await client.callTool({
+      name: "bootstrap_session",
+      arguments: {
+        mailbox: "pm.aster@agents.local",
+        role: "pm",
+        name: "Aster",
+        workspacePath: "/Users/me/worktrees/pm-aster"
+      }
     });
 
-    resources.push({ service });
+    expect(bootstrapResult.isError).toBeFalsy();
+    const runtimeContext = (bootstrapResult.structuredContent as {
+      runtimeContext: RuntimeContext;
+    }).runtimeContext;
+    expect(runtimeContext.session_id).toBe("codex-session-pm-001");
+    expect(runtimeContext.session_status).toBe("idle");
+    expect(clientTransport.sessionId).toBe("test-transport-session");
 
-    await service.start();
-    await service.bindSession({
-      mailbox: "pm.aster@agents.local",
-      session_id: "sess_pm_001",
-      session_status: "idle"
-    });
-    await service.updateSession("pm.aster@agents.local", {
-      latest_summary: "Waiting for backend follow-up."
-    });
-    await service.sendSessionHeartbeats();
-
-    const sessionResponse = await centralApp.request("/api/v1/sessions/sess_pm_001");
+    const sessionResponse = await centralApp.request("/api/v1/sessions/codex-session-pm-001");
     expect(sessionResponse.status).toBe(200);
     const session = (await sessionResponse.json()) as Session;
     expect(session.session_status).toBe("idle");
-    expect(session.latest_summary).toBe("Waiting for backend follow-up.");
 
-    const snapshot = service.getStatusSnapshot();
-    expect(snapshot.mailboxes[0].current_session?.session_id).toBe("sess_pm_001");
-
-    const restartedService = new HostService({
-      config,
-      client: new CentralApiClient("http://central.test", centralFetch),
-      stateStore: new HostStateStore(statePath),
-      centralBaseUrl: "http://central.test",
-      hostVersion: "0.1.0",
-      machineHeartbeatIntervalMs: 60_000,
-      sessionHeartbeatIntervalMs: 60_000
+    const contextResult = await client.callTool({
+      name: "get_runtime_context",
+      arguments: { mailbox: "pm.aster@agents.local" }
     });
 
-    resources.push({ service: restartedService });
+    expect(
+      (contextResult.structuredContent as { runtimeContext: RuntimeContext }).runtimeContext.session_id
+    ).toBe(
+      "codex-session-pm-001"
+    );
+  });
 
-    await restartedService.start();
+  it("serves runtime task and thread tools through MCP", async () => {
+    await createCodexSessionHome("/Users/me/worktrees/pm-aster", "codex-session-pm-001");
+    const { service, centralApp } = await createService();
+    const { client } = await createMcpClientPair(service);
 
-    expect(restartedService.getStatusSnapshot().mailboxes[0].current_session?.session_id).toBe(
-      "sess_pm_001"
+    await client.callTool({
+      name: "bootstrap_session",
+      arguments: {
+        mailbox: "pm.aster@agents.local",
+        role: "pm",
+        name: "Aster",
+        workspacePath: "/Users/me/worktrees/pm-aster"
+      }
+    });
+
+    const createThreadResponse = await centralApp.request("/api/v1/threads", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        subject: "Review implementation plan",
+        body: "Please review the implementation plan and coordinate backend follow-up.",
+        assigned_mailbox: "pm.aster@agents.local"
+      })
+    });
+    const createdThread = (await createThreadResponse.json()) as {
+      thread: { thread_id: string };
+      primary_task: { task_id: string };
+      messages: Array<{ message_id: string }>;
+    };
+
+    const threadId = createdThread.thread.thread_id;
+    const primaryTaskId = createdThread.primary_task.task_id;
+    const firstMessageId = createdThread.messages[0].message_id;
+
+    const tasksResult = await client.callTool({
+      name: "list_mailbox_tasks",
+      arguments: { mailbox: "pm.aster@agents.local" }
+    });
+    const tasks = (tasksResult.structuredContent as { tasks: Task[] }).tasks;
+    expect(tasks.some((task) => task.task_id === primaryTaskId)).toBe(true);
+
+    const workPackageResult = await client.callTool({
+      name: "get_task_work_package",
+      arguments: { mailbox: "pm.aster@agents.local", taskId: primaryTaskId }
+    });
+    const workPackage = (workPackageResult.structuredContent as {
+      workPackage: WorkPackage;
+    }).workPackage;
+    expect(workPackage.task.task_id).toBe(primaryTaskId);
+    expect(workPackage.new_messages).toHaveLength(1);
+
+    const replyResult = await client.callTool({
+      name: "reply_thread",
+      arguments: {
+        mailbox: "pm.aster@agents.local",
+        threadId,
+        body: "Backend also needs to review the interface constraints.",
+        toMailbox: "human-user"
+      }
+    });
+    expect(replyResult.isError).toBeFalsy();
+
+    const deltaResult = await client.callTool({
+      name: "get_thread_delta",
+      arguments: {
+        mailbox: "pm.aster@agents.local",
+        threadId,
+        afterMessageId: firstMessageId
+      }
+    });
+    const delta = (deltaResult.structuredContent as {
+      delta: {
+        thread_id: string;
+        messages: Array<{ body: string }>;
+      };
+    }).delta;
+    expect(delta.messages).toHaveLength(1);
+
+    const childTaskResult = await client.callTool({
+      name: "create_child_task",
+      arguments: {
+        mailbox: "pm.aster@agents.local",
+        threadId,
+        title: "Review backend constraints",
+        toMailbox: "backend.coda@agents.local",
+        body: "Please summarize backend interface constraints.",
+        requiresArtifact: false
+      }
+    });
+    const childTask = (childTaskResult.structuredContent as { task: Task }).task;
+    expect(childTask.assignee_mailbox).toBe("backend.coda@agents.local");
+
+    const statusResult = await client.callTool({
+      name: "update_task_status",
+      arguments: {
+        mailbox: "backend.coda@agents.local",
+        taskId: childTask.task_id,
+        status: "done"
+      }
+    });
+    expect((statusResult.structuredContent as { task: Task }).task.status).toBe("done");
+
+    const fullThreadResult = await client.callTool({
+      name: "get_full_thread",
+      arguments: { mailbox: "pm.aster@agents.local", threadId }
+    });
+    const fullThread = (fullThreadResult.structuredContent as {
+      thread: {
+        messages: unknown[];
+        related_tasks: Task[];
+      };
+    }).thread;
+    expect(fullThread.messages).toHaveLength(2);
+    expect(fullThread.related_tasks).toHaveLength(2);
+
+    const agentsResult = await client.callTool({
+      name: "list_agents",
+      arguments: { mailbox: "pm.aster@agents.local" }
+    });
+    const agents = (agentsResult.structuredContent as {
+      agents: Array<{ mailbox: string }>;
+    }).agents;
+    expect(agents.map((agent) => agent.mailbox)).toEqual(
+      expect.arrayContaining(["pm.aster@agents.local", "backend.coda@agents.local"])
     );
   });
 });

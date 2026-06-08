@@ -18,7 +18,14 @@ Machine-local daemon for mailbox registration, local session registry, heartbeat
    pnpm dev:host
    ```
 
-4. Inspect the local status surface:
+4. Register the Host MCP endpoint with Codex:
+
+   ```bash
+   codex mcp add agent-mail-host --url http://localhost:8788/mcp
+   ```
+
+5. Inspect the local surfaces:
 
    - `GET /health`
    - `GET /status`
+   - `/mcp`

@@ -1,7 +1,8 @@
-import { type HostStatus, SESSION_STATUSES } from "@agent-mail/shared";
+import { type HostStatus, type RuntimeContext, SESSION_STATUSES, runtimeContextSchema } from "@agent-mail/shared";
 
-import type { HostConfig, HostMailboxConfig } from "./config.js";
 import { CentralApiClient, CentralApiError } from "./client.js";
+import type { HostConfig, HostMailboxConfig } from "./config.js";
+import { CodexSessionResolver } from "./codex-sessions.js";
 import type { HostState, PersistedSessionState } from "./state.js";
 import { HostStateStore } from "./state.js";
 
@@ -21,6 +22,13 @@ export type SessionRuntimePatch = {
   last_heartbeat_at?: string | null;
 };
 
+export type BootstrapSessionInput = {
+  mailbox: string;
+  role: string;
+  name: string;
+  workspacePath: string;
+};
+
 export type HostServiceOptions = {
   config: HostConfig;
   client: CentralApiClient;
@@ -29,6 +37,7 @@ export type HostServiceOptions = {
   hostVersion: string;
   machineHeartbeatIntervalMs: number;
   sessionHeartbeatIntervalMs: number;
+  sessionResolver?: CodexSessionResolver;
 };
 
 type TimerHandle = ReturnType<typeof setInterval>;
@@ -55,6 +64,7 @@ export type HostStatusSnapshot = {
 const nowIso = () => new Date().toISOString();
 
 export class HostService {
+  private readonly sessionResolver: CodexSessionResolver;
   private state!: HostState;
   private hostStatus: HostStatus = "online";
   private startedAt = nowIso();
@@ -65,7 +75,9 @@ export class HostService {
   private machineTimer: TimerHandle | null = null;
   private sessionTimer: TimerHandle | null = null;
 
-  constructor(private readonly options: HostServiceOptions) {}
+  constructor(private readonly options: HostServiceOptions) {
+    this.sessionResolver = options.sessionResolver ?? new CodexSessionResolver();
+  }
 
   async start(): Promise<void> {
     this.state = await this.options.stateStore.load(this.options.config);
@@ -139,7 +151,7 @@ export class HostService {
 
   async bindSession(input: SessionBindingInput): Promise<PersistedSessionState> {
     const mailboxConfig = this.requireMailboxConfig(input.mailbox);
-    const currentMailboxState = this.state.mailboxes[input.mailbox];
+    const currentMailboxState = this.requireMailboxState(input.mailbox);
 
     if (
       currentMailboxState.current_session &&
@@ -180,6 +192,72 @@ export class HostService {
     return persisted;
   }
 
+  async bootstrapSession(input: BootstrapSessionInput): Promise<RuntimeContext> {
+    const mailboxConfig = this.requireMailboxConfig(input.mailbox);
+
+    if (mailboxConfig.role !== input.role) {
+      throw new Error(`Mailbox ${input.mailbox} role mismatch: expected ${mailboxConfig.role}.`);
+    }
+
+    if (mailboxConfig.name !== input.name) {
+      throw new Error(`Mailbox ${input.mailbox} name mismatch: expected ${mailboxConfig.name}.`);
+    }
+
+    if (mailboxConfig.workspace_path !== input.workspacePath) {
+      throw new Error(
+        `Mailbox ${input.mailbox} workspace mismatch: expected ${mailboxConfig.workspace_path}.`
+      );
+    }
+
+    const codexSession = await this.sessionResolver.findLatestByWorkspace(input.workspacePath);
+
+    if (!codexSession) {
+      throw new Error(
+        `No Codex session metadata found for workspace ${input.workspacePath}. Start Codex in that workspace first.`
+      );
+    }
+
+    await this.bindSession({
+      mailbox: input.mailbox,
+      session_id: codexSession.id,
+      session_status: "bootstrapping"
+    });
+
+    await this.updateSession(input.mailbox, {
+      session_status: "idle"
+    });
+
+    await this.sendSessionHeartbeatForMailbox(this.requireMailboxState(input.mailbox));
+
+    return this.getRuntimeContext(input.mailbox);
+  }
+
+  getRuntimeContext(mailbox: string): RuntimeContext {
+    const mailboxConfig = this.requireMailboxConfig(mailbox);
+    const currentSession = this.requireMailboxState(mailbox).current_session;
+
+    return runtimeContextSchema.parse({
+      mailbox: mailboxConfig.mailbox,
+      role: mailboxConfig.role,
+      name: mailboxConfig.name,
+      workspace_path: mailboxConfig.workspace_path,
+      machine_id: this.options.config.machine_id,
+      session_id: currentSession?.session_id ?? null,
+      session_status: currentSession?.session_status ?? null,
+      active_task_id: currentSession?.active_task_id ?? null,
+      last_processed_message_id: currentSession?.last_processed_message_id ?? null,
+      latest_summary: currentSession?.latest_summary ?? null
+    });
+  }
+
+  getCurrentSession(mailbox: string): PersistedSessionState | null {
+    return this.requireMailboxState(mailbox).current_session;
+  }
+
+  getClient(): CentralApiClient {
+    return this.options.client;
+  }
+
   async updateSession(mailbox: string, patch: SessionRuntimePatch): Promise<void> {
     const mailboxState = this.requireMailboxState(mailbox);
 
@@ -193,6 +271,26 @@ export class HostService {
     };
 
     await this.persistState();
+  }
+
+  async clearActiveSession(
+    mailbox: string,
+    requestedBy = "human-user",
+    force = false
+  ): Promise<void> {
+    const mailboxState = this.requireMailboxState(mailbox);
+
+    if (!mailboxState.current_session) {
+      return;
+    }
+
+    await this.options.client.clearSession(mailboxState.current_session.session_id, {
+      mailbox,
+      requested_by: requestedBy,
+      force
+    });
+
+    await this.markSessionCleared(mailbox);
   }
 
   async markSessionCleared(mailbox: string): Promise<void> {
@@ -223,38 +321,7 @@ export class HostService {
     );
 
     for (const mailboxState of activeMailboxes) {
-      const currentSession = mailboxState.current_session!;
-
-      try {
-        const result = await this.options.client.sendSessionHeartbeat(currentSession.session_id, {
-          mailbox: mailboxState.mailbox,
-          session_status: currentSession.session_status,
-          active_task_id: currentSession.active_task_id,
-          last_processed_message_id: currentSession.last_processed_message_id,
-          latest_summary: currentSession.latest_summary
-        });
-
-        mailboxState.current_session = {
-          ...currentSession,
-          last_heartbeat_at: result.last_heartbeat_at
-        };
-        this.lastSessionHeartbeatAt = result.last_heartbeat_at;
-        this.hostStatus = "online";
-        this.lastError = null;
-      } catch (error) {
-        if (error instanceof CentralApiError && error.status === 404) {
-          await this.options.client.bindSession({
-            session_id: currentSession.session_id,
-            mailbox: mailboxState.mailbox,
-            machine_id: this.options.config.machine_id,
-            workspace_path: currentSession.workspace_path,
-            session_status: currentSession.session_status
-          });
-          continue;
-        }
-
-        this.recordError(error, `session_heartbeat:${mailboxState.mailbox}`);
-      }
+      await this.sendSessionHeartbeatForMailbox(mailboxState);
     }
 
     await this.persistState();
@@ -279,6 +346,45 @@ export class HostService {
           this.state.mailboxes[mailbox.mailbox]?.recent_cleared_sessions.length ?? 0
       }))
     };
+  }
+
+  private async sendSessionHeartbeatForMailbox(mailboxState: HostState["mailboxes"][string]): Promise<void> {
+    const currentSession = mailboxState.current_session;
+
+    if (!currentSession || currentSession.session_status === "cleared") {
+      return;
+    }
+
+    try {
+      const result = await this.options.client.sendSessionHeartbeat(currentSession.session_id, {
+        mailbox: mailboxState.mailbox,
+        session_status: currentSession.session_status,
+        active_task_id: currentSession.active_task_id,
+        last_processed_message_id: currentSession.last_processed_message_id,
+        latest_summary: currentSession.latest_summary
+      });
+
+      mailboxState.current_session = {
+        ...currentSession,
+        last_heartbeat_at: result.last_heartbeat_at
+      };
+      this.lastSessionHeartbeatAt = result.last_heartbeat_at;
+      this.hostStatus = "online";
+      this.lastError = null;
+    } catch (error) {
+      if (error instanceof CentralApiError && error.status === 404) {
+        await this.options.client.bindSession({
+          session_id: currentSession.session_id,
+          mailbox: mailboxState.mailbox,
+          machine_id: this.options.config.machine_id,
+          workspace_path: currentSession.workspace_path,
+          session_status: currentSession.session_status
+        });
+        return this.sendSessionHeartbeatForMailbox(mailboxState);
+      }
+
+      this.recordError(error, `session_heartbeat:${mailboxState.mailbox}`);
+    }
   }
 
   private requireMailboxConfig(mailbox: string): HostMailboxConfig {
@@ -311,4 +417,3 @@ export class HostService {
     this.lastError = `${action}: ${message}`;
   }
 }
-

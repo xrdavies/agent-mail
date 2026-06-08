@@ -43,7 +43,13 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
    pnpm dev:host
    ```
 
-6. Run verification:
+6. Register the Host MCP endpoint with Codex when you want a session to use local tools:
+
+   ```bash
+   codex mcp add agent-mail-host --url http://localhost:8788/mcp
+   ```
+
+7. Run verification:
 
    ```bash
    pnpm test

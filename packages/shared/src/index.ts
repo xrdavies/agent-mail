@@ -142,6 +142,19 @@ export const workPackageSchema = z.object({
   recent_artifacts: z.array(artifactSchema)
 });
 
+export const runtimeContextSchema = z.object({
+  mailbox: z.string().min(1),
+  role: z.string().min(1),
+  name: z.string().min(1),
+  workspace_path: z.string().min(1),
+  machine_id: z.string().min(1),
+  session_id: z.string().min(1).nullable(),
+  session_status: z.enum(SESSION_STATUSES).nullable(),
+  active_task_id: z.string().min(1).nullable(),
+  last_processed_message_id: z.string().min(1).nullable(),
+  latest_summary: z.string().nullable()
+});
+
 export const registerMachineRequestSchema = z.object({
   machine_id: z.string().min(1),
   label: z.string().min(1),
@@ -236,6 +249,63 @@ export const threadDeltaQuerySchema = z.object({
   after_message_id: z.string().min(1).optional()
 });
 
+export const bootstrapSessionToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  role: z.string().min(1),
+  name: z.string().min(1),
+  workspacePath: z.string().min(1)
+});
+
+export const getRuntimeContextToolInputSchema = z.object({
+  mailbox: z.string().min(1)
+});
+
+export const listMailboxTasksToolInputSchema = z.object({
+  mailbox: z.string().min(1)
+});
+
+export const getTaskWorkPackageToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  taskId: z.string().min(1)
+});
+
+export const getThreadDeltaToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  threadId: z.string().min(1),
+  afterMessageId: z.string().min(1).optional()
+});
+
+export const getFullThreadToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  threadId: z.string().min(1)
+});
+
+export const replyThreadToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  threadId: z.string().min(1),
+  body: z.string().min(1),
+  toMailbox: z.string().min(1).optional()
+});
+
+export const createChildTaskToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  threadId: z.string().min(1),
+  title: z.string().min(1),
+  toMailbox: z.string().min(1),
+  body: z.string().min(1),
+  requiresArtifact: z.boolean()
+});
+
+export const updateTaskStatusToolInputSchema = z.object({
+  mailbox: z.string().min(1),
+  taskId: z.string().min(1),
+  status: z.enum(TASK_STATUSES)
+});
+
+export const listAgentsToolInputSchema = z.object({
+  mailbox: z.string().min(1)
+});
+
 export type Machine = z.infer<typeof machineSchema>;
 export type Mailbox = z.infer<typeof mailboxSchema>;
 export type Session = z.infer<typeof sessionSchema>;
@@ -246,6 +316,7 @@ export type Artifact = z.infer<typeof artifactSchema>;
 export type ThreadSummary = z.infer<typeof threadSummarySchema>;
 export type ThreadDetail = z.infer<typeof threadDetailSchema>;
 export type WorkPackage = z.infer<typeof workPackageSchema>;
+export type RuntimeContext = z.infer<typeof runtimeContextSchema>;
 export type HostStatus = (typeof HOST_STATUSES)[number];
 export type MailboxStatus = (typeof MAILBOX_STATUSES)[number];
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
