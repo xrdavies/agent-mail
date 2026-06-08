@@ -2,6 +2,13 @@
 
 Machine-local daemon for mailbox registration, local session registry, heartbeat, and runtime status.
 
+It also owns:
+
+- local MCP exposure at `/mcp`
+- mailbox pending-work detection
+- automatic `codex exec` vs `codex exec resume` decisions
+- session summary and last-processed-message persistence
+
 ## Local run
 
 1. Copy the env template:
@@ -29,3 +36,14 @@ Machine-local daemon for mailbox registration, local session registry, heartbeat
    - `GET /health`
    - `GET /status`
    - `/mcp`
+
+## Runtime behavior
+
+When the daemon is running, it periodically:
+
+1. refreshes machine and session heartbeats
+2. checks local mailboxes for pending tasks
+3. runs `codex exec` when a mailbox has no active session
+4. runs `codex exec resume <session_id>` when a mailbox already has one
+
+For host-managed turns, the MCP endpoint is injected automatically into the Codex command line. The manual `codex mcp add` step is only needed when you want to start an interactive Codex session yourself and bootstrap it through the same local MCP bridge.

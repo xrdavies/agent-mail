@@ -5,7 +5,7 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
 ## Current workspace
 
 - `apps/central`: Hono control-plane service with Drizzle/Postgres persistence
-- `apps/host`: machine-local daemon for registration, local session registry, heartbeat, and runtime status
+- `apps/host`: machine-local daemon for registration, local session registry, heartbeat, local MCP, and automatic `codex exec/resume`
 - `packages/shared`: shared enums, payload schemas, and response contracts
 - `apps/web`: reserved for the Phase 7 operator UI
 
@@ -43,11 +43,13 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
    pnpm dev:host
    ```
 
-6. Register the Host MCP endpoint with Codex when you want a session to use local tools:
+6. If you want a manually started Codex session to use the same local MCP bridge, register the Host MCP endpoint with Codex:
 
    ```bash
    codex mcp add agent-mail-host --url http://localhost:8788/mcp
    ```
+
+The Host daemon now also injects this MCP endpoint automatically when it launches `codex exec` and `codex exec resume` for pending mailbox work.
 
 7. Run verification:
 
