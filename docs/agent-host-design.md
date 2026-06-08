@@ -9,6 +9,7 @@ Agent Host is the machine-local runtime supervisor that enables mailbox-scoped C
 This document should be read together with:
 
 - [System Architecture](./system-architecture.md)
+- [Technical Stack](./tech-stack.md)
 - [Implementation Plan](./implementation-plan.md)
 - [Data Model](./data-model.md)
 - [API Contract](./api-contract.md)

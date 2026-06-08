@@ -16,6 +16,7 @@ It is intentionally implementation-oriented:
 This plan assumes the current source of truth documents are:
 
 - [System Architecture](./system-architecture.md)
+- [Technical Stack](./tech-stack.md)
 - [Prompt Specification](./prompt-specification.md)
 
 ## Planning Principles
