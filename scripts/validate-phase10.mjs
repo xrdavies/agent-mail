@@ -14,6 +14,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const nowIso = () => new Date().toISOString();
 
+const logStep = (message) => {
+  console.log(`[phase10] ${message}`);
+};
+
 const parseArgs = () => ({
   keepTemp: process.argv.includes("--keep-temp")
 });
@@ -565,6 +569,11 @@ const buildReport = (context) => ({
   scenarios: context.results
 });
 
+const writeProgressReport = async (context) => {
+  const report = buildReport(context);
+  await writeFile(context.environment.reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+};
+
 const cleanup = async ({ environment, services, keepTemp }) => {
   await Promise.allSettled(services.map((service) => service.stop()));
   await runCommand("pkill", ["-f", environment.tempRoot]).catch(() => {});
@@ -584,24 +593,33 @@ const main = async () => {
   const results = {};
 
   try {
+    logStep(`prepare temp root ${environment.tempRoot}`);
     await ensureDatabase(databaseName);
+    logStep(`database ready ${databaseName}`);
     const stack = await startStack({ environment, databaseUrl });
     services.push(stack.central, stack.host, stack.web);
+    logStep(`stack ready central=${stack.centralBaseUrl} host=${stack.hostBaseUrl} web=${stack.webBaseUrl}`);
 
     const scenario1Result = await scenario1({ centralBaseUrl: stack.centralBaseUrl });
     results.scenario_1 = scenario1Result;
+    await writeProgressReport({ environment, stack, results });
+    logStep("scenario 1 complete");
 
     const scenario2Result = await scenario2({
       centralBaseUrl: stack.centralBaseUrl,
       scenario1Result
     });
     results.scenario_2 = scenario2Result;
+    await writeProgressReport({ environment, stack, results });
+    logStep("scenario 2 complete");
 
     const scenario3Result = await scenario3({
       centralBaseUrl: stack.centralBaseUrl,
       environment
     });
     results.scenario_3 = scenario3Result;
+    await writeProgressReport({ environment, stack, results });
+    logStep("scenario 3 complete");
 
     const scenario4And5Result = await scenario4And5({
       centralBaseUrl: stack.centralBaseUrl,
@@ -619,6 +637,8 @@ const main = async () => {
       session_detail_visible_in_web: true,
       clear_action_works_in_web: true
     };
+    await writeProgressReport({ environment, stack, results });
+    logStep("scenario 4 and 5 complete");
 
     const report = buildReport({ environment, stack, results });
     await writeFile(environment.reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
