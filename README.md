@@ -63,3 +63,19 @@ The Host daemon now also injects this MCP endpoint automatically when it launche
    pnpm test
    pnpm build
    ```
+
+9. Run the formal end-to-end validation flow:
+
+   ```bash
+   pnpm validate:phase10
+   ```
+
+`validate:phase10` is now the default proof path for the implementation plan. It provisions a temporary validation stack, drives the mailbox/session scenarios from Phase 10, validates the operator web surface, and writes a final JSON report.
+
+Use:
+
+```bash
+pnpm validate:phase10 -- --keep-temp
+```
+
+when you want to keep the temporary workspaces, logs, and report on disk for debugging.

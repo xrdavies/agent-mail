@@ -2,7 +2,7 @@
 
 ## Goal
 
-This runbook describes the default local demo loop for the Agent Mail POC: start a clean stack, verify that it is healthy, optionally run the Codex smoke path, and stop everything cleanly.
+This runbook describes the default local demo loop for the Agent Mail POC: start a clean stack, verify that it is healthy, optionally run the formal Phase 10 validation path, and stop everything cleanly.
 
 ## Prerequisites
 
@@ -44,10 +44,16 @@ The default local environment values live in `.env.example`:
    pnpm demo:status
    ```
 
-5. Optionally run the end-to-end Codex + MCP smoke flow:
+5. Run the formal end-to-end validation flow:
 
    ```bash
-   pnpm smoke:codex
+   pnpm validate:phase10
+   ```
+
+6. If the formal validation fails and you want to inspect the temporary stack, rerun it with:
+
+   ```bash
+   pnpm validate:phase10 -- --keep-temp
    ```
 
 Keep the `pnpm demo:start` terminal open while the demo is running.
@@ -77,6 +83,33 @@ Use this as the fast verification path. It exits non-zero if the API is unreacha
 - task count
 - task status distribution
 - task assignee distribution
+
+### `pnpm validate:phase10`
+
+Use this as the default proof path for the current implementation plan.
+
+The script:
+
+- creates a temporary database
+- clones temporary mailbox workspaces
+- starts Central, Host, and Web on ephemeral ports
+- drives the mailbox/session scenarios from Phase 10
+- verifies host/session visibility through the Web UI
+- writes a JSON report at `<temp_root>/phase10-report.json`
+
+Default behavior cleans up the temporary stack after the run.
+
+Use `--keep-temp` when you want to retain:
+
+- the temporary workspace roots
+- Central/Host/Web logs
+- the final JSON report
+
+Example:
+
+```bash
+pnpm validate:phase10 -- --keep-temp
+```
 
 ### `pnpm smoke:codex`
 
@@ -132,4 +165,5 @@ After a clean start:
 
 - If `pnpm demo:status` fails right after startup, wait a few seconds and rerun it. The API may still be compiling.
 - If the start flow fails during database bootstrap, run `docker compose ps` and then `pnpm demo:stop` before retrying.
+- If `pnpm validate:phase10` fails, rerun it with `--keep-temp` and inspect the emitted temp-root logs and JSON report first.
 - If `pnpm smoke:codex` fails, confirm the API is healthy first and that the local Codex CLI is installed.
