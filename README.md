@@ -7,9 +7,11 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
 - `apps/central`: Hono control-plane service with Drizzle/Postgres persistence
 - `apps/host`: machine-local daemon for registration, local session registry, heartbeat, local MCP, and automatic `codex exec/resume`
 - `packages/shared`: shared enums, payload schemas, and response contracts
-- `apps/web`: operator-facing React/Vite workbench for hosts and sessions
+- `apps/web`: human/operator-facing React/Vite workbench for threads, tasks, hosts, and sessions
 
 ## Local development
+
+The default manual startup path for the current local test environment lives in [docs/demo-operations.md](/Users/m4002/Projects/agent-mail/docs/demo-operations.md:1).
 
 1. Start PostgreSQL:
 

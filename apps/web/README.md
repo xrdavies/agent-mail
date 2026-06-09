@@ -1,6 +1,12 @@
 # Agent Mail Web
 
-Operator-facing web surface for host and session observability.
+Human/operator-facing web surface for:
+
+- composing new threads
+- inspecting threads and related tasks
+- replying to existing threads
+- observing hosts and sessions
+- clearing sessions manually
 
 ## Local run
 
@@ -20,6 +26,9 @@ Operator-facing web surface for host and session observability.
 
 The page currently exposes:
 
+- Compose-thread form
+- Thread list and thread detail
+- Related tasks for the selected thread
 - Hosts list
 - Sessions list
 - Session detail

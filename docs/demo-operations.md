@@ -1,169 +1,209 @@
-# Demo RUNBOOK
+# Local Test Environment RUNBOOK
 
 ## Goal
 
-This runbook describes the default local demo loop for the Agent Mail POC: start a clean stack, verify that it is healthy, optionally run the formal Phase 10 validation path, and stop everything cleanly.
+This runbook starts the current local Agent Mail test environment exactly as the repository works today:
+
+- PostgreSQL via `docker compose`
+- Central API on `http://localhost:3000`
+- Host daemon on `http://localhost:8788`
+- Web UI on `http://localhost:5173`
+
+Use this path when you want to interact with the system manually. Use `pnpm validate:phase10` when you want the full formal proof path.
 
 ## Prerequisites
 
-- `Node.js 24`
+- `Node.js >= 24`
 - `pnpm`
-- Docker or Docker Desktop
-- Codex CLI installed locally if you want to run `pnpm smoke:codex`
+- Docker Desktop or OrbStack
+- `codex` CLI installed if you want Host-managed agent turns to execute real work
+- `gh auth status` passing if you want artifact metadata to include GitHub repository and PR data
 
-The default local environment values live in `.env.example`:
+## One-Time Setup
 
-- `DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail`
-- `APP_ORIGIN=http://localhost:5173`
-- `PORT=3001`
-- `VITE_API_URL=http://localhost:3001`
+1. Install dependencies:
 
-## Recommended Daily Flow
+```bash
+pnpm install
+```
 
-1. Install dependencies once:
+2. Copy env files:
 
-   ```bash
-   pnpm install
-   ```
+```bash
+cp apps/central/.env.example apps/central/.env
+cp apps/host/.env.example apps/host/.env
+```
 
-2. Stop anything stale before a fresh demo:
+3. Create a local Host config:
 
-   ```bash
-   pnpm demo:stop
-   ```
+```bash
+cp apps/host/host.example.toml apps/host/host.local.toml
+```
 
-3. Start the full demo stack:
+4. Edit `apps/host/host.local.toml`:
 
-   ```bash
-   pnpm demo:start
-   ```
+- set `machine_id` and `label` for this machine
+- keep one mailbox per agent identity you want to run locally
+- set each `workspace_path` to a real writable git checkout or worktree
 
-4. In another terminal, verify the stack is up:
+Recommended shape:
 
-   ```bash
-   pnpm demo:status
-   ```
+```toml
+machine_id = "mac-local"
+label = "Mac Local"
 
-5. Run the formal end-to-end validation flow:
+[[mailboxes]]
+mailbox = "pm.aster@agents.local"
+name = "Aster"
+role = "pm"
+workspace_path = "/absolute/path/to/pm-worktree"
+git_user_name = "Aster"
+git_user_email = "pm.aster@agents.local"
 
-   ```bash
-   pnpm validate:phase10
-   ```
+[[mailboxes]]
+mailbox = "backend.coda@agents.local"
+name = "Coda"
+role = "backend"
+workspace_path = "/absolute/path/to/backend-worktree"
+git_user_name = "Coda"
+git_user_email = "backend.coda@agents.local"
+```
 
-6. If the formal validation fails and you want to inspect the temporary stack, rerun it with:
+Notes:
 
-   ```bash
-   pnpm validate:phase10 -- --keep-temp
-   ```
+- Do not point multiple artifact-producing mailboxes at the same writable checkout unless you intentionally want them sharing one worktree.
+- For end-to-end testing, separate worktrees are the safer default.
 
-Keep the `pnpm demo:start` terminal open while the demo is running.
+## Start The Stack
 
-## Command Reference
+Open three terminals after the database is ready.
 
-### `pnpm demo:start`
+### 1. Start PostgreSQL
 
-This command now runs through `scripts/demo-start.mjs` and performs the full bootstrap in a fixed order:
+```bash
+docker compose up -d postgres
+```
 
-- starts PostgreSQL with `pnpm db:up`
-- reapplies migrations and reseeds demo data via `pnpm demo:reset`
-- launches the API, web app, and three long-lived agent workers in the foreground
+### 2. Apply migrations
 
-When startup reaches the long-running phase, the script prints:
+```bash
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:migrate
+```
 
-- Web: `http://localhost:5173`
-- API: `http://localhost:3001`
-- Health: `http://localhost:3001/health`
+### 3. Start Central
 
-### `pnpm demo:status`
+Terminal A:
 
-Use this as the fast verification path. It exits non-zero if the API is unreachable and prints:
+```bash
+pnpm dev:central
+```
 
-- API health
-- thread count
-- task count
-- task status distribution
-- task assignee distribution
+Expected:
 
-### `pnpm validate:phase10`
+- Central listens on `http://localhost:3000`
 
-Use this as the default proof path for the current implementation plan.
+### 4. Start Host
 
-The script:
+Terminal B:
 
-- creates a temporary database
-- clones temporary mailbox workspaces
-- starts Central, Host, and Web on ephemeral ports
-- drives the mailbox/session scenarios from Phase 10
-- verifies host/session visibility through the Web UI
-- writes a JSON report at `<temp_root>/phase10-report.json`
+```bash
+HOST_CONFIG_PATH=apps/host/host.local.toml pnpm dev:host
+```
 
-Default behavior cleans up the temporary stack after the run.
+Expected:
 
-Use `--keep-temp` when you want to retain:
+- Host listens on `http://localhost:8788`
+- the machine and configured mailboxes register with Central
 
-- the temporary workspace roots
-- Central/Host/Web logs
-- the final JSON report
+### 5. Start Web
 
-Example:
+Terminal C:
+
+```bash
+pnpm dev:web
+```
+
+Expected:
+
+- Web listens on `http://localhost:5173`
+- `/api` requests proxy to Central on `http://localhost:3000`
+
+## Ready Checks
+
+Run these once the three services are up:
+
+```bash
+curl http://localhost:3000/api/v1/health
+curl http://localhost:8788/health
+curl http://localhost:8788/status
+curl http://localhost:3000/api/v1/machines
+curl http://localhost:3000/api/v1/mailboxes
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+The Web UI should show:
+
+- compose-thread form
+- thread list and thread detail
+- task list for the selected thread
+- host list
+- session list
+- session detail with clear-session action
+
+## Manual Usage Loop
+
+1. Open the Web UI.
+2. Create a thread addressed to a mailbox that exists in `apps/host/host.local.toml`, for example `pm.aster@agents.local`.
+3. Write a task that either:
+- asks for a direct answer
+- asks PM to delegate to another local mailbox such as `backend.coda@agents.local`
+4. Watch the thread, tasks, hosts, and sessions update.
+5. If Codex is installed and the Host sees pending mailbox work, it will automatically choose `codex exec` or `codex exec resume`.
+
+## Formal Proof Path
+
+Use this when you want the repo’s full automated verification path instead of the manual stack above:
+
+```bash
+pnpm validate:phase10
+```
+
+For temp logs, workspaces, and the final JSON report:
 
 ```bash
 pnpm validate:phase10 -- --keep-temp
 ```
 
-### `pnpm smoke:codex`
+## Stop The Environment
 
-Use this as the deep verification path when you need to prove MCP connectivity and real Codex task execution against the local API.
-
-### `pnpm demo:reset`
-
-Use this when you need a clean inbox with seeded data. It reapplies migrations and resets the demo dataset back to:
-
-- default agent identities
-- one backend thread
-- one PM thread
-- one QA thread
-
-For the cleanest result, prefer stopping and restarting the full stack instead of resetting while workers are still active:
+1. Press `Ctrl-C` in the Central, Host, and Web terminals.
+2. Stop PostgreSQL:
 
 ```bash
-pnpm demo:stop
-pnpm demo:start
+docker compose down
 ```
 
-### `pnpm demo:stop`
+Optional cleanup:
 
-This stops:
-
-- API dev processes
-- web dev processes
-- long-lived agent worker processes
-- the local PostgreSQL container
-
-## Manual Fallback
-
-If you need to bring the stack up step by step instead of using `pnpm demo:start`, use this order:
-
-1. `pnpm install`
-2. `pnpm db:up`
-3. `pnpm db:migrate`
-4. `pnpm db:seed`
-5. `pnpm dev:api`
-6. `pnpm dev:web`
-7. `pnpm dev:agents`
-
-## Expected Ready State
-
-After a clean start:
-
-- the web app is available at `http://localhost:5173`
-- the API health endpoint responds at `http://localhost:3001/health`
-- `pnpm demo:status` reports seeded threads and tasks
-- the seeded agents are `backend-agent`, `qa-agent`, and `pm-agent`
+```bash
+rm -f .agent-mail/host-state.json
+```
 
 ## Troubleshooting
 
-- If `pnpm demo:status` fails right after startup, wait a few seconds and rerun it. The API may still be compiling.
-- If the start flow fails during database bootstrap, run `docker compose ps` and then `pnpm demo:stop` before retrying.
-- If `pnpm validate:phase10` fails, rerun it with `--keep-temp` and inspect the emitted temp-root logs and JSON report first.
-- If `pnpm smoke:codex` fails, confirm the API is healthy first and that the local Codex CLI is installed.
+- If Host starts but no agent work happens, check that `codex --version` succeeds.
+- If Host cannot register mailboxes correctly, verify `HOST_CONFIG_PATH` and every `workspace_path`.
+- If Web loads but data is empty, verify Central is reachable at `http://localhost:3000` and that Vite is still running.
+- If artifact rows are missing `repository` or `pr_link`, check `gh auth status`. Local branch and commit metadata still work without GitHub auth, but GitHub fields may be null.
+- If the database is stale, rerun:
+
+```bash
+docker compose down -v
+docker compose up -d postgres
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:migrate
+```
