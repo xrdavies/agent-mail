@@ -292,6 +292,9 @@ describe("HostOrchestrator", () => {
     await orchestrator.processPendingWorkOnce();
 
     const workPackage = await service.getClient().getTaskWorkPackage(artifactTask.task_id);
+    const artifactTaskRow = (await service.getClient().listTasks({ thread_id: threadPayload.thread.thread_id }))
+      .find((task) => task.task_id === artifactTask.task_id);
+    expect(artifactTaskRow?.status).toBe("done");
     expect(workPackage.recent_artifacts).toHaveLength(1);
     expect(workPackage.recent_artifacts[0].path).toBe("RUNBOOK.md");
     expect(workPackage.recent_artifacts[0].branch).toBe("agent-mail/pm.aster/task_runbook");

@@ -72,7 +72,21 @@ export class HostOrchestrator {
         continue;
       }
 
-      const pending = await this.findNextPendingTask(mailbox);
+      let pending = null;
+
+      try {
+        pending = await this.findNextPendingTask(mailbox);
+      } catch (error) {
+        console.error(
+          JSON.stringify({
+            action: "find_pending_task_failed",
+            mailbox: mailbox.mailbox,
+            timestamp: new Date().toISOString(),
+            error: error instanceof Error ? error.message : String(error)
+          })
+        );
+        continue;
+      }
 
       if (!pending) {
         continue;
@@ -210,7 +224,12 @@ export class HostOrchestrator {
     let latestSummary = result.lastMessage;
 
     if (refreshedTask.requires_artifact) {
-      const artifactError = await this.reportArtifacts(mailbox, refreshedTask, result.lastMessage);
+      const artifactSourceText =
+        [...thread.messages]
+          .reverse()
+          .find((message) => message.from_id === mailbox.mailbox)?.body ?? result.lastMessage;
+
+      const artifactError = await this.reportArtifacts(mailbox, refreshedTask, artifactSourceText);
 
       if (artifactError) {
         latestSummary = artifactError;

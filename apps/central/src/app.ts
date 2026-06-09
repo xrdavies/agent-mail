@@ -918,11 +918,20 @@ export const createApp = (db: Database) => {
     if (task.assignee_mailbox) {
       const activeSession = await getActiveSessionForMailbox(db, task.assignee_mailbox);
       latest_summary = activeSession?.latest_summary ?? null;
-      new_message_rows = await getThreadMessagesAfter(
-        db,
-        thread.thread_id,
-        activeSession?.last_processed_message_id ?? undefined
-      );
+
+      try {
+        new_message_rows = await getThreadMessagesAfter(
+          db,
+          thread.thread_id,
+          activeSession?.last_processed_message_id ?? undefined
+        );
+      } catch (error) {
+        if (error instanceof ApiError && error.code === "message_not_found") {
+          new_message_rows = await getMessageRows(db, thread.thread_id);
+        } else {
+          throw error;
+        }
+      }
     }
 
     return c.json(
