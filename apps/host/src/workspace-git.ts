@@ -3,13 +3,15 @@ import { spawn } from "node:child_process";
 export type WorkspaceGitMeta = {
   branch: string | null;
   commitSha: string | null;
+  repository: string | null;
+  prLink: string | null;
 };
 
-type Executor = (workspacePath: string, args: string[]) => Promise<string>;
+type Executor = (command: string, workspacePath: string, args: string[]) => Promise<string>;
 
-const defaultExecutor: Executor = async (workspacePath, args) =>
+const defaultExecutor: Executor = async (command, workspacePath, args) =>
   new Promise((resolve, reject) => {
-    const child = spawn("git", args, {
+    const child = spawn(command, args, {
       cwd: workspacePath,
       stdio: "pipe"
     });
@@ -28,7 +30,7 @@ const defaultExecutor: Executor = async (workspacePath, args) =>
     child.on("error", reject);
     child.on("close", (code) => {
       if (code !== 0) {
-        reject(new Error(stderr || `git ${args.join(" ")} failed with code ${code}`));
+        reject(new Error(stderr || `${command} ${args.join(" ")} failed with code ${code}`));
         return;
       }
 
@@ -42,19 +44,41 @@ export class WorkspaceGitInspector {
   async inspect(workspacePath: string): Promise<WorkspaceGitMeta> {
     try {
       const [branch, commitSha] = await Promise.all([
-        this.executor(workspacePath, ["rev-parse", "--abbrev-ref", "HEAD"]),
-        this.executor(workspacePath, ["rev-parse", "HEAD"])
+        this.executor("git", workspacePath, ["rev-parse", "--abbrev-ref", "HEAD"]),
+        this.executor("git", workspacePath, ["rev-parse", "HEAD"])
       ]);
+
+      const repository =
+        (await this.tryGh(workspacePath, ["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"])) ??
+        null;
+      const prLink =
+        branch && branch !== "HEAD"
+          ? ((await this.tryGh(workspacePath, ["pr", "list", "--state", "all", "--head", branch, "--json", "url", "--jq", ".[0].url"])) ??
+            null)
+          : null;
 
       return {
         branch,
-        commitSha
+        commitSha,
+        repository,
+        prLink
       };
     } catch {
       return {
         branch: null,
-        commitSha: null
+        commitSha: null,
+        repository: null,
+        prLink: null
       };
+    }
+  }
+
+  private async tryGh(workspacePath: string, args: string[]): Promise<string | null> {
+    try {
+      const value = await this.executor("gh", workspacePath, args);
+      return value || null;
+    } catch {
+      return null;
     }
   }
 }

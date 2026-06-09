@@ -117,8 +117,10 @@ const serializeTask = (row: TaskRow) =>
 const serializeArtifact = (row: ArtifactRow) =>
   artifactSchema.parse({
     ...row,
+    repository: row.repository ?? null,
     branch: row.branch ?? null,
     commit_sha: row.commit_sha ?? null,
+    pr_link: row.pr_link ?? null,
     created_at: row.created_at.toISOString()
   });
 
@@ -866,10 +868,12 @@ export const createApp = (db: Database) => {
           artifact_id: createId("art"),
           task_id: payload.task_id,
           mailbox: payload.mailbox,
+          repository: payload.repository ?? null,
           artifact_type: payload.artifact_type,
           path: payload.path,
           branch: payload.branch ?? null,
           commit_sha: payload.commit_sha ?? null,
+          pr_link: payload.pr_link ?? null,
           created_at
         })
         .returning();

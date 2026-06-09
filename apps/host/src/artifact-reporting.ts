@@ -94,10 +94,12 @@ export const finalizeArtifactsForTask = async (input: {
     await input.client.createArtifact({
       task_id: input.task.task_id,
       mailbox: input.mailbox.mailbox,
+      repository: gitMeta.repository,
       artifact_type: inferArtifactType(path),
       path,
       branch: gitMeta.branch,
-      commit_sha: gitMeta.commitSha
+      commit_sha: gitMeta.commitSha,
+      pr_link: gitMeta.prLink
     });
   }
 

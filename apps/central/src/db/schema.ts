@@ -161,10 +161,12 @@ export const artifacts = pgTable(
     mailbox: text("mailbox")
       .notNull()
       .references(() => mailboxes.mailbox, { onDelete: "restrict" }),
+    repository: text("repository"),
     artifact_type: artifactTypeEnum("artifact_type").notNull(),
     path: text("path").notNull(),
     branch: text("branch"),
     commit_sha: text("commit_sha"),
+    pr_link: text("pr_link"),
     created_at: timestamptz("created_at").notNull().defaultNow()
   },
   (table) => [index("artifacts_task_idx").on(table.task_id)]

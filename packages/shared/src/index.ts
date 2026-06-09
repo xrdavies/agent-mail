@@ -113,10 +113,12 @@ export const artifactSchema = z.object({
   artifact_id: z.string().min(1),
   task_id: z.string().min(1),
   mailbox: z.string().min(1),
+  repository: z.string().min(1).nullable(),
   artifact_type: z.enum(ARTIFACT_TYPES),
   path: z.string().min(1),
   branch: z.string().min(1).nullable(),
   commit_sha: z.string().min(1).nullable(),
+  pr_link: z.string().url().nullable(),
   created_at: isoTimestampSchema
 });
 
@@ -239,10 +241,12 @@ export const updateTaskStatusRequestSchema = z.object({
 export const createArtifactRequestSchema = z.object({
   task_id: z.string().min(1),
   mailbox: z.string().min(1),
+  repository: z.string().min(1).nullable().optional(),
   artifact_type: z.enum(ARTIFACT_TYPES),
   path: z.string().min(1),
   branch: z.string().min(1).nullable().optional(),
-  commit_sha: z.string().min(1).nullable().optional()
+  commit_sha: z.string().min(1).nullable().optional(),
+  pr_link: z.string().url().nullable().optional()
 });
 
 export const threadDeltaQuerySchema = z.object({

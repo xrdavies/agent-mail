@@ -492,15 +492,16 @@ const scenario3 = async ({ centralBaseUrl, environment }) => {
 };
 
 const scenario4And5 = async ({ centralBaseUrl, webBaseUrl, scenario3Result, environment }) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-proxy-server"]
+  });
   const page = await browser.newPage();
 
   try {
     await page.goto(webBaseUrl, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Agent Mail Operator");
+    await page.waitForSelector("text=AGENT MAIL CONTROL ROOM");
     await page.waitForSelector("text=Phase10 Script Mac");
-    await page.waitForSelector("text=pm.aster@agents.local");
-    await page.waitForSelector("text=backend.coda@agents.local");
 
     await page.locator('button').filter({ hasText: 'backend.coda@agents.local' }).first().click();
     await page.waitForTimeout(500);
@@ -549,9 +550,40 @@ const scenario4And5 = async ({ centralBaseUrl, webBaseUrl, scenario3Result, envi
       return null;
     });
 
+    const webThreadSubject = `Phase10 web compose ${Date.now()}`;
+    await page.fill("#compose-subject", webThreadSubject);
+    await page.fill(
+      "#compose-body",
+      "Please acknowledge this web-composed thread with a backend follow-up if needed."
+    );
+    await page.selectOption("#compose-mailbox", "pm.aster@agents.local");
+    await page.getByRole("button", { name: "Create Thread" }).click();
+
+    const webThread = await waitFor("scenario 5 web compose", async () => {
+      const threads = await fetchJson(centralBaseUrl, "/api/v1/threads");
+      return threads.find((thread) => thread.subject === webThreadSubject) ?? null;
+    });
+
+    await page.getByRole("button", { name: webThreadSubject }).click();
+    await page.fill("#reply-body", "Phase10 web reply from human operator.");
+    await page.getByRole("button", { name: "Reply to Thread" }).click();
+
+    const webReply = await waitFor("scenario 5 web reply", async () => {
+      const threadDetail = await getThread(centralBaseUrl, webThread.thread_id);
+      return (
+        threadDetail.messages.find(
+          (message) =>
+            message.from_id === "human-user" &&
+            message.body.includes("Phase10 web reply from human operator.")
+        ) ?? null
+      );
+    });
+
     return {
       newBackendSessionId: newSession.sessionId,
-      reusedSessionId: newSession.reused
+      reusedSessionId: newSession.reused,
+      webThreadId: webThread.thread_id,
+      webReplyMessageId: webReply.message_id
     };
   } finally {
     await Promise.race([browser.close(), sleep(5000)]);
@@ -579,7 +611,12 @@ const cleanup = async ({ environment, services, keepTemp }) => {
   await runCommand("pkill", ["-f", environment.tempRoot]).catch(() => {});
 
   if (!keepTemp) {
-    await rm(environment.tempRoot, { recursive: true, force: true });
+    await rm(environment.tempRoot, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 250
+    });
   }
 };
 
@@ -635,7 +672,11 @@ const main = async () => {
     results.scenario_5 = {
       host_visible_in_web: true,
       session_detail_visible_in_web: true,
-      clear_action_works_in_web: true
+      clear_action_works_in_web: true,
+      compose_thread_in_web: true,
+      reply_thread_in_web: true,
+      web_thread_id: scenario4And5Result.webThreadId,
+      web_reply_message_id: scenario4And5Result.webReplyMessageId
     };
     await writeProgressReport({ environment, stack, results });
     logStep("scenario 4 and 5 complete");
@@ -658,7 +699,17 @@ const main = async () => {
     console.error(JSON.stringify(failureReport, null, 2));
     throw error;
   } finally {
-    await cleanup({ environment, services, keepTemp: args.keepTemp });
+    try {
+      await cleanup({ environment, services, keepTemp: args.keepTemp });
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          generated_at: nowIso(),
+          temp_root: environment.tempRoot,
+          cleanup_error: error instanceof Error ? error.message : String(error)
+        }, null, 2)
+      );
+    }
   }
 };
 

@@ -283,7 +283,9 @@ describe("HostOrchestrator", () => {
         async inspect() {
           return {
             branch: "agent-mail/pm.aster/task_runbook",
-            commitSha: "abc123"
+            commitSha: "abc123",
+            repository: "xrdavies/agent-mail",
+            prLink: "https://github.com/xrdavies/agent-mail/pull/123"
           };
         }
       }
@@ -299,5 +301,7 @@ describe("HostOrchestrator", () => {
     expect(workPackage.recent_artifacts[0].path).toBe("RUNBOOK.md");
     expect(workPackage.recent_artifacts[0].branch).toBe("agent-mail/pm.aster/task_runbook");
     expect(workPackage.recent_artifacts[0].commit_sha).toBe("abc123");
+    expect(workPackage.recent_artifacts[0].repository).toBe("xrdavies/agent-mail");
+    expect(workPackage.recent_artifacts[0].pr_link).toBe("https://github.com/xrdavies/agent-mail/pull/123");
   });
 });
