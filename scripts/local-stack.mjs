@@ -393,8 +393,29 @@ const bootstrap = async (context) => {
   log(`mailboxes: ${mailboxes.map((entry) => entry.mailbox).join(", ")}`);
 };
 
+const waitForPostgresReady = async () => {
+  await waitFor(
+    "postgres readiness",
+    async () => {
+      await runCommand("docker", [
+        "exec",
+        "agent-mail-postgres",
+        "pg_isready",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres"
+      ]);
+      return true;
+    },
+    60000,
+    1000
+  );
+};
+
 const ensureLocalDatabase = async (context, { fresh }) => {
   await runCommand("docker", ["compose", "up", "-d", "postgres"]);
+  await waitForPostgresReady();
 
   const queryResult = await runCommand("docker", [
     "exec",
@@ -420,7 +441,24 @@ const ensureLocalDatabase = async (context, { fresh }) => {
       "-d",
       "postgres",
       "-c",
-      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${context.databaseName}' AND pid <> pg_backend_pid(); DROP DATABASE IF EXISTS ${context.databaseName}; CREATE DATABASE ${context.databaseName};`
+      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${context.databaseName}' AND pid <> pg_backend_pid();`
+    ]);
+    await runCommand("docker", [
+      "exec",
+      "agent-mail-postgres",
+      "dropdb",
+      "-U",
+      "postgres",
+      "--if-exists",
+      context.databaseName
+    ]);
+    await runCommand("docker", [
+      "exec",
+      "agent-mail-postgres",
+      "createdb",
+      "-U",
+      "postgres",
+      context.databaseName
     ]);
     log(`recreated database: ${context.databaseName}`);
     return;
