@@ -13,6 +13,19 @@ Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorep
 
 The default manual startup path for the current local test environment lives in [docs/demo-operations.md](/Users/m4002/Projects/agent-mail/docs/demo-operations.md:1).
 
+The fastest script-driven local path is now:
+
+```bash
+pnpm local:start
+pnpm local:status
+```
+
+For a clean local database and cleared Host session state:
+
+```bash
+pnpm local:start -- --fresh
+```
+
 1. Start PostgreSQL:
 
    ```bash

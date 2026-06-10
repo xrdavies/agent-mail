@@ -11,6 +11,39 @@ This runbook starts the current local Agent Mail test environment exactly as the
 
 Use this path when you want to interact with the system manually. Use `pnpm validate:phase10` when you want the full formal proof path.
 
+## Fast Script Path
+
+If you want one-command local startup, use:
+
+```bash
+pnpm local:start
+```
+
+Useful companion commands:
+
+```bash
+pnpm local:bootstrap
+pnpm local:status
+pnpm local:stop
+```
+
+For a clean local database plus cleared Host session state:
+
+```bash
+pnpm local:start -- --fresh
+```
+
+What the script path does:
+
+- creates `.agent-mail/worktrees/pm-aster` and `.agent-mail/worktrees/backend-coda` if needed
+- creates or repairs `apps/host/host.local.toml` when it still contains placeholder paths
+- ensures a dedicated local database exists
+- runs migrations
+- starts Central, Host, and Web in the background
+- writes logs under `.agent-mail/local-stack/logs`
+
+The rest of this runbook documents the equivalent manual path.
+
 ## Prerequisites
 
 - `Node.js >= 24`
