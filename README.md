@@ -2,6 +2,8 @@
 
 Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorepo that follows the POC architecture in `docs/`.
 
+The current email-oriented POC clarification lives in [docs/poc-v0.1-email-central-host.md](/Users/m4002/Projects/agent-mail/docs/poc-v0.1-email-central-host.md:1).
+
 ## Current workspace
 
 - `apps/central`: Hono control-plane service with Drizzle/Postgres persistence
