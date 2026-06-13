@@ -2,53 +2,82 @@
 
 ## Purpose
 
-This document defines the canonical data model for the current Agent Mail POC.
+This document defines the canonical data model for the next email-oriented Agent Mail POC.
 
 It exists to support:
 
-- schema design
+- Central schema design
+- Host orchestration design
 - API contract design
-- Agent Host design
 - session continuity via `codex exec resume`
-- Web visibility of hosts, mailboxes, sessions, threads, and tasks
+- future SMTP and internet-email compatibility
 
-This is the logical data model. It is not tied to a specific ORM shape or migration implementation.
+This document supersedes the earlier generic `thread/message` model for the next implementation slice.
 
 ## Modeling Principles
 
-1. Mailbox is the stable identity boundary.
-2. Task is the execution boundary.
-3. Thread is the communication boundary.
-4. Session belongs to a mailbox, not directly to a task, in the POC.
-5. GitHub artifact references are persisted in Agent Mail, but GitHub remains the artifact truth layer.
-6. A machine may host multiple mailboxes.
-7. A mailbox may only be bound to one active session at a time in the POC.
+1. Mailbox-address identity is the stable collaboration boundary.
+2. Email is the primary communication object.
+3. Delivery is the per-recipient state object.
+4. Thread groups emails by reply linkage, not by subject-only heuristics.
+5. Task is attached primarily to a triggering email and secondarily to a thread.
+6. Host is the runtime boundary; agent profile is the identity/profile boundary.
+7. A mailbox may only be active on one Host at a time.
+8. A mailbox may only have one active session at a time in the POC.
+9. Read state must not live on the email row itself.
+10. Repository delivery artifacts and email-linked resources are different concepts and should not be merged.
+
+## Canonical Terminology
+
+### Address Object
+
+Agent Mail should use an RFC 5322-aligned structured address object:
+
+```json
+{
+  "display_name": "Aster",
+  "address": "pm.aster@agents.local"
+}
+```
+
+Rules:
+
+- `from` is one address object
+- `to` is an array of address objects
+- `cc` is an array of address objects
+- the POC stores arrays for future compatibility
+- the POC runtime enforces exactly one primary `to` recipient
+- raw RFC-style header strings may be preserved separately for display, replay, and future SMTP compatibility
 
 ## Core Entities
 
-The POC requires these entities:
+The email-oriented POC requires these entities:
 
-- `Machine`
-- `Mailbox`
+- `Host`
+- `HostToken`
+- `AgentProfile`
+- `MailboxBinding`
 - `Session`
 - `Thread`
-- `Message`
+- `Email`
+- `Delivery`
 - `Task`
+- `LinkedResource`
 - `Artifact`
 
-## Entity: Machine
+## Entity: Host
 
-Represents one machine that runs an Agent Host.
+Represents one local Agent Host daemon instance registered with Central.
 
 ### Fields
 
-- `machine_id`
+- `host_id`
   - type: string
   - unique
-  - immutable
+  - stable host identity
 - `label`
   - type: string
-  - human-readable machine name
+  - human-readable host name
 - `host_version`
   - type: string
   - optional
@@ -57,7 +86,10 @@ Represents one machine that runs an Agent Host.
     - `online`
     - `offline`
     - `degraded`
+    - `auth_failed`
 - `last_heartbeat_at`
+  - timestamp
+- `last_authenticated_at`
   - timestamp
 - `created_at`
   - timestamp
@@ -66,24 +98,59 @@ Represents one machine that runs an Agent Host.
 
 ### Notes
 
-- one machine may host multiple mailboxes
-- machine status is set by Agent Host heartbeat behavior
+- this replaces earlier `Machine` language for the next POC slice
+- one Host may manage multiple active mailbox bindings
+- Host must authenticate successfully before exposing MCP
 
-## Entity: Mailbox
+## Entity: HostToken
 
-Represents one agent identity.
+Represents the long-lived Central-issued token for one Host.
 
 ### Fields
 
-- `mailbox`
+- `token_id`
   - type: string
   - unique
-  - canonical identity key
+- `host_id`
+  - foreign key to `Host.host_id`
+- `token_hash`
+  - type: string
+  - Central should not store raw tokens
+- `token_status`
+  - enum:
+    - `active`
+    - `revoked`
+- `issued_at`
+  - timestamp
+- `revoked_at`
+  - timestamp
+  - nullable
+- `created_at`
+  - timestamp
+- `updated_at`
+  - timestamp
+
+### Notes
+
+- bootstrap keys are only used for exchange and are not the normal runtime credential
+- POC uses one long-lived revocable token per Host
+
+## Entity: AgentProfile
+
+Represents one registered agent identity/profile record.
+
+### Fields
+
+- `agent_id`
+  - type: string
+  - unique
+- `mailbox`
+  - type: string
+  - mailbox address, for example `pm.aster@agents.local`
 - `name`
   - type: string
-  - human-readable codename
 - `role`
-  - enum or constrained string
+  - constrained string
   - examples:
     - `pm`
     - `tech_lead`
@@ -93,21 +160,64 @@ Represents one agent identity.
     - `qa`
     - `security`
     - `ops`
-- `machine_id`
-  - foreign key to `Machine.machine_id`
-  - nullable only if mailbox is temporarily unassigned
+- `responsibilities`
+  - type: text
+  - fixed role-shaped profile description in the POC
+- `profile_status`
+  - enum:
+    - `active`
+    - `retired`
+    - `unavailable`
+- `registered_by_host_id`
+  - foreign key to `Host.host_id`
+- `created_at`
+  - timestamp
+- `updated_at`
+  - timestamp
+- `retired_at`
+  - timestamp
+  - nullable
+
+### Notes
+
+- mailbox and name changes are treated as a new agent identity in the POC
+- old profiles move to `retired` and remain queryable
+- only one non-retired profile should exist for a mailbox at a time
+- `retired` agents may read historical information but may not send new email
+
+## Entity: MailboxBinding
+
+Represents the current host-local ownership of an active mailbox identity.
+
+### Fields
+
+- `binding_id`
+  - type: string
+  - unique
+- `agent_id`
+  - foreign key to `AgentProfile.agent_id`
+- `mailbox`
+  - type: string
+  - mailbox snapshot
+- `host_id`
+  - foreign key to `Host.host_id`
 - `workspace_path`
   - type: string
-  - machine-local path
+  - writable local workspace/worktree path
 - `git_user_name`
   - type: string
 - `git_user_email`
   - type: string
-- `mailbox_status`
+- `binding_status`
   - enum:
     - `active`
-    - `disabled`
-    - `unassigned`
+    - `inactive`
+    - `failed`
+- `bound_at`
+  - timestamp
+- `unbound_at`
+  - timestamp
+  - nullable
 - `created_at`
   - timestamp
 - `updated_at`
@@ -115,12 +225,13 @@ Represents one agent identity.
 
 ### Notes
 
-- mailbox identity is explicit in MCP tools during the POC
-- mailbox is the stable owner of a long-lived Codex session
+- a mailbox may only have one active binding at a time
+- if another Host tries to claim a still-live binding, Central must reject it
+- Host restart may reset bindings in the POC and require re-registration
 
 ## Entity: Session
 
-Represents one mailbox-scoped Codex working session.
+Represents one mailbox-scoped long-lived Codex session.
 
 ### Fields
 
@@ -128,33 +239,32 @@ Represents one mailbox-scoped Codex working session.
   - type: string
   - unique
 - `mailbox`
-  - foreign key to `Mailbox.mailbox`
-- `machine_id`
-  - foreign key to `Machine.machine_id`
+  - type: string
+  - mailbox snapshot
+- `host_id`
+  - foreign key to `Host.host_id`
 - `workspace_path`
   - type: string
-  - copied from mailbox binding at bootstrap time
+  - resolved path used for bootstrap
 - `session_status`
   - enum:
     - `bootstrapping`
     - `idle`
     - `running`
-    - `waiting_human`
-    - `waiting_child`
     - `failed`
     - `cleared`
 - `active_task_id`
   - foreign key to `Task.task_id`
   - nullable
-- `last_processed_message_id`
-  - foreign key to `Message.message_id`
+- `last_processed_delivery_id`
+  - foreign key to `Delivery.delivery_id`
   - nullable
 - `latest_summary`
   - type: text
   - nullable
-- `last_heartbeat_at`
-  - timestamp
 - `started_at`
+  - timestamp
+- `last_heartbeat_at`
   - timestamp
 - `cleared_at`
   - timestamp
@@ -166,30 +276,27 @@ Represents one mailbox-scoped Codex working session.
 
 ### Notes
 
-- in the POC, a mailbox may have at most one non-cleared session at a time
-- sessions are cleared manually
+- one mailbox may have at most one non-cleared session at a time
+- Host uses `resume session` instead of starting new sessions for every unread email
 
 ## Entity: Thread
 
-Represents one mail conversation.
+Represents a stable conversation thread built from reply linkage.
 
 ### Fields
 
 - `thread_id`
-  - type: UUID/string
+  - type: string
   - unique
-- `subject`
+- `root_email_id`
+  - foreign key to `Email.email_id`
+- `root_message_id`
   - type: string
-- `created_by_type`
-  - enum:
-    - `human`
-    - `agent`
-- `created_by_id`
+- `root_subject`
   - type: string
-  - `human-user` or mailbox
-- `assigned_mailbox`
-  - foreign key to `Mailbox.mailbox`
-  - the mailbox that owns the primary task
+- `latest_email_id`
+  - foreign key to `Email.email_id`
+  - nullable
 - `thread_status`
   - enum:
     - `open`
@@ -204,93 +311,70 @@ Represents one mail conversation.
 
 ### Notes
 
-- `thread_status` is an optional but recommended derived field in the POC
-- thread is the communication container, not the execution container
+- thread assignment is based on `in_reply_to` and `references`
+- subject must not be used as the primary merge key
+- if reply linkage is missing, Central creates a new thread in the POC
+- UI should display the first email subject as the thread subject
 
-## Entity: Message
+## Entity: Email
 
-Represents one mail event inside a thread.
+Represents one persisted email item.
 
 ### Fields
 
+- `email_id`
+  - type: string
+  - unique
 - `message_id`
-  - type: UUID/string
+  - type: string
   - unique
 - `thread_id`
   - foreign key to `Thread.thread_id`
-- `from_type`
-  - enum:
-    - `human`
-    - `agent`
-- `from_id`
+- `from`
+  - structured address object
+- `to`
+  - array of structured address objects
+- `cc`
+  - array of structured address objects
+- `subject`
   - type: string
-  - `human-user` or mailbox
-- `to_type`
-  - enum:
-    - `human`
-    - `agent`
-    - nullable
-- `to_id`
-  - type: string
-  - nullable
-- `body`
+- `body_text`
   - type: text
-- `message_kind`
-  - enum:
-    - `human_mail`
-    - `agent_reply`
-    - `delegation_mail`
-    - `summary_mail`
-    - `system_note`
-  - optional in early implementation, but strongly recommended
-- `created_at`
-  - timestamp
-
-### Notes
-
-- `delegation_mail` is especially valuable for showing agent-to-agent coordination in Web
-- messages are append-only
-
-## Entity: Task
-
-Represents one execution assignment anchored to a thread.
-
-### Fields
-
-- `task_id`
-  - type: UUID/string
-  - unique
-- `title`
+- `raw_body`
+  - type: text
+- `raw_headers`
+  - type: object
+  - optional raw header preservation, for example:
+    - `from`
+    - `to`
+    - `cc`
+    - `subject`
+- `in_reply_to`
   - type: string
-- `thread_id`
-  - foreign key to `Thread.thread_id`
-  - nullable only for exceptional cases
-- `parent_task_id`
-  - foreign key to `Task.task_id`
   - nullable
-- `created_by_type`
+- `references`
+  - type: array of strings
+- `email_kind`
   - enum:
-    - `human`
-    - `agent`
-- `created_by_id`
+    - `human_inbound`
+    - `agent_reply`
+    - `agent_delegation`
+    - `agent_receipt`
+    - `system_note`
+- `send_state`
+  - enum:
+    - `draft`
+    - `sent`
+    - `failed`
+- `created_by_host_id`
+  - foreign key to `Host.host_id`
+  - nullable
+- `created_by_mailbox`
   - type: string
-  - `human-user` or mailbox
-- `assignee_type`
-  - enum:
-    - `human`
-    - `agent`
-- `assignee_mailbox`
-  - foreign key to `Mailbox.mailbox`
-  - for agent tasks
-- `status`
-  - enum:
-    - `new`
-    - `in_progress`
-    - `paused`
-    - `done`
-    - `blocked`
-- `requires_artifact`
-  - boolean
+  - nullable
+- `sent_at`
+  - timestamp
+  - nullable
 - `created_at`
   - timestamp
 - `updated_at`
@@ -298,30 +382,149 @@ Represents one execution assignment anchored to a thread.
 
 ### Notes
 
-- `requires_artifact = true` means the task is expected to produce concrete repository output
-- parent tasks may be paused while child tasks are running
+- Central generates internal `message_id` values for POC-native email
+- future SMTP ingress/egress should preserve external `message_id` where applicable
+- the POC only needs the send path operationally, but `send_state` should still reserve `draft`
+- `cc` is preserved for compatibility but does not participate in task routing in the POC
+- `raw_headers` may preserve original header strings when Central or a future mail connector needs exact replay fidelity
+
+## Entity: Delivery
+
+Represents one recipient-specific delivery state for an email.
+
+### Fields
+
+- `delivery_id`
+  - type: string
+  - unique
+- `email_id`
+  - foreign key to `Email.email_id`
+- `thread_id`
+  - foreign key to `Thread.thread_id`
+- `recipient_address`
+  - type: string
+- `recipient_mailbox`
+  - type: string
+  - nullable for future external recipients
+- `delivery_kind`
+  - enum:
+    - `to`
+    - `cc`
+- `read_status`
+  - enum:
+    - `unread`
+    - `read`
+- `read_at`
+  - timestamp
+  - nullable
+- `created_at`
+  - timestamp
+- `updated_at`
+  - timestamp
+
+### Notes
+
+- unread/read is tracked at the delivery layer, not on `Email`
+- agents must explicitly mark deliveries read through MCP
+- debug reads must not mutate `read_status`
+
+## Entity: Task
+
+Represents one execution record created from an email context.
+
+### Fields
+
+- `task_id`
+  - type: string
+  - unique
+- `thread_id`
+  - foreign key to `Thread.thread_id`
+- `trigger_email_id`
+  - foreign key to `Email.email_id`
+- `parent_task_id`
+  - foreign key to `Task.task_id`
+  - nullable
+- `created_by_email_id`
+  - foreign key to `Email.email_id`
+  - nullable
+- `created_by_mailbox`
+  - type: string
+- `assignee_mailbox`
+  - type: string
+- `title`
+  - type: string
+- `instructions`
+  - type: text
+  - nullable
+- `requires_artifact`
+  - boolean
+- `status`
+  - enum:
+    - `new`
+    - `in_progress`
+    - `paused`
+    - `done`
+    - `blocked`
+- `completed_by_email_id`
+  - foreign key to `Email.email_id`
+  - nullable
+- `created_at`
+  - timestamp
+- `updated_at`
+  - timestamp
+
+### Notes
+
+- task is email-first and thread-second
+- if an agent sends a delegation email and then creates a task, `trigger_email_id` must point to that delegation email
+- a task cannot be marked `done` without a valid `completed_by_email_id`
+
+## Entity: LinkedResource
+
+Represents a link-style attachment attached to an email.
+
+### Fields
+
+- `linked_resource_id`
+  - type: string
+  - unique
+- `email_id`
+  - foreign key to `Email.email_id`
+- `url`
+  - type: string
+- `title`
+  - type: string
+  - nullable
+- `mime_type`
+  - type: string
+  - nullable
+- `size_bytes`
+  - type: integer
+  - nullable
+- `created_at`
+  - timestamp
+
+### Notes
+
+- the POC does not support binary upload attachments
+- agents send links only
 
 ## Entity: Artifact
 
-Represents one declared repository output.
+Represents one repository output produced for a task.
 
 ### Fields
 
 - `artifact_id`
-  - type: UUID/string
+  - type: string
   - unique
 - `task_id`
   - foreign key to `Task.task_id`
-- `mailbox`
-  - foreign key to `Mailbox.mailbox`
-- `artifact_type`
-  - enum:
-    - `document`
-    - `script`
-    - `code`
-    - `config`
-    - `test`
-    - `other`
+- `produced_by_mailbox`
+  - type: string
+- `repository`
+  - type: string
+  - nullable
 - `path`
   - type: string
 - `branch`
@@ -330,173 +533,73 @@ Represents one declared repository output.
 - `commit_sha`
   - type: string
   - nullable
+- `pr_link`
+  - type: string
+  - nullable
 - `created_at`
   - timestamp
 
 ### Notes
 
-- the artifact record lives in Agent Mail
-- the actual file truth lives in GitHub
-
-## Relationships
-
-### Machine -> Mailbox
-
-- one-to-many
-
-### Mailbox -> Session
-
-- one-to-many historically
-- at most one active session in the POC
-
-### Thread -> Message
-
-- one-to-many
-
-### Thread -> Task
-
-- one-to-many
-
-### Task -> Task
-
-- self-referential parent/child relationship
-
-### Task -> Artifact
-
-- one-to-many
+- `Artifact` is for repository delivery outputs
+- `LinkedResource` is for email-linked materials
+- these should remain separate
 
 ## Key Invariants
 
-These rules should hold in the POC:
+1. A mailbox may only have one active Host binding at a time.
+2. A mailbox may only have one non-cleared session at a time.
+3. Every email belongs to exactly one thread.
+4. Thread assignment is driven by `in_reply_to` and `references`.
+5. Subject-only matching must not merge threads.
+6. POC send flows must enforce exactly one primary `to` recipient even though the field is modeled as an array.
+7. Every email delivery has its own unread/read lifecycle.
+8. Delivery read state must not change during debug/read-only inspection.
+9. A task must reference both `thread_id` and `trigger_email_id`.
+10. `Task.trigger_email_id` must belong to the same thread as `Task.thread_id`.
+11. A task may only be marked `done` if `completed_by_email_id` is:
+    - on the same thread
+    - sent by the current assignee mailbox
+    - created later than the task itself
+12. A `retired` mailbox may not send new email.
+13. `LinkedResource` rows are email-scoped, not task-scoped.
+14. `Artifact` rows are task-scoped, not email-scoped.
 
-1. A mailbox may have at most one non-cleared session at a time.
-2. A session belongs to exactly one mailbox.
-3. A mailbox session is bound to one fixed workspace path during its lifetime.
-4. A task belongs to at most one parent task.
-5. A message always belongs to exactly one thread.
-6. If a task has `requires_artifact = true`, it must not be considered complete without at least one valid artifact record or equivalent validated artifact signal.
-7. Child tasks under the same parent must share the same `thread_id` as the parent.
-8. Manual session clearing removes the active mailbox -> session binding but preserves session metadata for debugging and audit.
+## Recommended Derived Views
 
-## Recommended Status Semantics
-
-## Machine.host_status
-
-- `online`
-  - heartbeat is fresh
-- `degraded`
-  - heartbeat is present but recent failures exist
-- `offline`
-  - heartbeat is stale or absent
-
-## Mailbox.mailbox_status
-
-- `active`
-  - mailbox can receive work
-- `disabled`
-  - mailbox should not receive work
-- `unassigned`
-  - mailbox exists but is not currently mapped to a machine
-
-## Session.session_status
-
-- `bootstrapping`
-  - first session registration in progress
-- `idle`
-  - session exists and is not actively running a turn
-- `running`
-  - a Codex turn is in progress
-- `waiting_human`
-  - last action requires human reply
-- `waiting_child`
-  - waiting for child task completion
-- `failed`
-  - last resume/bootstrap failed
-- `cleared`
-  - session was manually cleared and is no longer active
-
-## Thread.thread_status
-
-- `open`
-  - normal active collaboration
-- `waiting_human`
-  - thread currently expects human input
-- `waiting_agent`
-  - thread currently expects agent work
-- `completed`
-  - collaboration is complete
-- `blocked`
-  - collaboration is blocked
-
-## Task.status
-
-- `new`
-  - newly created and eligible for pickup
-- `in_progress`
-  - currently being worked
-- `paused`
-  - intentionally suspended, often due to child task creation
-- `done`
-  - completed
-- `blocked`
-  - cannot proceed without intervention or missing artifact
-
-## Suggested Derived Queries
-
-The system will benefit from these derived views:
-
-- mailbox pending work queue
-- sessions by host
+- unread deliveries by mailbox, oldest first
+- active mailbox bindings by Host
 - active sessions by mailbox
-- thread latest message summary
-- thread child-task completion summary
-- artifact-producing tasks missing artifact records
+- thread latest-email summary
+- pending tasks by mailbox
+- delegated tasks by trigger email
+- retired agent history lookup
+- failed mailboxes awaiting manual recovery
 
-## Suggested Indexes
+## Recommended Indexes
 
 At minimum, index:
 
-- `Mailbox.machine_id`
-- `Session.mailbox`
-- `Session.machine_id`
-- `Session.session_status`
-- `Thread.assigned_mailbox`
-- `Thread.updated_at`
-- `Message.thread_id, created_at`
+- `Host.last_heartbeat_at`
+- `HostToken.host_id, token_status`
+- `AgentProfile.mailbox, profile_status`
+- `MailboxBinding.host_id, binding_status`
+- `MailboxBinding.mailbox, binding_status`
+- `Session.mailbox, session_status`
+- `Thread.root_message_id`
+- `Email.message_id`
+- `Email.thread_id, created_at`
+- `Delivery.recipient_mailbox, read_status, created_at`
 - `Task.assignee_mailbox, status, updated_at`
-- `Task.parent_task_id`
 - `Task.thread_id`
+- `Task.trigger_email_id`
 - `Artifact.task_id`
+- `LinkedResource.email_id`
 
-## Bootstrap-Specific Data Needs
+## Open Follow-on Work
 
-The bootstrap path requires:
+This model is enough to start the next implementation pass, but later phases may still refine:
 
-- mailbox lookup
-- workspace path binding
-- session creation metadata
-
-Therefore:
-
-- `Mailbox.workspace_path` must exist before normal resume operations
-- `Session.workspace_path` should capture the resolved value used at bootstrap time
-
-## Manual Cleanup-Specific Data Needs
-
-Manual cleanup should preserve:
-
-- `session_id`
-- `mailbox`
-- `workspace_path`
-- `latest_summary`
-- `last_processed_message_id`
-- `cleared_at`
-
-This allows later debugging even after the active binding is removed.
-
-## Open Modeling Questions
-
-1. Should `thread_status` be explicitly stored or derived?
-2. Should `message_kind` be explicit now or later?
-3. Should artifact validation require rows in `Artifact`, or is message-based `Artifacts:` parsing sufficient in the first implementation slice?
-4. Should `workspace_path` live only on `Mailbox`, or also be snapshotted on `Session` for historical audit?
+1. whether draft persistence should become active rather than reserved
+2. how external SMTP ingress maps to `recipient_mailbox = null` deliveries
+3. whether idempotency requires a dedicated persistence entity or can stay request-scoped
