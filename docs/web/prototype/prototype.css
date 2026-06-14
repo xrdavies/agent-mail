@@ -104,12 +104,6 @@ code,
   line-height: 1;
 }
 
-.brand-copy {
-  margin: 0.4rem 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
 .nav-group + .nav-group {
   margin-top: var(--space-4);
 }
