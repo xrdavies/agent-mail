@@ -1,0 +1,22 @@
+{
+  "name": "@agent-mail/host",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@agent-mail/contracts": "workspace:*",
+    "@hono/node-server": "^1.14.4",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "hono": "^4.8.5",
+    "zod": "^3.25.76"
+  }
+}
