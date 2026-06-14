@@ -47,7 +47,7 @@
 - P0：最小技术路线锁定
 - P1：规格冻结
 - P2：仓库骨架建立
-- P3：共享 contract 层
+- P3：Contracts 层
 - P4：Central 数据层
 - P5：Central HTTP API
 - P6：Host 本地服务
@@ -147,7 +147,7 @@
 - 基础构建可运行
 - `Central + Host + contracts` 三块最小骨架可用
 
-## P3：共享 contract 层
+## P3：Contracts 层
 
 ### 目标
 
@@ -202,8 +202,8 @@
 
 ### 产物
 
-- 共享 TS types
-- 共享 Zod schemas
+- `contracts` 层的 TS types
+- `contracts` 层的 Zod schemas
 
 ### 验收条件
 
@@ -420,7 +420,7 @@
 
 ### P1：必须先打通的主链路
 
-- Shared contracts
+- Contracts
 - Central 数据层
 - Central HTTP API 第一批和第二批
 - Host 本地服务
