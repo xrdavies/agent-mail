@@ -33,6 +33,7 @@
 - `mail-detail.html`
 - `hosts.html`
 - `host-detail.html`
+- `debug.html`
 - `compose.html`
 
 ## 页面关系
