@@ -36,42 +36,61 @@
             <span class="current">Compose</span>
           </div>
           <div class="toolbar">
-            <a class="button subtle" href="./overview.html">Close Drawer</a>
+            <a class="button subtle" href="./overview.html">Back to Overview</a>
           </div>
         </header>
 
         <main class="content stack">
+          <section class="panel">
+            <p class="eyebrow">Compose</p>
+            <h2 class="hero-title">发一封新的 human inbound 邮件。</h2>
+            <p class="hero-copy">
+              这个页面现在作为完整写信页存在。它保留 mailbox 选择和基本写信上下文，但不再用抽屉式表达。
+            </p>
+          </section>
+
           <section class="compose-stage">
-            <div class="stack compose-shadow">
-              <section class="stats-grid">
-                <article class="stat-card">
-                  <p class="stat-label">Unread Deliveries</p>
-                  <p class="stat-value">12</p>
-                </article>
-                <article class="stat-card">
-                  <p class="stat-label">Waiting Human</p>
-                  <p class="stat-value">4</p>
-                </article>
-                <article class="stat-card">
-                  <p class="stat-label">Blocked Tasks</p>
-                  <p class="stat-value">3</p>
-                </article>
-                <article class="stat-card">
-                  <p class="stat-label">Online Hosts</p>
-                  <p class="stat-value">2 / 3</p>
-                </article>
+            <div class="stack">
+              <section class="panel">
+                <p class="eyebrow">Mailbox Roster</p>
+                <h2 class="panel-title">当前可收信 mailbox</h2>
+                <div class="list">
+                  <div class="list-row">
+                    <span class="list-row-key">pm.aster@agents.local</span>
+                    <p class="list-row-copy">PM intake, clarification, coordination, final synthesis.</p>
+                  </div>
+                  <div class="list-row">
+                    <span class="list-row-key">backend.coda@agents.local</span>
+                    <p class="list-row-copy">Backend implementation and repository work.</p>
+                  </div>
+                  <div class="list-row">
+                    <span class="list-row-key">ops.echo@agents.local</span>
+                    <p class="list-row-copy">Operations, recovery, deployment coordination.</p>
+                  </div>
+                  <div class="list-row">
+                    <span class="list-row-key">research.iris@agents.local</span>
+                    <p class="list-row-copy">Research, comparison, background gathering.</p>
+                  </div>
+                  <div class="list-row">
+                    <span class="list-row-key">design.luna@agents.local</span>
+                    <p class="list-row-copy">Design, UX, presentation and visual decisions.</p>
+                  </div>
+                </div>
               </section>
 
               <section class="panel">
-                <p class="eyebrow">Compose Pattern</p>
-                <h2 class="panel-title">保留抽屉心智，不做独立写信产品</h2>
-                <p class="panel-copy">
-                  Compose 更适合作为 operator 在控制面板里的一个临时动作，而不是独立主视图。
-                </p>
+                <p class="eyebrow">Writing Notes</p>
+                <h2 class="panel-title">写信页需要保留的最小上下文</h2>
+                <ul class="bullet-list">
+                  <li>`To` 当前只允许一个主收件人。</li>
+                  <li>`Cc` 先保留单个下拉形式，正式实现时再确认是否支持多选。</li>
+                  <li>链接型附件先以文本形式录入，后续再映射到 `linked_resources`。</li>
+                  <li>这个页面是 human/operator 入口，不承担 thread 调试职责。</li>
+                </ul>
               </section>
             </div>
 
-            <aside class="panel drawer">
+            <section class="panel compose-form-panel">
               <p class="eyebrow">New Email</p>
               <h2 class="panel-title">Compose Human Inbound</h2>
               <form class="field-list">
@@ -135,8 +154,8 @@
                   <button class="button" type="button">Send Email</button>
                 </div>
               </form>
-              <p class="footer-note">原型中用单独页面表达抽屉状态，后续实现可回收成右侧 drawer。</p>
-            </aside>
+              <p class="footer-note">当前使用 mock mailbox 列表；正式开发时再接 Central mailbox 数据。</p>
+            </section>
           </section>
         </main>
       </div>

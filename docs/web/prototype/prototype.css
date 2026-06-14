@@ -517,20 +517,13 @@ button.button {
 }
 
 .compose-stage {
-  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 24rem;
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
   gap: var(--space-4);
 }
 
-.compose-shadow {
-  opacity: 0.45;
-}
-
-.drawer {
-  position: sticky;
-  top: 5.5rem;
-  align-self: start;
+.compose-form-panel {
+  min-width: 0;
 }
 
 .field-list {
@@ -596,10 +589,6 @@ button.button {
 
   .compose-stage {
     grid-template-columns: 1fr;
-  }
-
-  .drawer {
-    position: static;
   }
 }
 
