@@ -41,109 +41,26 @@
 
         <main class="content stack">
           <section class="panel">
-            <p class="eyebrow">Purpose</p>
-            <h2 class="hero-title">用 HTML 保留布局， 用链接保留页面关系。</h2>
-            <p class="hero-copy">
-              这组页面不是最终产品前端，而是为 Web 端控制台建立一个稳定的结构参照。
-              风格只保留轻量层级、边框和留白，避免过早做视觉承诺。
-            </p>
-          </section>
-
-          <section class="stats-grid">
-            <article class="stat-card">
-              <p class="stat-label">Pages</p>
-              <p class="stat-value">10+1</p>
-            </article>
-            <article class="stat-card">
-              <p class="stat-label">Primary Objects</p>
-              <p class="stat-value">Mailbox / Thread / Mail / Host</p>
-            </article>
-            <article class="stat-card">
-              <p class="stat-label">Detail Layers</p>
-              <p class="stat-value">4</p>
-            </article>
-            <article class="stat-card">
-              <p class="stat-label">Style Scope</p>
-              <p class="stat-value">Low-fi Only</p>
-            </article>
-          </section>
-
-          <section class="grid-3">
+            <h2 class="panel-title">Pages</h2>
+            <div class="grid-3">
             <a class="card-link" href="./overview.html">
-              <p class="kicker">Global View</p>
               <h3>Overview</h3>
-              <p>回答系统现在发生了什么，谁在阻塞，哪个 host 异常。</p>
             </a>
             <a class="card-link" href="./mailboxes.html">
-              <p class="kicker">Mailbox View</p>
               <h3>Mailboxes</h3>
-              <p>进入 mailbox 视角，查看 binding、runtime 和工作负载。</p>
             </a>
             <a class="card-link" href="./threads.html">
-              <p class="kicker">Context View</p>
               <h3>Threads</h3>
-              <p>按协作链路查看邮件、任务和上下文状态。</p>
             </a>
             <a class="card-link" href="./mails.html">
-              <p class="kicker">Truth View</p>
               <h3>Mails</h3>
-              <p>按单封邮件查看收发、header、delivery 和关联对象。</p>
             </a>
             <a class="card-link" href="./hosts.html">
-              <p class="kicker">Runtime View</p>
               <h3>Hosts</h3>
-              <p>查看 host heartbeat、managed mailboxes 和 snapshot。</p>
             </a>
             <a class="card-link" href="./compose.html">
-              <p class="kicker">Operator View</p>
               <h3>Compose</h3>
-              <p>从人工入口发起邮件，不把 Web 做成 agent 工作台。</p>
             </a>
-          </section>
-
-          <section class="panel stack">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Navigation Model</p>
-                <h2 class="panel-title">页面关系</h2>
-              </div>
-              <p class="panel-copy">核心链路是从总览到 mailbox，再到 thread，再到单封邮件。</p>
-            </div>
-
-            <div class="flow-grid">
-              <article class="flow-card">
-                <p class="kicker">Entry</p>
-                <h3>Overview</h3>
-                <p>全局状态、告警、最老未读、等待人工、异常 host。</p>
-              </article>
-              <div class="arrow-note">-> Mailbox / Thread / Host</div>
-              <article class="flow-card">
-                <p class="kicker">Route</p>
-                <h3>Mailboxes</h3>
-                <p>按 mailbox 进入本地会话、收发活动和当前任务。</p>
-              </article>
-              <article class="flow-card">
-                <p class="kicker">Detail</p>
-                <h3>Mailbox Detail</h3>
-                <p>该 mailbox 的完整收发活动、参与过的 thread 和任务。</p>
-              </article>
-              <div class="arrow-note">-> Thread Detail</div>
-              <article class="flow-card">
-                <p class="kicker">Context</p>
-                <h3>Thread Detail</h3>
-                <p>一条协作链路的时间线、任务和 artifact。</p>
-              </article>
-              <article class="flow-card">
-                <p class="kicker">Truth</p>
-                <h3>Mail Detail</h3>
-                <p>单封邮件的 envelope、body、delivery map 和关联对象。</p>
-              </article>
-              <div class="arrow-note">parallel</div>
-              <article class="flow-card">
-                <p class="kicker">Infra</p>
-                <h3>Hosts / Host Detail</h3>
-                <p>从 runtime 和 heartbeat 角度反查 mailbox 的运行状态。</p>
-              </article>
             </div>
           </section>
         </main>
