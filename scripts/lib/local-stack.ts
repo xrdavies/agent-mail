@@ -162,6 +162,18 @@ export async function ensureWorktree(profile: LocalMailboxProfile): Promise<void
   await configureWorkspaceGit(profile);
 }
 
+export async function resolveNodeEntrypoint(
+  relativeCandidates: string[]
+): Promise<string> {
+  for (const candidate of relativeCandidates) {
+    const absolute = path.join(repoRoot, candidate);
+    if (await pathExists(absolute)) {
+      return candidate;
+    }
+  }
+  throw new Error(`Unable to resolve entrypoint from candidates: ${relativeCandidates.join(", ")}`);
+}
+
 export async function configureWorkspaceGit(profile: LocalMailboxProfile): Promise<void> {
   await runCommand("git", ["config", "user.name", profile.name], {
     cwd: profile.workspacePath

@@ -25,6 +25,7 @@ import { CentralService, type AuthenticatedHost } from "./service.js";
 
 type AppVariables = {
   auth: AuthenticatedHost;
+  requestId: string;
 };
 
 function jsonError(status: number, message: string, details?: unknown): Response {
@@ -36,6 +37,29 @@ function jsonError(status: number, message: string, details?: unknown): Response
       }
     },
     { status }
+  );
+}
+
+function logRequest(input: {
+  requestId: string;
+  method: string;
+  path: string;
+  status: number;
+  durationMs: number;
+  authHostId?: string;
+  debug?: boolean;
+}): void {
+  console.log(
+    JSON.stringify({
+      event: "http_request",
+      request_id: input.requestId,
+      method: input.method,
+      path: input.path,
+      status: input.status,
+      duration_ms: input.durationMs,
+      ...(input.authHostId ? { auth_host_id: input.authHostId } : {}),
+      ...(input.debug ? { debug: true } : {})
+    })
   );
 }
 
@@ -57,6 +81,24 @@ export function createApp(config: CentralConfig) {
   const service = new CentralService(db, new Set(config.bootstrapKeys));
 
   const app = new Hono<{ Variables: AppVariables }>();
+
+  app.use("*", async (c, next) => {
+    const requestId = c.req.header("x-request-id") ?? crypto.randomUUID();
+    const startedAt = Date.now();
+    const debug = c.req.header("x-agent-mail-debug") === "true";
+    c.set("requestId", requestId);
+    c.header("x-request-id", requestId);
+    await next();
+    logRequest({
+      requestId,
+      method: c.req.method,
+      path: c.req.path,
+      status: c.res.status,
+      durationMs: Date.now() - startedAt,
+      authHostId: c.get("auth")?.hostId,
+      debug
+    });
+  });
 
   app.use("*", async (c, next) => {
     try {
