@@ -28,7 +28,7 @@
 6. Task 的主归属是 email，辅归属是 thread。
 7. Host 必须先向 Central 鉴权成功，才能暴露 MCP。
 8. 每个 Host 在 POC 中有一个可 revoke 的长期 token。
-9. 每个 mailbox 在任意时刻最多只能有一个 active session。
+9. 每个 mailbox 在本地运行时同一时刻最多只能有一个 active session。
 10. Agents 的首次注册由手动启动后通过 Host MCP 完成。
 11. Host 每 10 秒轮询一次 unread mail，并唤醒空闲 agent。
 12. POC 提示词要求 agent 每次 resume 只处理一封 email。
@@ -61,7 +61,7 @@
 
 1. **邮件语义正确**：内部邮件模型尽量贴近 RFC 5322，后续可以平滑接入真实邮件系统。
 2. **运行时边界清晰**：Central 管状态，Host 管本地 runtime，Agent 只通过 MCP 工作。
-3. **会话连续性稳定**：每个 mailbox 保持一个长期 session，通过 `resume session` 延续上下文。
+3. **会话连续性稳定**：每个 mailbox 在本地保持一个长期 session，通过 `resume session` 延续上下文。
 4. **人工可观测可介入**：出现失败、冲突或调试需求时，人可以通过 Web、日志和 debug API 介入。
 
 ### 架构原则
@@ -70,7 +70,7 @@
 2. **Host-thin 执行模型**：Host 只做鉴权、轮询、resume、MCP bridge 和局部状态协调。
 3. **Email-first 协作模型**：协作以 email 为主，task 只是跟随 email 的结构化执行记录。
 4. **Delivery-first 已读模型**：read/unread 只存在于 `Delivery`，不污染 `Email` 主表。
-5. **Mailbox-scoped 连续性**：POC 中一个 mailbox 在任意时刻只对应一个 active session。
+5. **Mailbox-scoped 连续性**：POC 中一个 mailbox 在本地运行时任意时刻只对应一个 active session。
 6. **显式动作优于隐式动作**：`mark_delivery_read`、`create_task`、`update_task_status` 都必须显式调用。
 7. **调试路径与生产路径隔离**：debug inspection 可以跨 mailbox 查看，但不得影响 unread 状态和正常流程。
 
@@ -154,7 +154,7 @@
 
 职责：
 
-- 持久化 `Host`、`HostToken`、`AgentProfile`、`MailboxBinding`、`Session`、`Thread`、`Email`、`Delivery`、`Task`、`LinkedResource`、`Artifact`
+- 持久化 `Host`、`HostToken`、`AgentProfile`、`MailboxBinding`、`MailboxRuntime`、`Thread`、`Email`、`Delivery`、`Task`、`LinkedResource`、`Artifact`
 - 负责 host bootstrap key exchange 和 token revoke
 - 负责邮件入库、thread 归并、delivery 生成
 - 负责 unread 查询
@@ -604,7 +604,7 @@ Central 还负责：
 - 生成内部 `message_id`
 - 根据 reply linkage 计算 thread assignment
 - 通过 `completed_by_email_id` 校验 task completion
-- 强制执行“每个 mailbox 同时最多一个 active session”
+- 强制执行“每个 mailbox 同时最多 active 绑定到一个 Host”
 - 当某 mailbox 仍绑定在健康的其他 Host 上时拒绝冲突注册
 - 保证 debug/read-only inspection 不影响 read state
 
@@ -812,7 +812,7 @@ Mailbox binding 规则：
 设计原则：
 
 1. 所有正常 runtime tools 都必须显式带上 `mailbox`
-2. 不向正常 agent runtime 暴露通用 `list_unread_deliveries`
+2. 不向正常 agent runtime 暴露通用 unread deliveries 列表工具
 3. `Host` 负责在调度层选择当前目标邮件，agent 负责通过 MCP 再确认并执行
 4. `bootstrap` 动作与 `resume` 动作必须分离
 5. Email 是主协作对象，task 是跟随 email 的执行记录

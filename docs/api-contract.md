@@ -129,7 +129,7 @@ Structured address objects 是规范形式。
 - `inactive`
 - `failed`
 
-#### `session_status`
+#### `mailbox_runtime_status`
 
 - `bootstrapping`
 - `idle`
@@ -225,21 +225,19 @@ Structured address objects 是规范形式。
 }
 ```
 
-### Session
+### Mailbox Runtime
 
 ```json
 {
-  "session_id": "sess_pm_001",
   "mailbox": "pm.aster@agents.local",
   "host_id": "mac-local",
   "workspace_path": "/Users/me/worktrees/pm-aster",
-  "session_status": "idle",
+  "current_session_id": "sess_pm_001",
+  "mailbox_runtime_status": "idle",
   "active_task_id": null,
   "last_processed_delivery_id": "del_001",
   "latest_summary": "Handled one unread email and delegated a backend follow-up.",
-  "started_at": "2026-06-13T12:01:00.000Z",
   "last_heartbeat_at": "2026-06-13T12:05:00.000Z",
-  "cleared_at": null,
   "created_at": "2026-06-13T12:01:00.000Z",
   "updated_at": "2026-06-13T12:05:00.000Z"
 }
@@ -437,7 +435,22 @@ Auth：
 ```json
 {
   "host_status": "online",
-  "managed_mailboxes": ["pm.aster@agents.local", "backend.coda@agents.local"]
+  "managed_mailboxes": [
+    {
+      "mailbox": "pm.aster@agents.local",
+      "binding_status": "active",
+      "mailbox_runtime_status": "idle",
+      "last_processed_delivery_id": "del_001",
+      "current_session_id": "sess_pm_001"
+    },
+    {
+      "mailbox": "backend.coda@agents.local",
+      "binding_status": "active",
+      "mailbox_runtime_status": "running",
+      "last_processed_delivery_id": "del_011",
+      "current_session_id": "sess_backend_001"
+    }
+  ]
 }
 ```
 
@@ -900,7 +913,8 @@ X-Agent-Mail-Debug-Reason: manual-inspection
   "mailbox_status": [
     {
       "mailbox": "pm.aster@agents.local",
-      "session_status": "idle",
+      "mailbox_runtime_status": "idle",
+      "current_session_id": "sess_pm_001",
       "pending_unread_count": 1
     }
   ]
@@ -937,7 +951,7 @@ X-Agent-Mail-Debug-Reason: manual-inspection
 
 1. 所有正常 runtime tools 都必须显式带上 `mailbox`
 2. Host 面向 agent 的工具必须围绕“每次只处理一封最早未读邮件”设计
-3. 不向正常 agent runtime 暴露通用 `list_unread_deliveries`
+3. 不向正常 agent runtime 暴露通用 unread deliveries 列表工具
 4. `Host` 负责调度和注入当前目标邮件，agent 负责通过 MCP 再确认并执行
 5. Email 是主协作对象，task 是跟随 email 的执行记录
 
@@ -1347,7 +1361,7 @@ null
 1. Host 每 10 秒轮询一次 unread deliveries。
 2. 如果某个 mailbox 已在运行，Host 不得再次对其发起 resume。
 3. 正常 agent runtime 应以 `get_oldest_unread_delivery` 作为邮件处理入口。
-4. 正常 agent runtime 不应依赖通用 `list_unread_deliveries`。
+4. 正常 agent runtime 不应依赖通用 unread deliveries 列表工具。
 5. Resume 失败时应做指数退避，并在 3 次后停止。
 6. 多次失败后，Host 应将 mailbox 标记为 failed，并等待人工介入。
 7. Prompt policy 应要求 agents 每次 resume 只处理一条 unread delivery。
