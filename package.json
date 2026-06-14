@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "rm -rf packages/contracts/dist apps/central/dist apps/host/dist && pnpm exec tsc -b tsconfig.json",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm exec tsc -b tsconfig.json --noEmit",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "db:generate": "pnpm --filter @agent-mail/central db:generate",
