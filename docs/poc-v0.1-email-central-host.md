@@ -176,7 +176,7 @@
 - 暴露 MCP 给本机 Codex session
 - 每 10 秒轮询 unread deliveries
 - 判断 mailbox 是否应 `resume session`
-- 维持 Host heartbeat 与 session heartbeat
+- 维持 Host heartbeat，并在 heartbeat 中上报 mailbox runtime snapshots
 - 在 token 失效时停用 MCP
 
 不负责：
@@ -223,7 +223,7 @@
 | Host token | Central | 由 Central 发放和 revoke |
 | AgentProfile | Central | 首次手动启动后经 Host 注册 |
 | MailboxBinding | Central | 当前 mailbox 属于哪个 Host |
-| Session | Central | mailbox 级长期 session 元数据 |
+| MailboxRuntime | Central | Host 上报的 mailbox 本地运行时快照，用于诊断与观测 |
 | Email | Central | 规范邮件对象 |
 | Delivery | Central | 每个收件人的 unread/read 状态 |
 | Thread | Central | reply linkage 驱动 |

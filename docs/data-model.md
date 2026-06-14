@@ -23,7 +23,7 @@
 5. Task 主要附着在触发它的 email 上，次要关联到 thread。
 6. Host 是 runtime 边界；agent profile 是身份/profile 边界。
 7. 一个 mailbox 同时只能 active 在一个 Host 上。
-8. POC 中一个 mailbox 同时只能有一个 active session。
+8. POC 中一个 mailbox 在本地运行时同一时刻只能有一个 active session。
 9. read state 不能放在 email row 本身上。
 10. repository delivery artifacts 与 email-linked resources 不能混为一谈。
 
@@ -57,7 +57,7 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 - `HostToken`
 - `AgentProfile`
 - `MailboxBinding`
-- `Session`
+- `MailboxRuntime`
 - `Thread`
 - `Email`
 - `Delivery`
@@ -229,15 +229,12 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 - 如果另一个 Host 试图认领仍存活的 binding，Central 必须拒绝
 - 在 POC 中，Host 重启可能会重置 bindings，随后需要重新注册
 
-## 实体：Session
+## 实体：MailboxRuntime
 
-表示一个 mailbox-scoped 的长期 Codex session。
+表示某个 active mailbox 在当前 Host 上报的本地运行时快照。
 
 ### 字段
 
-- `session_id`
-  - 类型：string
-  - 唯一
 - `mailbox`
   - 类型：string
   - mailbox 快照
@@ -245,8 +242,11 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
   - 外键，指向 `Host.host_id`
 - `workspace_path`
   - 类型：string
-  - bootstrap 时实际使用的路径
-- `session_status`
+  - 当前 Host 绑定的工作目录
+- `current_session_id`
+  - 类型：string
+  - 可空
+- `mailbox_runtime_status`
   - enum：
     - `bootstrapping`
     - `idle`
@@ -262,13 +262,8 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 - `latest_summary`
   - 类型：text
   - 可空
-- `started_at`
-  - timestamp
 - `last_heartbeat_at`
   - timestamp
-- `cleared_at`
-  - timestamp
-  - 可空
 - `created_at`
   - timestamp
 - `updated_at`
@@ -276,8 +271,10 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 
 ### 说明
 
-- 一个 mailbox 最多只能有一个 non-cleared session
-- Host 通过 `resume session` 延续上下文，而不是为每封 unread email 新建 session
+- 这是 Host-local 运行信息在 Central 中的诊断快照，不是独立的 control-plane API 资源
+- 真正的归属关系是 `mailbox -> host`
+- `current_session_id` 仅作为调试与运行诊断字段，不作为独立资源主键
+- Host 通过 `resume session` 在本地延续上下文，而不是为每封 unread email 新建 session
 
 ## 实体：Thread
 
@@ -548,7 +545,7 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 ## 关键不变量
 
 1. 一个 mailbox 同时只能有一个 active Host binding。
-2. 一个 mailbox 同时只能有一个 non-cleared session。
+2. 一个 mailbox 同时只能 active 绑定到一个 Host。
 3. 每封 email 必须且只能属于一个 thread。
 4. Thread assignment 由 `in_reply_to` 和 `references` 驱动。
 5. 不允许 subject-only 匹配合并 threads。
@@ -569,7 +566,7 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 
 - 按 mailbox 列出 unread deliveries，按最旧优先
 - 按 Host 查看 active mailbox bindings
-- 按 mailbox 查看 active sessions
+- 按 mailbox 查看当前 mailbox runtime snapshot
 - thread 最新 email 摘要
 - 按 mailbox 查看待处理 tasks
 - 按 trigger email 查看 delegated tasks
@@ -585,7 +582,7 @@ Agent Mail 应使用与 RFC 5322 对齐的结构化 address object：
 - `AgentProfile.mailbox, profile_status`
 - `MailboxBinding.host_id, binding_status`
 - `MailboxBinding.mailbox, binding_status`
-- `Session.mailbox, session_status`
+- `MailboxRuntime.mailbox, mailbox_runtime_status`
 - `Thread.root_message_id`
 - `Email.message_id`
 - `Email.thread_id, created_at`
