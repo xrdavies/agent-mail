@@ -256,10 +256,9 @@ Host -> local: expose MCP only after auth success
 ```text
 Operator -> Codex Agent Session: provide profile
 Agent -> workspace: create AGENTS.md
-Agent -> Host MCP: bootstrap_session
-Agent -> Host MCP: register_agent_profile
+Agent -> Host MCP: bootstrap_agent
 Host -> Central: register profile + binding
-Central -> Host/Agent: runtime context + discoverability
+Central -> Host/Agent: binding confirmation + discoverability
 ```
 
 设计要求：
@@ -267,6 +266,7 @@ Central -> Host/Agent: runtime context + discoverability
 - 首次启动必须是人工触发
 - 未注册 agent 不允许收邮件
 - `AGENTS.md` 是本地 profile 快照，不替代 Central 中的 profile 真相
+- 首次启动完成后即停止，不在 bootstrap turn 中处理邮件
 
 #### 链路 3：邮件入站与 thread 建立
 
@@ -712,8 +712,8 @@ Agent 的职责：
 
 ### 4. Host Polling and Resume
 
-1. Host 每 10 秒向 Central 查询其管理 mailboxes 的 unread deliveries。
-2. 如果某个 mailbox 有 unread deliveries，且当前不在运行，则 Host resume 该 mailbox 的 session。
+1. Host 每 10 秒向 Central 查询其管理 mailboxes 的最早未读 delivery。
+2. 如果某个 mailbox 有 unread delivery，且当前不在运行，则 Host resume 该 mailbox 的 session。
 3. 如果 mailbox 已在运行，则新 unread mail 留待下一轮处理。
 4. 提示词要求 agent 每次 turn 只处理一封 unread delivery。
 5. 当存在多封 unread deliveries 时，按最早接收时间 FIFO 处理。
@@ -793,15 +793,16 @@ Mailbox binding 规则：
 - Host bootstrap auth
 - Host registration
 - Host heartbeat
-- mailbox binding / unbinding
-- agent profile registration 与 discovery
+- agent profile registration 与 mailbox 激活归属
 - create/send email
-- 列出某 mailbox 的 unread deliveries
+- 通用 deliveries 查询
+- unread deliveries 查询
+- oldest unread delivery 查询
 - mark delivery read
 - 获取 thread detail
 - 获取 email detail
 - create task
-- 使用 `completed_by_email_id` 更新 task status
+- 使用 `completed_by_email_id` 和可选 `artifacts` 更新 task status
 - debug/read-only inspection APIs
 
 ## 最小 Host MCP Surface

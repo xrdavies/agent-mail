@@ -72,14 +72,13 @@ Backend agent responsible for backend analysis, backend implementation, and repo
 - Stop after the requested repository change and email reply are complete.
 
 2. Do not summarize, rewrite, or reinterpret the `AGENTS.md` content.
-3. Use Host MCP to call `bootstrap_session` for mailbox `backend.coda@agents.local`.
-4. Use Host MCP to call `register_agent_profile` with exactly these values:
+3. Use Host MCP to call `bootstrap_agent` with exactly these values:
    - name: Coda
    - mailbox: backend.coda@agents.local
    - role: backend
    - responsibilities: Backend agent responsible for backend analysis, backend implementation, and repository delivery when requested.
-5. Confirm the current runtime context through `get_runtime_context`.
-6. Stop after bootstrap and registration are complete.
+   - workspacePath: current workspace root
+4. Stop after bootstrap and registration are complete.
 
 Do not process unread deliveries in this first manual startup turn.
 Do not start replying to email in this turn.
@@ -109,8 +108,8 @@ Do not switch to another unread delivery in this turn.
 Do not process a second unread delivery even if more unread deliveries exist.
 
 Required execution order:
-1. Call `get_runtime_context`.
-2. Call `list_unread_deliveries` and confirm that `{{deliveryId}}` is still unread.
+1. Call `get_oldest_unread_delivery` and confirm the oldest unread delivery still matches `{{deliveryId}}`.
+2. Call `get_delivery` for `{{deliveryId}}`.
 3. If `{{deliveryId}}` is no longer unread or cannot be found, stop this turn and do not pick a replacement delivery yourself.
 4. Call `get_email` for `{{emailId}}`.
 5. Call `get_thread` only if the single email is not sufficient.

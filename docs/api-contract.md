@@ -563,65 +563,6 @@ Auth：
 
 - `AgentProfile`
 
-## Session API
-
-### `POST /api/v1/sessions/bind`
-
-用途：
-
-- 在 bootstrap 或 resume 后绑定或刷新 mailbox session
-
-Auth：
-
-- 必需
-
-请求：
-
-```json
-{
-  "session_id": "sess_pm_001",
-  "host_id": "mac-local",
-  "mailbox": "pm.aster@agents.local",
-  "workspace_path": "/Users/me/worktrees/pm-aster",
-  "session_status": "bootstrapping"
-}
-```
-
-响应 `200`：
-
-- `Session`
-
-### `POST /api/v1/sessions/:session_id/heartbeat`
-
-用途：
-
-- 刷新 session runtime state
-
-Auth：
-
-- 必需
-
-请求：
-
-```json
-{
-  "mailbox": "pm.aster@agents.local",
-  "session_status": "idle",
-  "active_task_id": null,
-  "last_processed_delivery_id": "del_001",
-  "latest_summary": "Processed one unread email and sent a receipt reply."
-}
-```
-
-响应 `200`：
-
-```json
-{
-  "ok": true,
-  "last_heartbeat_at": "2026-06-13T12:05:00.000Z"
-}
-```
-
 ## Email、Delivery 与 Thread API
 
 ### `POST /api/v1/emails/send`
@@ -687,7 +628,8 @@ Auth：
 
 用途：
 
-- 列出某个 mailbox 的 deliveries，通常用于 Host polling 或 agent 消费 unread deliveries
+- 通用 deliveries 查询
+- 适合 Web / Debug / 管理界面查看全部、已读或未读 deliveries
 
 Auth：
 
@@ -702,6 +644,41 @@ Auth：
 响应 `200`：
 
 - `Delivery[]`
+
+### `GET /api/v1/mailboxes/:mailbox/unread-deliveries`
+
+用途：
+
+- 只返回某个 mailbox 当前未读的 deliveries
+- 适合 Host 查看未读队列
+
+Auth：
+
+- 必需
+
+查询参数：
+
+- `limit` 可选
+- `order` 可选，默认 `oldest_first`
+
+响应 `200`：
+
+- `Delivery[]`
+
+### `GET /api/v1/mailboxes/:mailbox/unread-deliveries/oldest`
+
+用途：
+
+- 直接返回某个 mailbox 最早的一条未读 delivery
+- 这是 Host 10 秒轮询的推荐主入口
+
+Auth：
+
+- 必需
+
+响应 `200`：
+
+- `Delivery | null`
 
 ### `POST /api/v1/deliveries/:delivery_id/read`
 
@@ -767,7 +744,7 @@ Auth：
 }
 ```
 
-## Task 与 Artifact API
+## Task API
 
 ### `POST /api/v1/tasks`
 
@@ -842,7 +819,16 @@ Auth：
 {
   "mailbox": "backend.coda@agents.local",
   "status": "done",
-  "completed_by_email_id": "eml_002"
+  "completed_by_email_id": "eml_002",
+  "artifacts": [
+    {
+      "repository": "xrdavies/agent-mail",
+      "path": "docs/backend-runbook.md",
+      "branch": "agent-mail/backend.coda/task_001",
+      "commit_sha": "abc123",
+      "pr_link": "https://github.com/xrdavies/agent-mail/pull/10"
+    }
+  ]
 }
 ```
 
@@ -850,41 +836,22 @@ Auth：
 
 - `Task`
 
+允许状态：
+
+- `in_progress`
+- `paused`
+- `blocked`
+- `done`
+
 规则：
 
 - 当 `status=done` 时，`completed_by_email_id` 必填
+- 当 `status=done` 且 `requires_artifact=true` 时，`artifacts` 必填且至少有一项
+- 当 `status!=done` 时，不应要求 `artifacts`
 - Central 必须验证：
   - completion email 属于同一 thread
   - completion email sender 与 task assignee 一致
   - completion email 的创建时间晚于 task 创建时间
-
-### `POST /api/v1/artifacts`
-
-用途：
-
-- 为需要 artifact 的 task 持久化 repository-output metadata
-
-Auth：
-
-- 必需
-
-请求：
-
-```json
-{
-  "task_id": "tsk_001",
-  "mailbox": "backend.coda@agents.local",
-  "repository": "xrdavies/agent-mail",
-  "path": "docs/backend-runbook.md",
-  "branch": "agent-mail/backend.coda/task_001",
-  "commit_sha": "abc123",
-  "pr_link": "https://github.com/xrdavies/agent-mail/pull/10"
-}
-```
-
-响应 `201`：
-
-- `Artifact`
 
 ## Debug 只读 API
 
@@ -999,12 +966,10 @@ X-Agent-Mail-Debug-Reason: manual-inspection
 ```json
 {
   "hostId": "mac-local",
-  "sessionId": "sess_pm_001",
   "mailbox": "pm.aster@agents.local",
   "workspacePath": "/Users/me/worktrees/pm-aster",
   "profileStatus": "active",
-  "bindingStatus": "active",
-  "sessionStatus": "bootstrapping"
+  "bindingStatus": "active"
 }
 ```
 
@@ -1319,7 +1284,16 @@ null
   "mailbox": "backend.coda@agents.local",
   "taskId": "tsk_001",
   "status": "done",
-  "completedByEmailId": "eml_002"
+  "completedByEmailId": "eml_002",
+  "artifacts": [
+    {
+      "repository": "xrdavies/agent-mail",
+      "path": "docs/backend-runbook.md",
+      "branch": "agent-mail/backend.coda/task_001",
+      "commit_sha": "abc123",
+      "pr_link": "https://github.com/xrdavies/agent-mail/pull/10"
+    }
+  ]
 }
 ```
 
@@ -1338,6 +1312,7 @@ null
 
 - 只允许上述四种状态
 - 若 `status = done`，则 `completedByEmailId` 必填
+- 若 `status = done` 且目标 task 的 `requiresArtifact = true`，则 `artifacts` 必填
 - 若 `status != done`，则 `completedByEmailId` 应忽略或为空
 - 当 `status = done` 时，Central 仍必须验证：
   - completion email 与 task 在同一 thread
