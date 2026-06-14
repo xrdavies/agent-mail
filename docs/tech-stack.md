@@ -21,7 +21,7 @@
 ## 选型原则
 
 1. 优先选择**足够支撑当前 POC**的最小集合，而不是提前为未来规模优化。
-2. 尽量让 `Central`、`Host`、shared contract 使用同一种语言和主要 runtime。
+2. 尽量让 `Central`、`Host`、contracts 层使用同一种语言和主要 runtime。
 3. 优先选择对本地开发、私有环境和小团队调试友好的工具。
 4. 先锁最小技术路线，再开展实现与细化接口。
 5. 第一阶段不让 `Web` 阻塞主链路实现。
@@ -49,7 +49,7 @@
 
 原因：
 
-- 当前系统天然包含多个边界：`Central`、`Host`、shared contracts
+- 当前系统天然包含多个边界：`Central`、`Host`、contracts
 - `pnpm workspace` 足够支撑当前规模
 - 不需要引入更复杂的 monorepo orchestration 工具
 
@@ -63,7 +63,7 @@
 原因：
 
 - `Hono` 足以支撑 `Central HTTP API` 18 个接口
-- `Zod` 适合做 request/response schema 与 shared contract 对齐
+- `Zod` 适合做 request/response schema 与 contracts 对齐
 - `PostgreSQL` 适合作为 POC 的关系型状态中心
 - `Drizzle ORM` 足够轻量，且便于贴近 `TypeScript` 定义 schema
 
@@ -80,7 +80,7 @@
 - `Hono` 足够暴露 `/health`、`/status`、`/mcp-config`
 - `@modelcontextprotocol/sdk` 是实现 `Host MCP tools` 的自然选择
 
-### 5. Shared contract 层
+### 5. Contracts 层
 
 - `TypeScript`
 - `Zod`
@@ -91,7 +91,7 @@
   - `Central API` contract
   - `Host MCP` contract
   - 数据模型 schema
-- 共享 contract 层应成为 `Central` 和 `Host` 之间的共同基础
+- `contracts` 层应成为 `Central` 和 `Host` 之间的共同基础
 
 ### 6. Web
 
@@ -222,14 +222,14 @@ apps/
   central/
   host/
 packages/
-  shared/
+  contracts/
 docs/
 ```
 
 说明：
 
 - `Web` 可在后续阶段再补回
-- 第一阶段只保留 `Central`、`Host`、`shared` 三块最小结构
+- 第一阶段只保留 `Central`、`Host`、`contracts` 三块最小结构
 
 ## 与实现计划的对应关系
 

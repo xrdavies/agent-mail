@@ -1,6 +1,6 @@
 # Agent Mail
 
-当前仓库用于承载 Agent Mail POC 的正式规范文档，覆盖架构、数据模型、API contract、prompt 设计和 agent 提示词。
+当前仓库用于承载 Agent Mail POC 的正式规范文档，覆盖架构、数据模型、API contract、实现计划、技术栈、prompt 设计和 agent 提示词。
 
 ## 当前保留文档
 

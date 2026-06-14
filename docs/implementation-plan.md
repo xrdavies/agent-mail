@@ -131,7 +131,7 @@
 - 建立：
   - `apps/central`
   - `apps/host`
-  - `packages/shared`
+  - `packages/contracts`
 - 建立基础 `tsconfig`
 - 建立基础 package manager 配置
 - 建立最小 build / test 脚手架
@@ -145,7 +145,7 @@
 
 - monorepo 结构建立完成
 - 基础构建可运行
-- `Central + Host + shared` 三块最小骨架可用
+- `Central + Host + contracts` 三块最小骨架可用
 
 ## P3：共享 contract 层
 
