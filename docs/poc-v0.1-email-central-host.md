@@ -861,6 +861,106 @@ Host 还应暴露这些非 MCP 的薄 API：
 - `GET /status`
 - `GET /mcp-config`
 
+## 最终接口清单
+
+这一节作为当前 POC 的接口总览页使用。
+
+详细 contract 仍以 `docs/api-contract.md` 为准；本节只列最终接口面和各接口的职责。
+
+### Central API Final List
+
+#### Health
+
+- `GET /api/v1/health`
+  - Central health probe
+
+#### Host Auth 与生命周期
+
+- `POST /api/v1/host-auth/exchange`
+  - 用 bootstrap key 换长期 host token
+- `POST /api/v1/hosts/register`
+  - 注册或刷新 Host metadata
+- `POST /api/v1/hosts/:host_id/heartbeat`
+  - Host heartbeat，并上报 mailbox runtime snapshot
+
+#### Idempotency
+
+- `POST /api/v1/idempotency-keys/issue`
+  - 为副作用操作发放幂等 key
+
+#### Agent Profile 与 mailbox 归属
+
+- `POST /api/v1/agents/register`
+  - 注册 agent profile，并建立或刷新 `mailbox -> host` 归属
+- `GET /api/v1/agents`
+  - agent discovery 与调试查看
+- `GET /api/v1/agents/:mailbox`
+  - 查看某个 mailbox 当前 active profile
+
+#### Email / Delivery / Thread
+
+- `POST /api/v1/emails/send`
+  - 发送 email，并创建 deliveries / 归并 thread
+- `GET /api/v1/mailboxes/:mailbox/deliveries`
+  - 通用 deliveries 查询
+- `GET /api/v1/mailboxes/:mailbox/unread-deliveries`
+  - 查询当前 mailbox 的未读 deliveries
+- `GET /api/v1/mailboxes/:mailbox/unread-deliveries/oldest`
+  - 查询当前 mailbox 最早的一条未读 delivery
+- `POST /api/v1/deliveries/:delivery_id/read`
+  - 显式将某条 delivery 标记为已读
+- `GET /api/v1/emails/:email_id`
+  - 获取单封 email 详情
+- `GET /api/v1/threads/:thread_id`
+  - 获取 thread 全量上下文
+
+#### Task
+
+- `POST /api/v1/tasks`
+  - 显式创建 task
+- `GET /api/v1/tasks`
+  - 查询 tasks
+- `PATCH /api/v1/tasks/:task_id/status`
+  - 更新 task 状态，并在 `done` 时携带 `completed_by_email_id` 与可选 `artifacts`
+
+### Host MCP Final List
+
+#### 首次启动类
+
+- `bootstrap_agent`
+  - 一次性完成 bootstrap、profile 注册和 mailbox binding 建立
+
+#### 邮件处理类
+
+- `get_oldest_unread_delivery`
+  - 获取当前 mailbox 最早的一条未读 delivery
+- `get_delivery`
+  - 按 `deliveryId` 获取 delivery detail
+- `get_email`
+  - 按 `emailId` 获取单封 email
+- `get_thread`
+  - 按 `threadId` 获取完整 thread
+- `mark_delivery_read`
+  - 显式标记当前 delivery 已读
+- `send_email`
+  - 发送 receipt、reply、delegation、completion reply
+
+#### Task 类
+
+- `create_task`
+  - 显式创建 task
+- `get_task`
+  - 获取单个 task 详情
+- `list_tasks`
+  - 查询 mailbox 或 thread 相关 tasks
+- `update_task_status`
+  - 更新 task 状态，只允许 `in_progress / paused / blocked / done`
+
+#### Agent 发现类
+
+- `list_agents`
+  - 为 delegation 做 agent discovery
+
 ## Idempotency
 
 POC 要求对有副作用的操作提供 idempotency 保护。
