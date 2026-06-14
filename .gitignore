@@ -1,9 +1,0 @@
-node_modules
-dist
-.env
-.env.*
-!.env.example
-.DS_Store
-coverage
-.agent-mail
-apps/host/host.local.toml
