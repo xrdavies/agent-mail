@@ -1,98 +1,94 @@
 # Agent Mail
 
-Agent Mail is being rebuilt from a docs-first baseline into a TypeScript monorepo that follows the POC architecture in `docs/`.
+Agent Mail 正在从以文档为主的基线，重建为一个遵循 `docs/` 中 POC 架构的 TypeScript monorepo。
 
-The current email-oriented POC clarification lives in [docs/poc-v0.1-email-central-host.md](/Users/m4002/Projects/agent-mail/docs/poc-v0.1-email-central-host.md:1).
+当前面向 email 的 POC 澄清文档位于 [docs/poc-v0.1-email-central-host.md](/Users/m4002/Projects/agent-mail/docs/poc-v0.1-email-central-host.md:1)。
 
-## Current workspace
+## 当前工作区
 
-- `apps/central`: Hono control-plane service with Drizzle/Postgres persistence
-- `apps/host`: machine-local daemon for registration, local session registry, heartbeat, local MCP, and automatic `codex exec/resume`
-- `packages/shared`: shared enums, payload schemas, and response contracts
-- `apps/web`: human/operator-facing React/Vite workbench for threads, tasks, hosts, and sessions
+- `apps/central`：基于 Hono 的 control-plane service，使用 Drizzle/Postgres 持久化
+- `apps/host`：machine-local daemon，负责注册、本地 session registry、heartbeat、本地 MCP，以及自动 `codex exec/resume`
+- `packages/shared`：共享 enums、payload schemas 和 response contracts
+- `apps/web`：面向 human/operator 的 React/Vite workbench，用于查看 threads、tasks、hosts 和 sessions
 
-## Local development
+## 本地开发
 
-The default manual startup path for the current local test environment lives in [docs/demo-operations.md](/Users/m4002/Projects/agent-mail/docs/demo-operations.md:1).
-
-The fastest script-driven local path is now:
+目前最快的脚本化启动方式是：
 
 ```bash
 pnpm local:start
 pnpm local:status
 ```
 
-For a clean local database and cleared Host session state:
+如果需要一个全新的本地数据库并清空 Host session state：
 
 ```bash
 pnpm local:start -- --fresh
 ```
 
-1. Start PostgreSQL:
+1. 启动 PostgreSQL：
 
    ```bash
    docker compose up -d
    ```
 
-2. Use the central and host env files:
+2. 准备 Central 和 Host 的 env 文件：
 
    ```bash
    cp apps/central/.env.example apps/central/.env
    cp apps/host/.env.example apps/host/.env
    ```
 
-3. Generate and apply migrations:
+3. 生成并应用 migrations：
 
    ```bash
    DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:generate
    DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:migrate
    ```
 
-4. Run the central service:
+4. 启动 Central service：
 
    ```bash
    pnpm dev:central
    ```
 
-5. Run the host daemon in a second terminal:
+5. 在第二个终端启动 Host daemon：
 
    ```bash
    pnpm dev:host
    ```
 
-6. Run the operator web UI in a third terminal:
+6. 在第三个终端启动 operator Web UI：
 
    ```bash
    pnpm dev:web
    ```
 
-7. If you want a manually started Codex session to use the same local MCP bridge, register the Host MCP endpoint with Codex:
+7. 如果你希望手动启动的 Codex session 走同一个本地 MCP bridge，需要把 Host MCP endpoint 注册到 Codex：
 
    ```bash
    codex mcp add agent-mail-host --url http://localhost:8788/mcp
    ```
 
-The Host daemon now also injects this MCP endpoint automatically when it launches `codex exec` and `codex exec resume` for pending mailbox work.
+当 Host daemon 为待处理 mailbox work 启动 `codex exec` 或 `codex exec resume` 时，也会自动注入这个 MCP endpoint。
 
-8. Run verification:
+8. 运行校验：
 
    ```bash
    pnpm test
    pnpm build
    ```
 
-9. Run the formal end-to-end validation flow:
+9. 运行正式的 end-to-end validation 流程：
 
    ```bash
    pnpm validate:phase10
    ```
 
-`validate:phase10` is now the default proof path for the implementation plan. It provisions a temporary validation stack, drives the mailbox/session scenarios from Phase 10, validates the operator web surface, and writes a final JSON report.
+`validate:phase10` 现在是 implementation plan 的默认 proof path。它会准备临时验证栈，驱动 Phase 10 中的 mailbox/session 场景，验证 operator Web surface，并输出最终 JSON report。
 
-Use:
+如果你希望保留临时 workspaces、logs 和 report 以便调试，请使用：
 
 ```bash
 pnpm validate:phase10 -- --keep-temp
 ```
-
-when you want to keep the temporary workspaces, logs, and report on disk for debugging.

@@ -1,49 +1,49 @@
 # Agent Host
 
-Machine-local daemon for mailbox registration, local session registry, heartbeat, and runtime status.
+Agent Host 是一个 machine-local daemon，负责 mailbox 注册、本地 session registry、heartbeat 和 runtime status。
 
-It also owns:
+它还负责：
 
-- local MCP exposure at `/mcp`
-- mailbox pending-work detection
-- automatic `codex exec` vs `codex exec resume` decisions
-- session summary and last-processed-message persistence
+- 在 `/mcp` 暴露本地 MCP
+- 检测 mailbox 的待处理工作
+- 决定使用 `codex exec` 还是 `codex exec resume`
+- 持久化 session summary 和 `last-processed-message`
 
-## Local run
+## 本地运行
 
-1. Copy the env template:
+1. 复制 env 模板：
 
    ```bash
    cp apps/host/.env.example apps/host/.env
    ```
 
-2. Adjust `apps/host/host.example.toml` or point `HOST_CONFIG_PATH` at another TOML file.
+2. 调整 `apps/host/host.example.toml`，或把 `HOST_CONFIG_PATH` 指向其他 TOML 文件。
 
-3. Start the daemon:
+3. 启动 daemon：
 
    ```bash
    pnpm dev:host
    ```
 
-4. Register the Host MCP endpoint with Codex:
+4. 将 Host MCP endpoint 注册到 Codex：
 
    ```bash
    codex mcp add agent-mail-host --url http://localhost:8788/mcp
    ```
 
-5. Inspect the local surfaces:
+5. 检查本地暴露的接口：
 
    - `GET /health`
    - `GET /status`
    - `/mcp`
 
-## Runtime behavior
+## 运行时行为
 
-When the daemon is running, it periodically:
+当 daemon 运行时，它会周期性执行以下动作：
 
-1. refreshes machine and session heartbeats
-2. checks local mailboxes for pending tasks
-3. runs `codex exec` when a mailbox has no active session
-4. runs `codex exec resume <session_id>` when a mailbox already has one
+1. 刷新 machine 和 session heartbeat
+2. 检查本地 mailboxes 是否有待处理任务
+3. 如果某个 mailbox 没有 active session，则运行 `codex exec`
+4. 如果某个 mailbox 已有 active session，则运行 `codex exec resume <session_id>`
 
-For host-managed turns, the MCP endpoint is injected automatically into the Codex command line. The manual `codex mcp add` step is only needed when you want to start an interactive Codex session yourself and bootstrap it through the same local MCP bridge.
+对于由 Host 管理的 turns，MCP endpoint 会自动注入到 Codex 命令行中。只有当你想自己手动启动一个交互式 Codex session，并通过同一个本地 MCP bridge 进行 bootstrap 时，才需要手动执行 `codex mcp add`。

@@ -1,75 +1,75 @@
 # Agent Mail API Contract
 
-## Purpose
+## 目的
 
-This document defines the API contract target for the next email-oriented Agent Mail POC.
+本文档定义下一版 email-oriented Agent Mail POC 的 API contract 目标。
 
-It covers three layers:
+它覆盖三层：
 
 1. **Agent Mail Central HTTP API**
 2. **Agent Host Thin HTTP API**
 3. **Agent Host Local MCP Contract**
 
-This document replaces the earlier thread/message-first API draft for the next implementation slice.
+对于下一轮实现切片，本文档替代早先以 thread/message 为中心的 API 草案。
 
-## Contract Principles
+## Contract 原则
 
-1. Central owns the durable collaboration state.
-2. Host is a thin local runtime bridge and not the source of truth.
-3. Codex sessions should work through Host MCP only.
-4. Email is the primary communication object.
-5. Delivery is the read/unread state object.
-6. Task is created explicitly and remains secondary to email.
-7. Host must authenticate successfully before exposing MCP.
-8. Debug inspection must be explicitly flagged and must not affect unread state.
+1. Central 拥有持久化协作状态。
+2. Host 是轻量的本地 runtime bridge，而不是真相来源。
+3. Codex sessions 只应通过 Host MCP 工作。
+4. Email 是主要通信对象。
+5. Delivery 是 read/unread 状态对象。
+6. Task 需要显式创建，并且始终从属于 email。
+7. Host 必须先完成鉴权，才能暴露 MCP。
+8. Debug inspection 必须显式打标，且不能影响 unread 状态。
 
 ## Versioning
 
-- Central API base path: `/api/v1`
-- Host thin API base path: local host root, for example `http://localhost:8788`
-- MCP tools: versioned by Host release, not by tool-name suffix
+- Central API base path：`/api/v1`
+- Host thin API base path：本地 Host 根路径，例如 `http://localhost:8788`
+- MCP tools：按 Host release 版本化，而不是在 tool name 上追加版本后缀
 
-## Authentication Model
+## 鉴权模型
 
 ### Bootstrap
 
-POC bootstrap flow:
+POC 的 bootstrap 流程：
 
-1. Host starts with a preconfigured bootstrap key.
-2. Host exchanges the bootstrap key for a Central-issued long-lived token.
-3. Host uses that token for normal Central API access.
+1. Host 以预配置的 bootstrap key 启动。
+2. Host 用 bootstrap key 换取一个由 Central 颁发的长期 token。
+3. Host 用该 token 访问正常的 Central API。
 
 ### Runtime Auth
 
-Central-facing Host requests should use:
+Host 调用 Central API 时应使用：
 
 ```http
 Authorization: Bearer <host_token>
 ```
 
-Rules:
+规则：
 
-- one long-lived revocable token per Host
-- Central should store token hashes, not raw tokens
-- Host must stop exposing MCP if token validation fails or the token is revoked
+- POC 中每个 Host 只有一个长期、可 revoke 的 token
+- Central 应只存 token hash，不存原始 token
+- 如果 token 校验失败或被 revoke，Host 必须停止暴露 MCP
 
 ### Debug Tagging
 
-Read-only debug inspection must be explicit.
+只读 debug inspection 必须显式标记。
 
-Recommended headers:
+推荐 headers：
 
 ```http
 X-Agent-Mail-Debug: true
 X-Agent-Mail-Debug-Reason: manual-inspection
 ```
 
-Rules:
+规则：
 
-- debug reads must not mutate delivery unread/read state
-- debug calls should be logged distinctly from normal runtime calls
+- debug 读取不得修改 delivery unread/read state
+- debug 调用应与正常 runtime traffic 分开记录
 
-## Shared Type Conventions
+## 共享类型约定
 
 ### Identifiers
 
@@ -87,9 +87,9 @@ Rules:
 
 ### Timestamps
 
-Use ISO 8601 UTC strings.
+统一使用 ISO 8601 UTC 字符串。
 
-Example:
+示例：
 
 ```json
 "2026-06-13T12:00:00.000Z"
@@ -104,9 +104,9 @@ Example:
 }
 ```
 
-Structured address objects are canonical.
+Structured address objects 是规范形式。
 
-For future SMTP compatibility, Central may also preserve raw RFC-style header strings separately on the email record.
+为兼容未来 SMTP，Central 也可以在 email record 上单独保留原始 RFC-style header strings。
 
 ### Enumerations
 
@@ -172,7 +172,7 @@ For future SMTP compatibility, Central may also preserve raw RFC-style header st
 - `done`
 - `blocked`
 
-## Resource Shapes
+## 资源结构
 
 ### Host
 
@@ -357,11 +357,11 @@ For future SMTP compatibility, Central may also preserve raw RFC-style header st
 
 ### `GET /api/v1/health`
 
-Purpose:
+用途：
 
 - Central health probe
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -369,15 +369,15 @@ Response `200`:
 }
 ```
 
-## Host Auth and Lifecycle
+## Host Auth 与生命周期
 
 ### `POST /api/v1/host-auth/exchange`
 
-Purpose:
+用途：
 
-- exchange a bootstrap key for a long-lived host token
+- 将 bootstrap key 交换为长期 host token
 
-Request:
+请求：
 
 ```json
 {
@@ -388,7 +388,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -400,15 +400,15 @@ Response `200`:
 
 ### `POST /api/v1/hosts/register`
 
-Purpose:
+用途：
 
-- register or refresh Host metadata after token exchange
+- 在 token 交换完成后，注册或刷新 Host metadata
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -418,21 +418,21 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 - `Host`
 
 ### `POST /api/v1/hosts/:host_id/heartbeat`
 
-Purpose:
+用途：
 
-- refresh Host heartbeat and auth liveness
+- 刷新 Host heartbeat 和 auth 存活状态
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -441,7 +441,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -450,24 +450,24 @@ Response `200`:
 }
 ```
 
-Rules:
+规则：
 
-- Host should heartbeat every 5 seconds
-- after 5 consecutive failed or missing heartbeat checks, Central may mark the Host offline
+- Host 应每 5 秒发送一次 heartbeat
+- 若连续 5 次 heartbeat 缺失或失败，Central 可将该 Host 标记为 offline
 
-## Idempotency Utility
+## Idempotency 辅助接口
 
 ### `POST /api/v1/idempotency-keys/issue`
 
-Purpose:
+用途：
 
-- issue a Central-owned idempotency key for a side-effecting Host action
+- 为 Host 的副作用操作发放一个由 Central 管理的 idempotency key
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -477,7 +477,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -485,24 +485,24 @@ Response `200`:
 }
 ```
 
-Notes:
+说明：
 
-- Host may call this automatically before forwarding `send_email` or `create_task`
-- agents do not need to manage these keys directly in the POC interface
+- Host 可以在转发 `send_email` 或 `create_task` 前自动调用此接口
+- POC 中 agent 不需要自己管理这些 key
 
-## Agent Profile and Binding APIs
+## Agent Profile 与 Binding API
 
 ### `POST /api/v1/agents/register`
 
-Purpose:
+用途：
 
-- register or refresh the current active agent profile and mailbox binding
+- 注册或刷新当前 active agent profile 与 mailbox binding
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -517,7 +517,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -526,56 +526,56 @@ Response `200`:
 }
 ```
 
-Rules:
+规则：
 
-- if the mailbox is still actively bound to another healthy Host, Central should reject the registration with `409`
-- if a profile change implies a new agent identity, Central should retire the previous active profile
+- 如果该 mailbox 仍 active 绑定在另一台健康 Host 上，Central 应返回 `409`
+- 如果 profile 变更意味着新的 agent identity，Central 应 retire 旧的 active profile
 
 ### `GET /api/v1/agents`
 
-Purpose:
+用途：
 
-- discover agents for delegation and debugging
+- 为 delegation 与调试提供 agent discovery
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Query parameters:
+查询参数：
 
-- `include_retired` optional, default `false`
+- `include_retired` 可选，默认 `false`
 
-Response `200`:
+响应 `200`：
 
 - `AgentProfile[]`
 
 ### `GET /api/v1/agents/:mailbox`
 
-Purpose:
+用途：
 
-- fetch the current active profile for one mailbox
+- 获取某个 mailbox 当前 active profile
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Response `200`:
+响应 `200`：
 
 - `AgentProfile`
 
-## Session APIs
+## Session API
 
 ### `POST /api/v1/sessions/bind`
 
-Purpose:
+用途：
 
-- bind or refresh a mailbox session after bootstrap or resume
+- 在 bootstrap 或 resume 后绑定或刷新 mailbox session
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -587,21 +587,21 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 - `Session`
 
 ### `POST /api/v1/sessions/:session_id/heartbeat`
 
-Purpose:
+用途：
 
-- refresh session runtime state
+- 刷新 session runtime state
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -613,7 +613,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -622,19 +622,19 @@ Response `200`:
 }
 ```
 
-## Email, Delivery, and Thread APIs
+## Email、Delivery 与 Thread API
 
 ### `POST /api/v1/emails/send`
 
-Purpose:
+用途：
 
-- send an email, assign or resolve the thread, persist deliveries, and return the created records
+- 发送一封 email，解析或创建 thread，持久化 deliveries，并返回创建结果
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -667,7 +667,7 @@ Request:
 }
 ```
 
-Response `201`:
+响应 `201`：
 
 ```json
 {
@@ -677,43 +677,43 @@ Response `201`:
 }
 ```
 
-Rules:
+规则：
 
-- Central generates internal `message_id`
-- POC should enforce exactly one `to` recipient
-- subject alone must not merge threads
+- Central 生成内部 `message_id`
+- POC 应强制只有一个 `to` recipient
+- 不允许仅通过 subject 合并 threads
 
 ### `GET /api/v1/mailboxes/:mailbox/deliveries`
 
-Purpose:
+用途：
 
-- list deliveries for a mailbox, usually unread first for Host polling or agent consumption
+- 列出某个 mailbox 的 deliveries，通常用于 Host polling 或 agent 消费 unread deliveries
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Query parameters:
+查询参数：
 
-- `read_status` optional, for example `unread`
-- `limit` optional
-- `order` optional, use `oldest_first` for the POC default
+- `read_status` 可选，例如 `unread`
+- `limit` 可选
+- `order` 可选，POC 默认使用 `oldest_first`
 
-Response `200`:
+响应 `200`：
 
 - `Delivery[]`
 
 ### `POST /api/v1/deliveries/:delivery_id/read`
 
-Purpose:
+用途：
 
-- explicitly mark a delivery as read
+- 显式将某个 delivery 标记为已读
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -721,7 +721,7 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -734,29 +734,29 @@ Response `200`:
 
 ### `GET /api/v1/emails/:email_id`
 
-Purpose:
+用途：
 
-- fetch one email in full
+- 完整获取单封 email
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Response `200`:
+响应 `200`：
 
 - `Email`
 
 ### `GET /api/v1/threads/:thread_id`
 
-Purpose:
+用途：
 
-- fetch one thread plus its email timeline
+- 获取单个 thread 及其 email 时间线
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -767,19 +767,19 @@ Response `200`:
 }
 ```
 
-## Task and Artifact APIs
+## Task 与 Artifact API
 
 ### `POST /api/v1/tasks`
 
-Purpose:
+用途：
 
-- create a task explicitly from an email context
+- 从 email context 显式创建 task
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -795,26 +795,26 @@ Request:
 }
 ```
 
-Response `201`:
+响应 `201`：
 
 - `Task`
 
-Rules:
+规则：
 
-- `trigger_email_id` must belong to the same thread
-- when created after a delegation email, `trigger_email_id` should be the delegation email id
+- `trigger_email_id` 必须属于相同的 thread
+- 如果 task 是在 delegation email 之后创建，则 `trigger_email_id` 应指向 delegation email
 
 ### `GET /api/v1/tasks`
 
-Purpose:
+用途：
 
-- list tasks for one mailbox, thread, or trigger email
+- 按 mailbox、thread 或 trigger email 列出 tasks
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Query parameters:
+查询参数：
 
 - `assignee_mailbox`
 - `status`
@@ -822,21 +822,21 @@ Query parameters:
 - `trigger_email_id`
 - `parent_task_id`
 
-Response `200`:
+响应 `200`：
 
 - `Task[]`
 
 ### `PATCH /api/v1/tasks/:task_id/status`
 
-Purpose:
+用途：
 
-- update task state and validate completion rules
+- 更新 task state，并在完成时校验 completion rules
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -846,29 +846,29 @@ Request:
 }
 ```
 
-Response `200`:
+响应 `200`：
 
 - `Task`
 
-Rules:
+规则：
 
-- when `status=done`, `completed_by_email_id` is required
-- Central must verify:
-  - the completion email belongs to the same thread
-  - the completion email sender matches the task assignee
-  - the completion email was created later than the task
+- 当 `status=done` 时，`completed_by_email_id` 必填
+- Central 必须验证：
+  - completion email 属于同一 thread
+  - completion email sender 与 task assignee 一致
+  - completion email 的创建时间晚于 task 创建时间
 
 ### `POST /api/v1/artifacts`
 
-Purpose:
+用途：
 
-- persist repository-output metadata for artifact-producing tasks
+- 为需要 artifact 的 task 持久化 repository-output metadata
 
-Auth:
+Auth：
 
-- required
+- 必需
 
-Request:
+请求：
 
 ```json
 {
@@ -882,21 +882,21 @@ Request:
 }
 ```
 
-Response `201`:
+响应 `201`：
 
 - `Artifact`
 
-## Debug Read-Only APIs
+## Debug 只读 API
 
-The POC allows broad manual inspection for debugging, but read state must remain unchanged.
+POC 允许为了开发和排障做较宽松的人工 inspection，但 unread state 必须保持不变。
 
-Recommended behavior:
+推荐行为：
 
-- all normal GET APIs may be called with debug headers
-- debug-tagged reads may inspect broader mailbox/thread/email scope
-- debug-tagged reads must not trigger implicit or explicit unread-state mutation
+- 所有正常 GET API 都可以加 debug headers 调用
+- 带 debug 标记的读取可以查看更广的 mailbox/thread/email 范围
+- 带 debug 标记的读取绝不能触发隐式或显式已读
 
-Example:
+示例：
 
 ```http
 GET /api/v1/mailboxes/backend.coda@agents.local/deliveries?read_status=unread
@@ -906,11 +906,11 @@ X-Agent-Mail-Debug-Reason: manual-inspection
 
 ## Agent Host Thin HTTP API
 
-These are local Host APIs for health, observability, and MCP bootstrap.
+这些是 Host 暴露给本地的 thin HTTP API，用于 health、observability 和 MCP bootstrap。
 
 ### `GET /health`
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -920,11 +920,11 @@ Response `200`:
 
 ### `GET /status`
 
-Purpose:
+用途：
 
-- inspect current Host runtime state, managed mailboxes, and session health
+- 查看当前 Host runtime state、managed mailboxes 与 session health
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -942,11 +942,11 @@ Response `200`:
 
 ### `GET /mcp-config`
 
-Purpose:
+用途：
 
-- expose MCP configuration helpers for both humans and scripts
+- 暴露 MCP 配置辅助信息，供人工和脚本使用
 
-Response `200`:
+响应 `200`：
 
 ```json
 {
@@ -964,17 +964,17 @@ Response `200`:
 
 ## Host MCP Contract
 
-All normal runtime tools should keep `mailbox` explicit.
+所有正常 runtime tools 都应显式带上 `mailbox`。
 
-## Bootstrap and Registration
+## Bootstrap 与注册
 
 ### `bootstrap_session`
 
-Purpose:
+用途：
 
-- bind the current Codex session to a mailbox/workspace
+- 将当前 Codex session 绑定到 mailbox/workspace
 
-Input:
+输入：
 
 ```json
 {
@@ -988,11 +988,11 @@ Input:
 
 ### `register_agent_profile`
 
-Purpose:
+用途：
 
-- register the agent profile and active mailbox binding through Host
+- 通过 Host 注册 agent profile 和 active mailbox binding
 
-Input:
+输入：
 
 ```json
 {
@@ -1007,17 +1007,17 @@ Input:
 
 ### `get_runtime_context`
 
-Purpose:
+用途：
 
-- return mailbox, host, session, and workspace runtime context
+- 返回当前 mailbox、host、session、workspace 的 runtime context
 
 ### `list_unread_deliveries`
 
-Purpose:
+用途：
 
-- list unread deliveries for the mailbox, oldest first
+- 列出某个 mailbox 的 unread deliveries，按最旧优先
 
-Input:
+输入：
 
 ```json
 {
@@ -1029,11 +1029,11 @@ Input:
 
 ### `get_email`
 
-Purpose:
+用途：
 
-- fetch one email in full
+- 完整获取单封 email
 
-Input:
+输入：
 
 ```json
 {
@@ -1045,11 +1045,11 @@ Input:
 
 ### `get_thread`
 
-Purpose:
+用途：
 
-- fetch the full thread only when the single email is not enough
+- 仅在单封 email 不足以安全行动时，再获取完整 thread
 
-Input:
+输入：
 
 ```json
 {
@@ -1061,11 +1061,11 @@ Input:
 
 ### `mark_delivery_read`
 
-Purpose:
+用途：
 
-- explicitly mark a delivery as read
+- 显式将某个 delivery 标记为已读
 
-Input:
+输入：
 
 ```json
 {
@@ -1076,11 +1076,11 @@ Input:
 
 ### `send_email`
 
-Purpose:
+用途：
 
-- send an email through Host and Central
+- 通过 Host 和 Central 发送 email
 
-Input:
+输入：
 
 ```json
 {
@@ -1105,11 +1105,11 @@ Input:
 
 ### `create_task`
 
-Purpose:
+用途：
 
-- create an execution record from an email context
+- 从 email context 创建执行记录
 
-Input:
+输入：
 
 ```json
 {
@@ -1126,11 +1126,11 @@ Input:
 
 ### `update_task_status`
 
-Purpose:
+用途：
 
-- update status and supply `completedByEmailId` when done
+- 更新 task 状态，并在完成时提供 `completedByEmailId`
 
-Input:
+输入：
 
 ```json
 {
@@ -1143,11 +1143,11 @@ Input:
 
 ### `list_agents`
 
-Purpose:
+用途：
 
-- discover agents for delegation
+- 为 delegation 做 agent discovery
 
-Input:
+输入：
 
 ```json
 {
@@ -1155,11 +1155,11 @@ Input:
 }
 ```
 
-## Runtime Rules
+## Runtime 规则
 
-1. Host polls unread deliveries every 10 seconds.
-2. If a mailbox is already running, Host must not issue another resume for it.
-3. Resume failures should use exponential backoff and stop after 3 attempts.
-4. After repeated failure, Host should mark the mailbox failed and require human intervention.
-5. Prompt policy should ask agents to process one unread delivery per resume turn.
-6. Host should not auto-bootstrap agents that were never manually registered.
+1. Host 每 10 秒轮询一次 unread deliveries。
+2. 如果某个 mailbox 已在运行，Host 不得再次对其发起 resume。
+3. Resume 失败时应做指数退避，并在 3 次后停止。
+4. 多次失败后，Host 应将 mailbox 标记为 failed，并等待人工介入。
+5. Prompt policy 应要求 agents 每次 resume 只处理一条 unread delivery。
+6. Host 不得自动 bootstrap 从未手动注册过的 agents。

@@ -1,46 +1,46 @@
 # Agent Mail Prompt Specification
 
-## Purpose
+## 目的
 
-This document is the single source of truth for prompt behavior in the next email-oriented Agent Mail POC.
+本文档是下一版 email-oriented Agent Mail POC 的提示词单一真相来源。
 
-It defines:
+它定义：
 
-- the first manual startup prompt
-- the shared runtime prompt
-- role-specific prompt overlays
-- the single-email-per-resume runtime overlay
+- 首次手动启动提示词
+- 共享运行时提示词
+- 各角色提示词覆盖层
+- “每次 resume 只处理一封未读邮件”的运行时覆盖层
 
-This document replaces the earlier thread/task-first prompt draft for the next implementation slice.
+对于下一轮实现切片，本文档替代早先以 thread/task-first 为主的提示词草案。
 
-## Prompting Principles
+## Prompting 原则
 
-1. Mailbox identity must always be explicit.
-2. The Codex session should work through Agent Mail Host MCP only.
-3. The session should start from unread deliveries, not from full inbox replay.
-4. The session should handle one unread delivery per resume turn in the POC.
-5. The session must explicitly mark deliveries read through MCP.
-6. Email is the primary collaboration object; task is secondary and explicit.
-7. If a task is completed, the agent must send the reply email first and update task status second.
-8. Agents should only load full thread history when the single email is insufficient.
-9. Debug/read-only behaviors are not part of the normal runtime prompt path.
+1. mailbox identity 必须始终显式出现。
+2. Codex session 只应通过 Agent Mail Host MCP 工作。
+3. session 应从 unread deliveries 开始，而不是盲目回放整个 inbox。
+4. 在 POC 中，每次 resume 只处理一条 unread delivery。
+5. session 必须通过 MCP 显式标记 deliveries 为已读。
+6. Email 是主要协作对象；task 是次级且显式的执行记录。
+7. 如果 task 要完成，agent 必须先发送 reply email，再更新 task 状态。
+8. 只有在单封 email 不足时，才去加载完整 thread history。
+9. debug/read-only 行为不属于正常运行提示词路径。
 
-## Prompt Composition Model
+## Prompt 组合模型
 
-Each live agent prompt is composed of:
+每个活跃 agent prompt 由四部分组成：
 
-1. first manual startup prompt, only for first bootstrap
-2. shared base prompt
+1. 首次手动启动 prompt，仅用于第一次 bootstrap
+2. 共享 base prompt
 3. role-specific prompt
 4. runtime unread-delivery overlay
 
-The shared base prompt and role prompt are durable.
+共享 base prompt 和 role prompt 是长期存在的。
 
-The runtime overlay is regenerated for each resume turn.
+runtime overlay 会在每次 resume turn 重新生成。
 
-## First Manual Startup Prompt
+## 首次手动启动 Prompt
 
-Use this only when an agent is started manually for the first time on a Host.
+仅在一个 agent 第一次在某台 Host 上手动启动时使用。
 
 ```text
 You are {{name}}, role {{role}}, mailbox {{mailbox}}.
@@ -68,9 +68,9 @@ Do not invent a different mailbox, role, name, or responsibilities string.
 Do not skip the `AGENTS.md` step.
 ```
 
-## Shared Base Prompt
+## 共享 Base Prompt
 
-This prompt applies to every mailbox-scoped session.
+该 prompt 适用于每一个 mailbox-scoped session。
 
 ```text
 You are {{name}}, role {{role}}, mailbox {{mailbox}}.
@@ -93,7 +93,7 @@ Rules:
 11. Do not create git commits, branches, or pushes unless the task explicitly asks for them.
 ```
 
-## Role Prompts
+## 角色 Prompt
 
 ## PM Agent
 
@@ -209,9 +209,9 @@ You should:
 
 ## Runtime Unread-Delivery Overlay
 
-This overlay is composed for each resume turn.
+该 overlay 会在每次 resume turn 生成。
 
-## Shared Runtime Header
+## 共享 Runtime Header
 
 ```text
 Prioritize unread delivery {{deliveryId}} for mailbox {{mailbox}}.
@@ -219,7 +219,7 @@ This delivery belongs to email {{emailId}} on thread {{threadId}}.
 Process this delivery before considering any later unread deliveries.
 ```
 
-## Single-Email Processing Overlay
+## 单封 Email 处理 Overlay
 
 ```text
 Use this turn to process exactly one unread delivery.
@@ -241,7 +241,7 @@ Recommended sequence:
 10. Stop after this one delivery is fully handled.
 ```
 
-## No-Task Case
+## No-Task 场景
 
 ```text
 If no task is needed:
@@ -250,7 +250,7 @@ If no task is needed:
 - stop the turn
 ```
 
-## Direct-Reply Case
+## Direct-Reply 场景
 
 ```text
 If direct response is enough:
@@ -259,7 +259,7 @@ If direct response is enough:
 - stop the turn
 ```
 
-## Delegation Case
+## Delegation 场景
 
 ```text
 If another agent is needed:
@@ -269,7 +269,7 @@ If another agent is needed:
 - stop the turn
 ```
 
-## Task-Completion Case
+## Task-Completion 场景
 
 ```text
 If you are completing a task:
@@ -279,23 +279,23 @@ If you are completing a task:
 - stop the turn
 ```
 
-## Tool Usage Guidance
+## Tool 使用顺序建议
 
-Normal runtime should prefer this tool order:
+正常 runtime 应优先使用以下顺序：
 
 1. `get_runtime_context`
 2. `list_unread_deliveries`
 3. `get_email`
-4. `get_thread` only if needed
+4. `get_thread`，仅在需要时
 5. `send_email`
-6. `create_task` when delegation or explicit tracking is needed
-7. `update_task_status` when task state must change
+6. `create_task`，用于 delegation 或显式执行跟踪
+7. `update_task_status`，当 task 状态需要变化时
 8. `mark_delivery_read`
 
-Normal runtime should avoid debug tools or debug flags.
+正常 runtime 应避免使用 debug tools 或 debug flags。
 
-## Manual Cleanup Note
+## 手动清理说明
 
-Sessions are not self-clearing in the current POC.
+在当前 POC 中，sessions 不会自清理。
 
-Prompts should not instruct agents to clear their own session.
+提示词不应让 agents 自行清理 session。
