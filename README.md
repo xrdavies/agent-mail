@@ -108,9 +108,11 @@ pnpm local:stop
 
 ## 验证
 
+推荐顺序：
+
 ```bash
-pnpm typecheck
 pnpm build
+pnpm typecheck
 pnpm test
 ```
 
