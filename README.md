@@ -16,6 +16,8 @@
   - prompt 规范与 Aster/Coda 串联示例
 - [docs/implementation-plan.md](/Users/m4002/Projects/agent-mail/docs/implementation-plan.md:1)
   - 当前 docs-only baseline 下的实现阶段规划
+- [docs/tech-stack.md](/Users/m4002/Projects/agent-mail/docs/tech-stack.md:1)
+  - 当前 POC 的最小技术栈确认
 - [PROMPT_ASTER.md](/Users/m4002/Projects/agent-mail/PROMPT_ASTER.md:1)
   - Aster 的首次启动与 `resume` 提示词
 - [PROMPT_CODA.md](/Users/m4002/Projects/agent-mail/PROMPT_CODA.md:1)

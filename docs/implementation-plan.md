@@ -17,6 +17,7 @@
 - [data-model.md](./data-model.md)
 - [api-contract.md](./api-contract.md)
 - [prompt-specification.md](./prompt-specification.md)
+- [tech-stack.md](./tech-stack.md)
 
 ## 当前实现目标
 
