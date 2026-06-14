@@ -14,7 +14,6 @@ import {
   spawnManagedProcess,
   stopManagedProcess,
   tailFile,
-  resolveNodeEntrypoint,
   waitForHttpOk,
   waitForPostgres,
   writeManifest
@@ -51,13 +50,9 @@ async function main(): Promise<void> {
     env: getCentralEnv(manifest)
   });
 
-  const centralEntrypoint = await resolveNodeEntrypoint([
-    path.join("apps", "central", "dist", "index.js"),
-    path.join("apps", "central", "dist", "src", "index.js")
-  ]);
   const centralPid = await spawnManagedProcess(
     "central",
-    [centralEntrypoint],
+    [path.join("apps", "central", "dist", "index.js")],
     getCentralEnv(manifest)
   );
   try {
@@ -67,13 +62,9 @@ async function main(): Promise<void> {
     throw new Error(`${String(error)}\n\nCentral log tail:\n${logTail}`);
   }
 
-  const hostEntrypoint = await resolveNodeEntrypoint([
-    path.join("apps", "host", "dist", "index.js"),
-    path.join("apps", "host", "dist", "src", "index.js")
-  ]);
   const hostPid = await spawnManagedProcess(
     "host",
-    [hostEntrypoint],
+    [path.join("apps", "host", "dist", "index.js")],
     getHostEnv(manifest)
   );
   try {

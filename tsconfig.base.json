@@ -12,10 +12,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "@agent-mail/contracts": ["packages/contracts/src/index.ts"]
-    },
     "declaration": true,
     "sourceMap": true,
     "rootDir": ".",

@@ -6,10 +6,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "rm -rf dist && tsc -b tsconfig.json",
+    "typecheck": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
-    "lint": "tsc -p tsconfig.json --noEmit",
+    "lint": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {

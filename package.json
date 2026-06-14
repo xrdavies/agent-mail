@@ -7,7 +7,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "rm -rf packages/contracts/dist apps/central/dist apps/host/dist && pnpm exec tsc -b tsconfig.json",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
