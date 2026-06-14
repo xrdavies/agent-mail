@@ -41,121 +41,69 @@
         </header>
 
         <main class="content stack">
-          <section class="panel">
-            <p class="eyebrow">Compose</p>
-            <h2 class="hero-title">发一封新的 human inbound 邮件。</h2>
-            <p class="hero-copy">
-              这个页面现在作为完整写信页存在。它保留 mailbox 选择和基本写信上下文，但不再用抽屉式表达。
-            </p>
-          </section>
-
-          <section class="compose-stage">
-            <div class="stack">
-              <section class="panel">
-                <p class="eyebrow">Mailbox Roster</p>
-                <h2 class="panel-title">当前可收信 mailbox</h2>
-                <div class="list">
-                  <div class="list-row">
-                    <span class="list-row-key">pm.aster@agents.local</span>
-                    <p class="list-row-copy">PM intake, clarification, coordination, final synthesis.</p>
-                  </div>
-                  <div class="list-row">
-                    <span class="list-row-key">backend.coda@agents.local</span>
-                    <p class="list-row-copy">Backend implementation and repository work.</p>
-                  </div>
-                  <div class="list-row">
-                    <span class="list-row-key">ops.echo@agents.local</span>
-                    <p class="list-row-copy">Operations, recovery, deployment coordination.</p>
-                  </div>
-                  <div class="list-row">
-                    <span class="list-row-key">research.iris@agents.local</span>
-                    <p class="list-row-copy">Research, comparison, background gathering.</p>
-                  </div>
-                  <div class="list-row">
-                    <span class="list-row-key">design.luna@agents.local</span>
-                    <p class="list-row-copy">Design, UX, presentation and visual decisions.</p>
-                  </div>
-                </div>
-              </section>
-
-              <section class="panel">
-                <p class="eyebrow">Writing Notes</p>
-                <h2 class="panel-title">写信页需要保留的最小上下文</h2>
-                <ul class="bullet-list">
-                  <li>`To` 当前只允许一个主收件人。</li>
-                  <li>`Cc` 先保留单个下拉形式，正式实现时再确认是否支持多选。</li>
-                  <li>链接型附件先以文本形式录入，后续再映射到 `linked_resources`。</li>
-                  <li>这个页面是 human/operator 入口，不承担 thread 调试职责。</li>
-                </ul>
-              </section>
-            </div>
-
-            <section class="panel compose-form-panel">
-              <p class="eyebrow">New Email</p>
-              <h2 class="panel-title">Compose Human Inbound</h2>
-              <form class="field-list">
-                <div class="field">
-                  <label for="compose-from">From</label>
-                  <input
-                    id="compose-from"
-                    class="input"
-                    type="text"
-                    name="from"
-                    value="Human Operator <human.operator@agents.local>"
-                  />
-                </div>
-                <div class="field">
-                  <label for="compose-to">To</label>
-                  <select id="compose-to" class="input" name="to">
-                    <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
-                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="compose-cc">Cc</label>
-                  <select id="compose-cc" class="input" name="cc">
-                    <option value="" selected>No Cc</option>
-                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                    <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
-                  </select>
-                  <p class="field-hint">Mock mailbox roster. 正式开发时再接 Central mailbox 列表。</p>
-                </div>
-                <div class="field">
-                  <label for="compose-subject">Subject</label>
-                  <input
-                    id="compose-subject"
-                    class="input"
-                    type="text"
-                    name="subject"
-                    value="Need API follow-up"
-                  />
-                </div>
-                <div class="field">
-                  <label for="compose-body">Body</label>
-                  <textarea id="compose-body" class="textarea" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
-                </div>
-                <div class="field">
-                  <label for="compose-linked-resources">Linked Resources</label>
-                  <textarea
-                    id="compose-linked-resources"
-                    class="textarea textarea-compact"
-                    name="linked-resources"
-                    placeholder="https://github.com/xrdavies/agent-mail/pull/18"
-                  >https://github.com/xrdavies/agent-mail/pull/18</textarea>
-                </div>
-                <div class="button-row">
-                  <a class="button subtle" href="./overview.html">Cancel</a>
-                  <button class="button" type="button">Send Email</button>
-                </div>
-              </form>
-              <p class="footer-note">当前使用 mock mailbox 列表；正式开发时再接 Central mailbox 数据。</p>
-            </section>
+          <section class="panel compose-form-page">
+            <p class="eyebrow">New Email</p>
+            <h2 class="panel-title">Compose Human Inbound</h2>
+            <form class="field-list">
+              <div class="field">
+                <label for="compose-from">From</label>
+                <input
+                  id="compose-from"
+                  class="input"
+                  type="text"
+                  name="from"
+                  value="Human Operator <human.operator@agents.local>"
+                />
+              </div>
+              <div class="field">
+                <label for="compose-to">To</label>
+                <select id="compose-to" class="input" name="to">
+                  <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
+                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="compose-cc">Cc</label>
+                <select id="compose-cc" class="input" name="cc">
+                  <option value="" selected>No Cc</option>
+                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                  <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="compose-subject">Subject</label>
+                <input
+                  id="compose-subject"
+                  class="input"
+                  type="text"
+                  name="subject"
+                  value="Need API follow-up"
+                />
+              </div>
+              <div class="field">
+                <label for="compose-body">Body</label>
+                <textarea id="compose-body" class="textarea" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
+              </div>
+              <div class="field">
+                <label for="compose-linked-resources">Linked Resources</label>
+                <textarea
+                  id="compose-linked-resources"
+                  class="textarea textarea-compact"
+                  name="linked-resources"
+                  placeholder="https://github.com/xrdavies/agent-mail/pull/18"
+                >https://github.com/xrdavies/agent-mail/pull/18</textarea>
+              </div>
+              <div class="button-row">
+                <a class="button subtle" href="./overview.html">Cancel</a>
+                <button class="button" type="button">Send Email</button>
+              </div>
+            </form>
           </section>
         </main>
       </div>

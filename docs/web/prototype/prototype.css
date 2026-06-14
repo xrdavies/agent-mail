@@ -516,14 +516,8 @@ button.button {
   background: rgba(255, 255, 255, 0.55);
 }
 
-.compose-stage {
-  display: grid;
-  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
-  gap: var(--space-4);
-}
-
-.compose-form-panel {
-  min-width: 0;
+.compose-form-page {
+  max-width: 52rem;
 }
 
 .field-list {
@@ -564,19 +558,6 @@ button.button {
   min-height: 5rem;
 }
 
-.field-hint {
-  margin: 0.45rem 0 0;
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-
-.footer-note {
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line-soft);
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 @media (max-width: 1100px) {
   .grid-4,
   .stats-grid {
@@ -585,10 +566,6 @@ button.button {
 
   .flow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .compose-stage {
-    grid-template-columns: 1fr;
   }
 }
 
