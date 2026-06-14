@@ -97,14 +97,15 @@
                 </div>
                 <div class="field">
                   <label for="compose-cc">Cc</label>
-                  <select id="compose-cc" class="input" name="cc" multiple size="5">
+                  <select id="compose-cc" class="input" name="cc">
+                    <option value="" selected>No Cc</option>
                     <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
                     <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
                     <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
                     <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
                     <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
                   </select>
-                  <p class="field-hint">Mock mailbox roster. `Cc` 先用多选下拉表达，正式开发时再接 Central。</p>
+                  <p class="field-hint">Mock mailbox roster. 正式开发时再接 Central mailbox 列表。</p>
                 </div>
                 <div class="field">
                   <label for="compose-subject">Subject</label>

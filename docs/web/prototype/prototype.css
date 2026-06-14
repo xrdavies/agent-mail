@@ -567,10 +567,6 @@ button.button {
   appearance: auto;
 }
 
-.field select.input[multiple] {
-  min-height: 8.5rem;
-}
-
 .textarea-compact {
   min-height: 5rem;
 }
