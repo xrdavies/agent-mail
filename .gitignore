@@ -3,6 +3,7 @@ dist
 .turbo
 .DS_Store
 *.tsbuildinfo
+.agent-mail/
 .env
 .env.local
 coverage

@@ -14,7 +14,10 @@
     "db:generate": "pnpm --filter @agent-mail/central db:generate",
     "db:migrate": "pnpm --filter @agent-mail/central db:migrate",
     "dev:central": "pnpm --filter @agent-mail/central dev",
-    "dev:host": "pnpm --filter @agent-mail/host dev"
+    "dev:host": "pnpm --filter @agent-mail/host dev",
+    "local:start": "tsx scripts/local-start.ts",
+    "local:bootstrap": "tsx scripts/local-bootstrap.ts",
+    "e2e:smoke": "tsx scripts/e2e-smoke.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.8",

@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -11,6 +11,7 @@ import type {
 
 import { CentralAuthError, CentralClient } from "./central-client.js";
 import type { HostConfig, ManagedMailboxConfig } from "./config.js";
+import { buildCodexMcpConfigArgs } from "./codex.js";
 import { buildResumePrompt, createSyntheticSessionId } from "./prompt.js";
 import { HostStateStore, type MailboxLocalState } from "./state.js";
 
@@ -77,6 +78,7 @@ export class HostRuntime {
   }) {
     await this.requireAuthenticated();
     const mailbox = this.requireManagedMailbox(input.mailbox);
+    await this.assertWorkspaceReady(mailbox.workspacePath);
     if (path.resolve(mailbox.workspacePath) !== path.resolve(input.workspacePath)) {
       throw new Error("workspacePath must match the configured mailbox workspace");
     }
@@ -518,6 +520,7 @@ export class HostRuntime {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "agent-mail-host-"));
     const outputPath = path.join(tempDir, "last-message.txt");
     try {
+      await this.assertWorkspaceReady(mailbox.workspacePath);
       if (this.config.resumeCommandTemplate) {
         await runProcess("sh", [
           "-lc",
@@ -532,6 +535,7 @@ export class HostRuntime {
           "exec",
           "-C",
           mailbox.workspacePath,
+          ...buildCodexMcpConfigArgs(this.getMcpUrl()),
           ...(this.config.resumeDangerouslyBypass ? ["--dangerously-bypass-approvals-and-sandbox"] : []),
           "resume",
           "--last",
@@ -580,6 +584,29 @@ export class HostRuntime {
     }
     if (!this.token) {
       throw new Error("Host is not authenticated");
+    }
+  }
+
+  private async assertWorkspaceReady(workspacePath: string): Promise<void> {
+    let workspaceStats;
+    try {
+      workspaceStats = await stat(workspacePath);
+    } catch {
+      throw new Error(`Workspace does not exist: ${workspacePath}`);
+    }
+    if (!workspaceStats.isDirectory()) {
+      throw new Error(`Workspace path is not a directory: ${workspacePath}`);
+    }
+
+    const gitPath = path.join(workspacePath, ".git");
+    let gitStats;
+    try {
+      gitStats = await stat(gitPath);
+    } catch {
+      throw new Error(`Workspace is missing .git metadata: ${workspacePath}`);
+    }
+    if (!gitStats.isDirectory() && !gitStats.isFile()) {
+      throw new Error(`Workspace has invalid .git metadata: ${workspacePath}`);
     }
   }
 }

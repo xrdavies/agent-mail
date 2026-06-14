@@ -14,7 +14,6 @@ import type {
   AddressObject,
   AgentProfile,
   Artifact,
-  ArtifactInput,
   CreateTaskRequest,
   Delivery,
   Email,
@@ -26,6 +25,7 @@ import type {
   MailboxBinding,
   RegisterAgentRequest,
   SendEmailRequest,
+  LinkedResourceInput,
   Task,
   Thread,
   UpdateTaskStatusRequest
@@ -627,6 +627,186 @@ export class CentralService {
           resourceId: emailId
         })
         .where(eq(idempotencyKeys.idempotencyKey, request.idempotency_key));
+
+      const response = await this.loadEmailSendResponse(tx, emailId);
+      return {
+        ...response,
+        deliveries: createdDeliveries
+      };
+    });
+  }
+
+  async ingestHumanEmail(input: {
+    from: AddressObject;
+    to: AddressObject[];
+    cc?: AddressObject[];
+    subject: string;
+    body_text: string;
+    raw_body: string;
+    raw_headers?: Record<string, string> | null;
+    in_reply_to?: string | null;
+    references?: string[];
+    linked_resources?: LinkedResourceInput[];
+  }): Promise<{
+    email: Email;
+    deliveries: Delivery[];
+    thread: Thread;
+  }> {
+    if (input.to.length !== 1) {
+      throw new HttpError(400, "POC requires exactly one primary recipient");
+    }
+
+    const cc = input.cc ?? [];
+    await this.ensureRecipientMailboxesRegistered([
+      ...input.to.map((item) => item.address),
+      ...cc.map((item) => item.address)
+    ]);
+
+    return this.db.transaction(async (tx) => {
+      const timestamp = now();
+      const threadInfo = await this.resolveThread(tx, {
+        in_reply_to: input.in_reply_to ?? null,
+        references: input.references ?? [],
+        subject: input.subject
+      });
+      const emailId = createPrefixedId("eml");
+      const messageId = createMessageId();
+
+      if (!threadInfo.thread) {
+        const threadId = createPrefixedId("thr");
+        await tx.insert(threads).values({
+          threadId,
+          rootEmailId: null,
+          rootMessageId: messageId,
+          rootSubject: input.subject,
+          latestEmailId: null,
+          threadStatus: "open",
+          createdAt: timestamp,
+          updatedAt: timestamp
+        });
+        threadInfo.thread = {
+          threadId,
+          rootEmailId: null,
+          rootMessageId: messageId,
+          rootSubject: input.subject,
+          latestEmailId: null,
+          threadStatus: "open",
+          createdAt: timestamp,
+          updatedAt: timestamp
+        };
+      }
+
+      await tx.insert(emails).values({
+        emailId,
+        messageId,
+        threadId: threadInfo.thread.threadId,
+        fromJson: input.from,
+        toJson: input.to,
+        ccJson: cc,
+        subject: input.subject,
+        bodyText: input.body_text,
+        rawBody: input.raw_body,
+        rawHeadersJson: input.raw_headers ?? null,
+        inReplyTo: input.in_reply_to ?? null,
+        referencesJson: input.references ?? [],
+        emailKind: "human_inbound",
+        sendState: "sent",
+        createdByHostId: null,
+        createdByMailbox: null,
+        sentAt: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      });
+
+      if (!threadInfo.thread.rootEmailId) {
+        await tx
+          .update(threads)
+          .set({
+            rootEmailId: emailId,
+            latestEmailId: emailId,
+            updatedAt: timestamp
+          })
+          .where(eq(threads.threadId, threadInfo.thread.threadId));
+      } else {
+        await tx
+          .update(threads)
+          .set({
+            latestEmailId: emailId,
+            updatedAt: timestamp
+          })
+          .where(eq(threads.threadId, threadInfo.thread.threadId));
+      }
+
+      const createdDeliveries: Delivery[] = [];
+      for (const recipient of input.to) {
+        const deliveryId = createPrefixedId("del");
+        await tx.insert(deliveries).values({
+          deliveryId,
+          emailId,
+          threadId: threadInfo.thread.threadId,
+          recipientAddress: recipient.address,
+          recipientMailbox: recipient.address,
+          deliveryKind: "to",
+          readStatus: "unread",
+          createdAt: timestamp,
+          updatedAt: timestamp
+        });
+        createdDeliveries.push(
+          mapDelivery({
+            deliveryId,
+            emailId,
+            threadId: threadInfo.thread.threadId,
+            recipientAddress: recipient.address,
+            recipientMailbox: recipient.address,
+            deliveryKind: "to",
+            readStatus: "unread",
+            readAt: null,
+            createdAt: timestamp,
+            updatedAt: timestamp
+          })
+        );
+      }
+
+      for (const recipient of cc) {
+        const deliveryId = createPrefixedId("del");
+        await tx.insert(deliveries).values({
+          deliveryId,
+          emailId,
+          threadId: threadInfo.thread.threadId,
+          recipientAddress: recipient.address,
+          recipientMailbox: recipient.address,
+          deliveryKind: "cc",
+          readStatus: "unread",
+          createdAt: timestamp,
+          updatedAt: timestamp
+        });
+        createdDeliveries.push(
+          mapDelivery({
+            deliveryId,
+            emailId,
+            threadId: threadInfo.thread.threadId,
+            recipientAddress: recipient.address,
+            recipientMailbox: recipient.address,
+            deliveryKind: "cc",
+            readStatus: "unread",
+            readAt: null,
+            createdAt: timestamp,
+            updatedAt: timestamp
+          })
+        );
+      }
+
+      for (const resource of input.linked_resources ?? []) {
+        await tx.insert(linkedResources).values({
+          linkedResourceId: createPrefixedId("lnk"),
+          emailId,
+          url: resource.url,
+          title: resource.title ?? null,
+          mimeType: resource.mime_type ?? null,
+          sizeBytes: resource.size_bytes ?? null,
+          createdAt: timestamp
+        });
+      }
 
       const response = await this.loadEmailSendResponse(tx, emailId);
       return {
