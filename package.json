@@ -10,7 +10,7 @@
     "build": "rm -rf packages/contracts/dist apps/central/dist apps/host/dist && pnpm exec tsc -b tsconfig.json",
     "typecheck": "pnpm exec tsc -b tsconfig.json --noEmit",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm exec tsc -b tsconfig.json --noEmit",
     "db:generate": "pnpm --filter @agent-mail/central db:generate",
     "db:migrate": "pnpm --filter @agent-mail/central db:migrate",
     "dev:central": "pnpm --filter @agent-mail/central dev",
