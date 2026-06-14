@@ -104,10 +104,6 @@ code,
   line-height: 1;
 }
 
-.nav-group + .nav-group {
-  margin-top: var(--space-4);
-}
-
 .nav-title,
 .eyebrow,
 .kicker {
