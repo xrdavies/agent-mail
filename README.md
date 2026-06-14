@@ -6,23 +6,23 @@
 
 ## 当前保留文档
 
-- [docs/poc-v0.1-email-central-host.md](/Users/m4002/Projects/agent-mail/docs/poc-v0.1-email-central-host.md:1)
+- [docs/poc-v0.1-email-central-host.md](./docs/poc-v0.1-email-central-host.md)
   - POC 总体设计、系统架构、接口总览
-- [docs/data-model.md](/Users/m4002/Projects/agent-mail/docs/data-model.md:1)
+- [docs/data-model.md](./docs/data-model.md)
   - 数据模型定义
-- [docs/api-contract.md](/Users/m4002/Projects/agent-mail/docs/api-contract.md:1)
+- [docs/api-contract.md](./docs/api-contract.md)
   - Central HTTP API 与 Host MCP contract
-- [docs/prompt-specification.md](/Users/m4002/Projects/agent-mail/docs/prompt-specification.md:1)
+- [docs/prompt-specification.md](./docs/prompt-specification.md)
   - prompt 规范与 Aster/Coda 串联示例
-- [docs/implementation-plan.md](/Users/m4002/Projects/agent-mail/docs/implementation-plan.md:1)
+- [docs/implementation-plan.md](./docs/implementation-plan.md)
   - 当前 docs-only baseline 下的实现阶段规划
-- [docs/tech-stack.md](/Users/m4002/Projects/agent-mail/docs/tech-stack.md:1)
+- [docs/tech-stack.md](./docs/tech-stack.md)
   - 当前 POC 的最小技术栈确认
-- [PROMPT_ASTER.md](/Users/m4002/Projects/agent-mail/PROMPT_ASTER.md:1)
+- [PROMPT_ASTER.md](./PROMPT_ASTER.md)
   - Aster 的首次启动与 `resume` 提示词
-- [PROMPT_CODA.md](/Users/m4002/Projects/agent-mail/PROMPT_CODA.md:1)
+- [PROMPT_CODA.md](./PROMPT_CODA.md)
   - Coda 的首次启动与 `resume` 提示词
-- [AGENTS.md](/Users/m4002/Projects/agent-mail/AGENTS.md:1)
+- [AGENTS.md](./AGENTS.md)
   - 仓库级 agent 规则
 
 ## 说明
