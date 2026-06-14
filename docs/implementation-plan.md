@@ -46,7 +46,7 @@
 
 - P0：最小技术路线锁定
 - P1：规格冻结
-- P2：仓库骨架重建
+- P2：仓库骨架建立
 - P3：共享 contract 层
 - P4：Central 数据层
 - P5：Central HTTP API
@@ -118,7 +118,7 @@
 - `poc-v0.1`、`data-model`、`api-contract`、`prompt-specification` 四份核心文档对齐
 - `PROMPT_ASTER.md`、`PROMPT_CODA.md` 与 `MCP tools` 命名一致
 
-## P2：仓库骨架重建
+## P2：仓库骨架建立
 
 ### 目标
 
@@ -135,7 +135,7 @@
 - 建立基础 `tsconfig`
 - 建立基础 package manager 配置
 - 建立最小 build / test 脚手架
-- 不在这一阶段恢复 `Web`
+- 不在这一阶段实现 `Web`
 
 ### 产物
 
@@ -416,7 +416,7 @@
 
 - 最小技术路线锁定
 - 规格冻结
-- 仓库骨架重建
+- 仓库骨架建立
 
 ### P1：必须先打通的主链路
 
