@@ -21,6 +21,7 @@
 - `AGENTS.md` 必须由各 mailbox 的首次启动会话自己写入，不能由 orchestration 脚本直接预写到 workspace 根目录。
 - smoke 使用内部 `CentralService.ingestHumanEmail(...)` 种入 `human_inbound`，不新增公开 Central API。
 - PM 最终回 human 时不应默认再 `cc` specialist；backend 对纯 `cc` 状态同步邮件应直接标记已读并停止，不再回执。
+- 根仓库与 mailbox worktree 的 git identity 必须隔离。根仓库保留人类维护者身份；Aster/Coda 等身份只写入各自 worktree 的 `config.worktree`，不得回写根仓库 `.git/config`。
 
 ## 主要命令
 

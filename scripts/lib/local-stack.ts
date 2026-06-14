@@ -144,6 +144,7 @@ export async function loadManifestOrDefault(): Promise<LocalRuntimeManifest> {
 }
 
 export async function ensureWorktree(profile: LocalMailboxProfile): Promise<void> {
+  await ensureWorktreeConfigIsolation();
   const gitPath = path.join(profile.workspacePath, ".git");
   if (await pathExists(gitPath)) {
     await configureWorkspaceGit(profile);
@@ -162,11 +163,29 @@ export async function ensureWorktree(profile: LocalMailboxProfile): Promise<void
   await configureWorkspaceGit(profile);
 }
 
+export async function ensureWorktreeConfigIsolation(): Promise<void> {
+  const result = await runCommand(
+    "git",
+    ["config", "--local", "--get", "extensions.worktreeConfig"],
+    { cwd: repoRoot, allowFailure: true }
+  );
+  if (result.exitCode === 0 && result.stdout.trim() === "true") {
+    return;
+  }
+
+  await runCommand(
+    "git",
+    ["config", "--local", "extensions.worktreeConfig", "true"],
+    { cwd: repoRoot }
+  );
+}
+
 export async function configureWorkspaceGit(profile: LocalMailboxProfile): Promise<void> {
-  await runCommand("git", ["config", "user.name", profile.name], {
+  await ensureWorktreeConfigIsolation();
+  await runCommand("git", ["config", "--worktree", "user.name", profile.name], {
     cwd: profile.workspacePath
   });
-  await runCommand("git", ["config", "user.email", profile.mailbox], {
+  await runCommand("git", ["config", "--worktree", "user.email", profile.mailbox], {
     cwd: profile.workspacePath
   });
 }
