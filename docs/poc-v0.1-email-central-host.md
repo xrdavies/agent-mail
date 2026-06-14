@@ -53,6 +53,388 @@
 - 从未手动初始化过的 agents 的自动 bootstrap
 - Markdown 邮件渲染
 
+## 系统架构设计
+
+### 架构目标
+
+本架构需要同时满足四类目标：
+
+1. **邮件语义正确**：内部邮件模型尽量贴近 RFC 5322，后续可以平滑接入真实邮件系统。
+2. **运行时边界清晰**：Central 管状态，Host 管本地 runtime，Agent 只通过 MCP 工作。
+3. **会话连续性稳定**：每个 mailbox 保持一个长期 session，通过 `resume session` 延续上下文。
+4. **人工可观测可介入**：出现失败、冲突或调试需求时，人可以通过 Web、日志和 debug API 介入。
+
+### 架构原则
+
+1. **Central-first 状态管理**：所有业务真相都回到 Central，不在 Host 本地分叉。
+2. **Host-thin 执行模型**：Host 只做鉴权、轮询、resume、MCP bridge 和局部状态协调。
+3. **Email-first 协作模型**：协作以 email 为主，task 只是跟随 email 的结构化执行记录。
+4. **Delivery-first 已读模型**：read/unread 只存在于 `Delivery`，不污染 `Email` 主表。
+5. **Mailbox-scoped 连续性**：POC 中一个 mailbox 在任意时刻只对应一个 active session。
+6. **显式动作优于隐式动作**：`mark_read`、`create_task`、`update_task_status` 都必须显式调用。
+7. **调试路径与生产路径隔离**：debug inspection 可以跨 mailbox 查看，但不得影响 unread 状态和正常流程。
+
+### 顶层拓扑
+
+```text
+                       +----------------------+
+                       |   Human / Operator   |
+                       +----------+-----------+
+                                  |
+                                  v
+                       +----------------------+
+                       |   Agent Mail Web     |
+                       +----------+-----------+
+                                  |
+                                  v
++--------------------+   HTTPS    +----------------------+   HTTPS    +-----------------------+
+| Future Mail Source | ---------> |       Central        | <--------> |        GitHub         |
+| / Mail Connector   |            |  control plane + DB  |            | artifact truth layer  |
++--------------------+            +----+------------+----+            +-----------------------+
+                                       ^            ^
+                                       |            |
+                                HTTPS  |            | HTTPS
+                                       |            |
+                     +-----------------+            +-----------------+
+                     |                                                |
+                     v                                                v
+            +----------------------+                         +----------------------+
+            |        Host A        |                         |        Host B        |
+            | auth / polling / MCP |                         | auth / polling / MCP |
+            +----------+-----------+                         +----------+-----------+
+                       |                                                |
+                       v                                                v
+            +----------------------+                         +----------------------+
+            |   Local MCP Server   |                         |   Local MCP Server   |
+            +----------+-----------+                         +----------+-----------+
+                       |                                                |
+                       v                                                v
+            +----------------------+                         +----------------------+
+            | Codex Agent Session  |                         | Codex Agent Session  |
+            | one mailbox/session  |                         | one mailbox/session  |
+            +----------------------+                         +----------------------+
+```
+
+说明：
+
+- `Web` 只面向 human/operator。
+- `Central` 是唯一 control plane。
+- `Host` 是 machine-local runtime coordinator。
+- `Local MCP Server` 是 `Host` 的一部分，不是独立系统。
+- `Future Mail Source / Mail Connector` 目前不启用，但在架构上需要预留。
+- `GitHub` 只负责 repository artifacts，不负责邮件或任务状态。
+
+### 组件分层
+
+#### 1. Web 层
+
+职责：
+
+- 供 human/operator 查看 agent、thread、email、task、session、Host 状态
+- 发起人类邮件
+- 触发人工恢复和清理动作
+- 提供调试入口
+
+不负责：
+
+- 直接调度 Codex
+- 持有 Host token
+- 管理 agent 本地 workspace
+
+#### 2. Central 层
+
+职责：
+
+- 持久化 `Host`、`HostToken`、`AgentProfile`、`MailboxBinding`、`Session`、`Thread`、`Email`、`Delivery`、`Task`、`LinkedResource`、`Artifact`
+- 负责 host bootstrap key exchange 和 token revoke
+- 负责邮件入库、thread 归并、delivery 生成
+- 负责 unread 查询
+- 负责 task completion 校验
+- 负责 debug 调用审计
+
+不负责：
+
+- 启动本地 Codex
+- 直接读取本地 repo/workspace
+- 替 agent 做业务判断
+
+#### 3. Host 层
+
+职责：
+
+- 向 Central 认证并注册自己
+- 管理本机 mailbox roster 与 binding
+- 暴露 MCP 给本机 Codex session
+- 每 10 秒轮询 unread deliveries
+- 判断 mailbox 是否应 `resume session`
+- 维持 Host heartbeat 与 session heartbeat
+- 在 token 失效时停用 MCP
+
+不负责：
+
+- 解析邮件语义
+- 自动给陌生 agent 做首次 bootstrap
+- 在后台静默消费邮件
+
+#### 4. Agent Session 层
+
+职责：
+
+- 作为 mailbox 的执行实例
+- 从 MCP 拉取 unread deliveries
+- 每次处理一封 email
+- 显式发送 email、标记已读、创建 task、更新 task 状态
+- 在需要时操作 repo 并产出 artifacts
+
+不负责：
+
+- 选择自己运行在哪台 Host
+- 选择自己的 workspace
+- 自我清理 session
+
+#### 5. Future Mail Connector 层
+
+这是未来扩展组件，目前不实现。
+
+职责预留：
+
+- 接入 SMTP / IMAP / API-based mail providers
+- 保留原始 `message_id`、headers、reply linkage
+- 将外部邮件规范化写入 Central
+
+当前约束：
+
+- 当前 POC 中，外部 connector 是逻辑预留，不参与运行链路
+
+### 状态归属矩阵
+
+| 对象 | 主真相来源 | 说明 |
+|---|---|---|
+| Host 身份与状态 | Central | Host 本地上报，Central 持久化 |
+| Host token | Central | 由 Central 发放和 revoke |
+| AgentProfile | Central | 首次手动启动后经 Host 注册 |
+| MailboxBinding | Central | 当前 mailbox 属于哪个 Host |
+| Session | Central | mailbox 级长期 session 元数据 |
+| Email | Central | 规范邮件对象 |
+| Delivery | Central | 每个收件人的 unread/read 状态 |
+| Thread | Central | reply linkage 驱动 |
+| Task | Central | email-first 的执行记录 |
+| LinkedResource | Central | email 上的链接型附件 |
+| Artifact | Central + GitHub | 元数据在 Central，实际内容在 GitHub/repo |
+| Workspace 实际文件 | 本地 repo / GitHub | 不进 Central |
+| MCP 暴露与运行中 session 进程状态 | Host | 仅本机实时状态 |
+
+### 核心运行链路
+
+#### 链路 1：Host 启动与认证
+
+```text
+Host -> Central: bootstrap key exchange
+Central -> Host: long-lived token
+Host -> Central: host register
+Host -> Central: heartbeat every 5s
+Host -> local: expose MCP only after auth success
+```
+
+设计要求：
+
+- 这是所有本地能力的前置条件
+- 未认证 Host 不得暴露 MCP
+- token 被 revoke 后，MCP 必须立刻失效
+
+#### 链路 2：Agent 首次手动启动
+
+```text
+Operator -> Codex Agent Session: provide profile
+Agent -> workspace: create AGENTS.md
+Agent -> Host MCP: bootstrap_session
+Agent -> Host MCP: register_agent_profile
+Host -> Central: register profile + binding
+Central -> Host/Agent: runtime context + discoverability
+```
+
+设计要求：
+
+- 首次启动必须是人工触发
+- 未注册 agent 不允许收邮件
+- `AGENTS.md` 是本地 profile 快照，不替代 Central 中的 profile 真相
+
+#### 链路 3：邮件入站与 thread 建立
+
+```text
+Human/Web or Future Mail Connector -> Central: submit email
+Central -> Central: resolve thread by in_reply_to / references
+Central -> Central: persist Email
+Central -> Central: create Deliveries
+```
+
+设计要求：
+
+- 没有 reply linkage 时一律新建 thread
+- `subject` 只作为展示，不作为 merge key
+- `cc` 在当前 POC 中只存储，不驱动 task routing
+
+#### 链路 4：轮询、唤醒与 resume
+
+```text
+Host -> Central: list unread deliveries for managed mailboxes
+Host -> Host: pick idle mailbox with unread mail
+Host -> Codex: resume session
+Codex -> Host MCP: list_unread_deliveries / get_email / get_thread
+```
+
+设计要求：
+
+- Host 每 10 秒轮询一次
+- mailbox 正在运行时不得重复 resume
+- 多封未读按 FIFO 处理
+- prompt 限制“一次 resume 只处理一封 email”
+
+#### 链路 5：单封邮件处理
+
+```text
+Agent -> Host MCP: get email
+Agent -> Host MCP: optionally get thread
+Agent -> Host MCP: send_email / create_task / update_task_status
+Agent -> Host MCP: mark_delivery_read
+Host -> Central: forward all stateful actions
+```
+
+设计要求：
+
+- `mark_read` 必须显式触发
+- 如果无需 task，也必须发送 receipt/reply
+- 如果要 delegation，先发邮件，再建 task
+
+#### 链路 6：任务完成闭环
+
+```text
+Agent -> Host MCP: send completion reply
+Agent -> Host MCP: update_task_status(done, completedByEmailId)
+Host -> Central: forward update
+Central -> Central: validate completion email
+Central -> Central: mark task done
+```
+
+设计要求：
+
+- `completed_by_email_id` 是状态变更的强校验依据
+- 不能只改 task 状态而不发 reply email
+
+### 调试与只读路径
+
+调试路径必须是架构上的一等公民，因为当前 POC 明确允许人工介入。
+
+设计要求：
+
+- debug 请求必须显式打标
+- debug 读取不改变 unread/read
+- debug 可跨 mailbox/thread/email 检查
+- debug 审计日志必须能与正常 runtime 区分
+
+推荐实现：
+
+- 所有 Central 读 API 接受 debug headers
+- 所有 Host MCP 读工具支持 `debug` 或只读模式参数
+- Web 调试界面默认走 debug 模式
+
+### 安全与信任边界
+
+#### 边界 1：Central 与 Host
+
+- 通过 bootstrap key 和 long-lived token 建立信任
+- 所有 Host runtime 请求必须带 Bearer token
+- token revoke 后，Central 与 Host 的 trust 立即失效
+
+#### 边界 2：Host 与 Agent Session
+
+- Host 只信任本机启动并接入本地 MCP 的 Codex session
+- Agent 所有能力都经由 Host MCP 转发
+- Agent 不直接持有 Central token
+
+#### 边界 3：Debug 与 Normal Runtime
+
+- debug 不得复用正常 unread 消费路径
+- debug 的“看”和 runtime 的“处理”必须是两条逻辑分支
+
+### 失败恢复设计
+
+#### Host 失联
+
+- heartbeat 周期：5 秒
+- 连续 5 次失败：Central 可将 Host 标记为 `offline`
+- 结果：该 Host 上的 mailboxes 不再视为可用执行面
+
+#### Resume 失败
+
+- Host 做指数退避
+- 最多重试 3 次
+- 超限后 mailbox 标记 `failed`
+- 需要人工重新登录 Host 并手工清理
+
+#### Host Crash 后重复处理
+
+POC 接受重复处理，但副作用要受控：
+
+- 发送 email 必须幂等
+- 创建 task 必须幂等
+- 幂等键由 Central 负责签发和去重
+
+#### Mailbox 冲突
+
+- 一个 mailbox 同时只能 active 在一个 Host
+- 若旧 Host 仍健康，新 Host 抢注册必须失败
+- 自动迁移不在当前 POC 范围内
+
+### 部署模型
+
+当前推荐部署模型：
+
+- 1 个 Central
+- 1 个 Web
+- N 个 Host
+- 每个 Host 管理若干 mailboxes
+- 每个 mailbox 对应 1 个长期 session
+
+部署特征：
+
+- 适合本地或小规模私有环境
+- 不依赖 queue middleware
+- 不依赖复杂调度器
+- 通过 mailbox binding 实现分布式执行定位
+
+### 向 SMTP 演进的兼容设计
+
+当前架构已经为未来接入 SMTP/真实外部邮箱预留了足够接口：
+
+1. Email 保留 `message_id`、`in_reply_to`、`references`
+2. Address Object 对齐 RFC 5322
+3. `raw_headers` 可保留原始头
+4. Threading 逻辑不依赖内部专有字段
+5. Delivery 与 Email 分离，适合真实多收件人模型
+6. `recipient_mailbox` 可在未来外部收件人场景下允许为 `null`
+
+未来接入时只需新增：
+
+- Mail Connector / SMTP Adapter
+- 外部收发协议处理
+- 外部 mailbox 路由与身份校验
+
+无需推翻当前的 Central/Host/MCP 主架构。
+
+### 架构结论
+
+符合当前需求的推荐架构是：
+
+- **Central 作为唯一业务状态中心**
+- **Host 作为每台机器的轻量执行协调器**
+- **MCP 作为 Agent 唯一运行时接口**
+- **Email/Delivery/Thread/Task 构成核心业务模型**
+- **Mailbox-scoped session 提供连续性**
+- **人工可见、可调试、可恢复作为 POC 的基本能力**
+
+这个架构满足当前四份规范文档中的约束，并且是后续进入实现阶段时最稳妥、改动面最小的一条路径。
+
 ## 术语
 
 ### Address Object
