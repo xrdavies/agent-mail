@@ -22,6 +22,12 @@
   --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   --font-body: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --terminal-bg: #000000;
+  --terminal-fg: #00ff00;
+  --terminal-dim: #00a600;
+  --terminal-bright: #00d900;
+  --terminal-border: #083905;
+  --terminal-cursor: #23ff18;
 }
 
 * {
@@ -527,6 +533,32 @@ button.button {
   padding-right: 0.2rem;
 }
 
+.terminal-stream {
+  gap: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--terminal-border);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(0, 217, 0, 0.035), transparent 18%),
+    radial-gradient(circle at top, rgba(35, 255, 24, 0.1), transparent 28rem),
+    var(--terminal-bg);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 217, 0, 0.05),
+    0 0 28px rgba(0, 217, 0, 0.08);
+}
+
+.terminal-stream::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  display: block;
+  width: 0.75rem;
+  height: 1.1rem;
+  margin-top: 0.45rem;
+  background: var(--terminal-cursor);
+  box-shadow: 0 0 12px rgba(35, 255, 24, 0.6);
+}
+
 .log-line {
   overflow-x: auto;
   padding: 0.85rem 0.95rem;
@@ -537,6 +569,23 @@ button.button {
   font-family: var(--font-mono);
   font-size: 0.82rem;
   line-height: 1.45;
+}
+
+.terminal-stream .log-line {
+  padding: 0.4rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--terminal-fg);
+  text-shadow: 0 0 10px rgba(0, 217, 0, 0.22);
+}
+
+.terminal-stream .log-line:nth-child(3n) {
+  color: var(--terminal-bright);
+}
+
+.terminal-stream .log-line:nth-child(4n) {
+  color: var(--terminal-dim);
 }
 
 .debug-stream-controls {
