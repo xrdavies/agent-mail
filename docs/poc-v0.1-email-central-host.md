@@ -71,7 +71,7 @@
 3. **Email-first 协作模型**：协作以 email 为主，task 只是跟随 email 的结构化执行记录。
 4. **Delivery-first 已读模型**：read/unread 只存在于 `Delivery`，不污染 `Email` 主表。
 5. **Mailbox-scoped 连续性**：POC 中一个 mailbox 在任意时刻只对应一个 active session。
-6. **显式动作优于隐式动作**：`mark_read`、`create_task`、`update_task_status` 都必须显式调用。
+6. **显式动作优于隐式动作**：`mark_delivery_read`、`create_task`、`update_task_status` 都必须显式调用。
 7. **调试路径与生产路径隔离**：debug inspection 可以跨 mailbox 查看，但不得影响 unread 状态和正常流程。
 
 ### 顶层拓扑
@@ -289,7 +289,7 @@ Central -> Central: create Deliveries
 Host -> Central: list unread deliveries for managed mailboxes
 Host -> Host: pick idle mailbox with unread mail
 Host -> Codex: resume session
-Codex -> Host MCP: list_unread_deliveries / get_email / get_thread
+Codex -> Host MCP: get_oldest_unread_delivery / get_email / get_thread
 ```
 
 设计要求：
@@ -302,9 +302,9 @@ Codex -> Host MCP: list_unread_deliveries / get_email / get_thread
 #### 链路 5：单封邮件处理
 
 ```text
-Agent -> Host MCP: get email
-Agent -> Host MCP: optionally get thread
-Agent -> Host MCP: send_email / create_task / update_task_status
+Agent -> Host MCP: get_oldest_unread_delivery / get_delivery / get_email
+Agent -> Host MCP: optionally get_thread
+Agent -> Host MCP: send_email / create_task / get_task / list_tasks / update_task_status
 Agent -> Host MCP: mark_delivery_read
 Host -> Central: forward all stateful actions
 ```
@@ -806,18 +806,53 @@ Mailbox binding 规则：
 
 ## 最小 Host MCP Surface
 
-确切 tool names 后续仍可微调，但 POC 至少需要这些 Host MCP 能力：
+当前 POC 的 Host MCP surface 应围绕“首次启动注册”和“每轮只处理一封最早未读邮件”来设计。
 
-- register agent profile
-- get runtime context
-- get unread deliveries
-- get email by `email_id`
-- get thread by `thread_id`
-- mark delivery read
-- send email
-- create task
-- update task status
-- list agents
+设计原则：
+
+1. 所有正常 runtime tools 都必须显式带上 `mailbox`
+2. 不向正常 agent runtime 暴露通用 `list_unread_deliveries`
+3. `Host` 负责在调度层选择当前目标邮件，agent 负责通过 MCP 再确认并执行
+4. `bootstrap` 动作与 `resume` 动作必须分离
+5. Email 是主协作对象，task 是跟随 email 的执行记录
+
+最小工具分组如下。
+
+### 首次启动类
+
+- `bootstrap_agent`
+  - 合并 session bootstrap、agent profile 注册、mailbox binding 注册
+
+### 邮件处理类
+
+- `get_oldest_unread_delivery`
+  - 返回当前 mailbox 最早的一封未读 delivery
+- `get_delivery`
+  - 按 `deliveryId` 获取 delivery detail
+- `get_email`
+  - 按 `emailId` 获取单封 email
+- `get_thread`
+  - 按 `threadId` 获取完整 thread
+- `mark_delivery_read`
+  - 显式标记当前 delivery 已读
+- `send_email`
+  - 发送 receipt、reply、delegation、completion reply
+
+### Task 类
+
+- `create_task`
+  - 显式创建 task，并由创建者填写 `requiresArtifact`
+- `get_task`
+  - 按 `taskId` 获取单个 task
+- `list_tasks`
+  - 查询 mailbox 或 thread 相关 tasks
+- `update_task_status`
+  - 仅允许更新为 `in_progress` / `paused` / `blocked` / `done`
+
+### Agent 发现类
+
+- `list_agents`
+  - 为 delegation 提供 agent discovery
 
 Host 还应暴露这些非 MCP 的薄 API：
 
