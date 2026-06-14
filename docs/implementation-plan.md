@@ -72,6 +72,11 @@
 - `Drizzle ORM`
 - `@modelcontextprotocol/sdk`
 - `SQLite` 作为 `Host` 本地状态存储
+- `React`
+- `Vite`
+- `Tailwind CSS`
+- `shadcn/ui`
+- `TanStack Query`
 - `git`
 - `gh`
 - `Docker Compose`

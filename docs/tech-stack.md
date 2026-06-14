@@ -95,23 +95,22 @@
 
 ### 6. Web
 
-当前 POC 的**第一阶段明确后置 Web 实现**。
+当前 POC 的 **Web 技术栈已经锁定**，但 **Web 实现在第一阶段后置**。
 
-当需要恢复 Web 时，建议基线为：
+锁定基线为：
 
 - `React`
 - `Vite`
-
-是否需要进一步锁定：
-
 - `Tailwind CSS`
 - `shadcn/ui`
 - `TanStack Query`
 
-当前可以后置，理由是：
+说明：
 
-- 本轮最小闭环首先要打通 `Central + Host + MCP`
+- 这表示技术路线已确认，但不要求在第一轮主链路里先恢复 Web 代码
+- 当前最小闭环首先仍应打通 `Central + Host + MCP`
 - Web 不应阻塞第一轮主流程实现
+- 是否引入 client-side router，仍可在恢复 Web 代码时按页面复杂度决定
 
 ### 7. Git 与 GitHub 操作
 
@@ -154,8 +153,6 @@
 
 ### Web UI 细节
 
-- 是否使用 `Tailwind CSS`
-- 是否使用 `shadcn/ui`
 - 是否使用 client-side router
 - 是否引入复杂状态管理
 
@@ -253,7 +250,7 @@ docs/
 
 ### 可以到后续阶段再决定的
 
-- Web 组件体系
+- Web 的 routing 方案
 - 浏览器级测试工具
 - 更复杂的日志与观测体系
 
