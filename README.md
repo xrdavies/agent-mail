@@ -114,6 +114,10 @@ pnpm build
 pnpm test
 ```
 
+- `build`、`typecheck`、`lint` 走 root solution 入口，统一由根级 `tsconfig.json` 驱动。
+- `test` 同样保留根入口 `pnpm test`，但底层按 package 执行。
+- 这是刻意保留的边界：测试更适合按应用/包分别管理运行时环境、fixture 和工具链，而不是强行并入 TypeScript solution build 语义。
+
 ## 规范文档
 
 - [docs/poc-v0.1-email-central-host.md](./docs/poc-v0.1-email-central-host.md)
