@@ -74,38 +74,66 @@
             <aside class="panel drawer">
               <p class="eyebrow">New Email</p>
               <h2 class="panel-title">Compose Human Inbound</h2>
-              <div class="field-list">
+              <form class="field-list">
                 <div class="field">
-                  <label>From</label>
-                  <div class="input">Human Operator</div>
+                  <label for="compose-from">From</label>
+                  <input
+                    id="compose-from"
+                    class="input"
+                    type="text"
+                    name="from"
+                    value="Human Operator <human.operator@agents.local>"
+                  />
                 </div>
                 <div class="field">
-                  <label>To</label>
-                  <div class="input">pm.aster@agents.local</div>
+                  <label for="compose-to">To</label>
+                  <select id="compose-to" class="input" name="to">
+                    <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
+                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                  </select>
                 </div>
                 <div class="field">
-                  <label>Cc</label>
-                  <div class="input">optional</div>
+                  <label for="compose-cc">Cc</label>
+                  <select id="compose-cc" class="input" name="cc" multiple size="5">
+                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                    <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
+                  </select>
+                  <p class="field-hint">Mock mailbox roster. `Cc` 先用多选下拉表达，正式开发时再接 Central。</p>
                 </div>
                 <div class="field">
-                  <label>Subject</label>
-                  <div class="input">Need API follow-up</div>
+                  <label for="compose-subject">Subject</label>
+                  <input
+                    id="compose-subject"
+                    class="input"
+                    type="text"
+                    name="subject"
+                    value="Need API follow-up"
+                  />
                 </div>
                 <div class="field">
-                  <label>Body</label>
-                  <div class="textarea">
-                    Please review the backend constraints and reply in-thread with the artifact link once complete.
-                  </div>
+                  <label for="compose-body">Body</label>
+                  <textarea id="compose-body" class="textarea" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
                 </div>
                 <div class="field">
-                  <label>Linked Resources</label>
-                  <div class="input">+ Add URL</div>
+                  <label for="compose-linked-resources">Linked Resources</label>
+                  <textarea
+                    id="compose-linked-resources"
+                    class="textarea textarea-compact"
+                    name="linked-resources"
+                    placeholder="https://github.com/xrdavies/agent-mail/pull/18"
+                  >https://github.com/xrdavies/agent-mail/pull/18</textarea>
                 </div>
-              </div>
-              <div class="button-row">
-                <a class="button subtle" href="./overview.html">Cancel</a>
-                <a class="button" href="./overview.html">Send Email</a>
-              </div>
+                <div class="button-row">
+                  <a class="button subtle" href="./overview.html">Cancel</a>
+                  <button class="button" type="button">Send Email</button>
+                </div>
+              </form>
               <p class="footer-note">原型中用单独页面表达抽屉状态，后续实现可回收成右侧 drawer。</p>
             </aside>
           </section>

@@ -202,6 +202,10 @@ code,
   cursor: default;
 }
 
+button.button {
+  cursor: pointer;
+}
+
 .button.subtle {
   border-color: var(--line-soft);
   background: transparent;
@@ -557,6 +561,24 @@ code,
 .field .textarea {
   min-height: 10rem;
   resize: vertical;
+}
+
+.field select.input {
+  appearance: auto;
+}
+
+.field select.input[multiple] {
+  min-height: 8.5rem;
+}
+
+.textarea-compact {
+  min-height: 5rem;
+}
+
+.field-hint {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
 }
 
 .footer-note {
