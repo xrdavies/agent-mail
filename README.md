@@ -87,16 +87,24 @@ curl http://127.0.0.1:8788/mcp-config
 
 ```bash
 pnpm local:start -- --fresh
+pnpm local:status
 pnpm local:bootstrap
 pnpm e2e:smoke
+pnpm local:stop
 ```
 
 - `local:start`
   - 创建/复用 mailbox worktree，启动 Postgres、Central、Host，并在 `--fresh` 下重置数据库与 Host 本地状态。
+- `local:status`
+  - 输出 Postgres / Central / Host / mailbox runtime 的当前状态。
 - `local:bootstrap`
   - 为 `pm.aster@agents.local` 和 `backend.coda@agents.local` 跑真实首次启动，让各自会话写入 `AGENTS.md` 并调用 `bootstrap_agent`。
 - `e2e:smoke`
   - 种入一封 `human_inbound`，等待 Host 自动轮询、Aster 委派、Coda 产出 artifact 并关闭 task、Aster 最终回 human。
+- `local:stop`
+  - 停掉 Host / Central；默认同时停掉本地 Postgres，可用 `-- --keep-postgres` 保留数据库。
+
+更正式的步骤和排障说明见 [docs/runbook-local-smoke.md](./docs/runbook-local-smoke.md)。
 
 ## 验证
 

@@ -16,6 +16,8 @@
     "dev:central": "pnpm --filter @agent-mail/central dev",
     "dev:host": "pnpm --filter @agent-mail/host dev",
     "local:start": "tsx scripts/local-start.ts",
+    "local:status": "tsx scripts/local-status.ts",
+    "local:stop": "tsx scripts/local-stop.ts",
     "local:bootstrap": "tsx scripts/local-bootstrap.ts",
     "e2e:smoke": "tsx scripts/e2e-smoke.ts"
   },

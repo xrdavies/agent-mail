@@ -34,6 +34,31 @@ export interface LocalRuntimeManifest {
   mailboxes: LocalMailboxProfile[];
 }
 
+export interface LocalProcessStatus {
+  name: "central" | "host";
+  pid: number | null;
+  alive: boolean;
+  healthUrl: string;
+  healthy: boolean;
+  logPath: string;
+}
+
+export interface LocalPostgresStatus {
+  running: boolean;
+  details: string;
+}
+
+export interface LocalMailboxStatus {
+  mailbox: string;
+  bootstrapped: boolean;
+  bindingStatus: string;
+  runtimeStatus: string;
+  currentSessionId: string | null;
+  lastProcessedDeliveryId: string | null;
+  lastError: string | null;
+  updatedAt: string;
+}
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const repoRoot = path.resolve(scriptDir, "../..");
 export const localDir = path.join(repoRoot, ".agent-mail", "local");
@@ -109,6 +134,13 @@ export async function writeManifest(manifest: LocalRuntimeManifest): Promise<voi
 
 export async function readManifest(): Promise<LocalRuntimeManifest> {
   return JSON.parse(await readFile(runtimeFile, "utf8")) as LocalRuntimeManifest;
+}
+
+export async function loadManifestOrDefault(): Promise<LocalRuntimeManifest> {
+  if (await pathExists(runtimeFile)) {
+    return readManifest();
+  }
+  return buildManifest();
 }
 
 export async function ensureWorktree(profile: LocalMailboxProfile): Promise<void> {
@@ -293,6 +325,16 @@ export async function stopManagedProcess(name: "central" | "host"): Promise<void
   await rm(pidPath, { force: true });
 }
 
+export async function readManagedPid(name: "central" | "host"): Promise<number | null> {
+  const pidPath = path.join(pidsDir, `${name}.pid`);
+  if (!(await pathExists(pidPath))) {
+    return null;
+  }
+  const raw = (await readFile(pidPath, "utf8")).trim();
+  const pid = Number(raw);
+  return Number.isFinite(pid) && pid > 0 ? pid : null;
+}
+
 export async function isPidAlive(pid: number): Promise<boolean> {
   if (!Number.isFinite(pid) || pid <= 0) {
     return false;
@@ -325,6 +367,39 @@ export async function waitForPostgres(timeoutMs: number): Promise<void> {
     );
     return result.exitCode === 0;
   }, timeoutMs, 1000, "PostgreSQL readiness");
+}
+
+export async function getPostgresStatus(): Promise<LocalPostgresStatus> {
+  const result = await runCommand(
+    "docker",
+    ["compose", "ps", "postgres", "--format", "json"],
+    { cwd: repoRoot, allowFailure: true }
+  );
+
+  if (result.exitCode !== 0) {
+    return {
+      running: false,
+      details: result.stderr.trim() || "docker compose ps failed"
+    };
+  }
+
+  const lines = result.stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    return {
+      running: false,
+      details: "postgres container not found"
+    };
+  }
+
+  const parsed = JSON.parse(lines[0]!) as { State?: string; Status?: string };
+  const running = parsed.State === "running";
+  return {
+    running,
+    details: parsed.Status ?? parsed.State ?? "unknown"
+  };
 }
 
 export async function resetDatabase(): Promise<void> {
@@ -521,6 +596,75 @@ export async function readBootstrapFlag(stateFilePath: string, mailbox: string):
   } finally {
     db.close();
   }
+}
+
+export async function readMailboxStatuses(stateFilePath: string): Promise<LocalMailboxStatus[]> {
+  if (!(await pathExists(stateFilePath))) {
+    return [];
+  }
+  const { DatabaseSync } = await import("node:sqlite");
+  const db = new DatabaseSync(stateFilePath);
+  try {
+    const rows = db
+      .prepare(
+        `
+          SELECT mailbox, bootstrapped, binding_status, runtime_status, current_session_id,
+                 last_processed_delivery_id, last_error, updated_at
+          FROM mailbox_state
+          ORDER BY mailbox ASC
+        `
+      )
+      .all() as Array<{
+      mailbox: string;
+      bootstrapped: number;
+      binding_status: string;
+      runtime_status: string;
+      current_session_id: string | null;
+      last_processed_delivery_id: string | null;
+      last_error: string | null;
+      updated_at: string;
+    }>;
+
+    return rows.map((row) => ({
+      mailbox: row.mailbox,
+      bootstrapped: row.bootstrapped === 1,
+      bindingStatus: row.binding_status,
+      runtimeStatus: row.runtime_status,
+      currentSessionId: row.current_session_id,
+      lastProcessedDeliveryId: row.last_processed_delivery_id,
+      lastError: row.last_error,
+      updatedAt: row.updated_at
+    }));
+  } finally {
+    db.close();
+  }
+}
+
+export async function getProcessStatus(
+  name: "central" | "host",
+  manifest: LocalRuntimeManifest
+): Promise<LocalProcessStatus> {
+  const pid = await readManagedPid(name);
+  const alive = pid !== null ? await isPidAlive(pid) : false;
+  const healthUrl =
+    name === "central"
+      ? `${manifest.centralBaseUrl}/api/v1/health`
+      : `${manifest.hostBaseUrl}/health`;
+  let healthy = false;
+  try {
+    const response = await fetch(healthUrl);
+    healthy = response.ok;
+  } catch {
+    healthy = false;
+  }
+  return {
+    name,
+    pid,
+    alive,
+    healthUrl,
+    healthy,
+    logPath: path.join(logsDir, `${name}.log`)
+  };
 }
 
 export function formatCommand(command: string, args: string[]): string {
