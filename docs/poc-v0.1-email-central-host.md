@@ -87,10 +87,10 @@
                        +----------+-----------+
                                   |
                                   v
-+--------------------+   HTTPS    +----------------------+   HTTPS    +-----------------------+
-| Future Mail Source | ---------> |       Central        | <--------> |        GitHub         |
-| / Mail Connector   |            |  control plane + DB  |            | artifact truth layer  |
-+--------------------+            +----+------------+----+            +-----------------------+
++--------------------+   HTTPS    +----------------------+
+| Future Mail Source | ---------> |       Central        |
+| / Mail Connector   |            |  control plane + DB  |
++--------------------+            +----+------------+----+
                                        ^            ^
                                        |            |
                                 HTTPS  |            | HTTPS
@@ -112,6 +112,13 @@
             +----------------------+                         +----------------------+
             | Codex Agent Session  |                         | Codex Agent Session  |
             | one mailbox/session  |                         | one mailbox/session  |
+            +----------+-----------+                         +----------+-----------+
+                       |                                                |
+                       | local repo / git / gh                           | local repo / git / gh
+                       v                                                v
+            +----------------------+                         +----------------------+
+            |        GitHub        |                         |        GitHub        |
+            | artifact truth layer |                         | artifact truth layer |
             +----------------------+                         +----------------------+
 ```
 
@@ -123,6 +130,8 @@
 - `Local MCP Server` 是 `Host` 的一部分，不是独立系统。
 - `Future Mail Source / Mail Connector` 目前不启用，但在架构上需要预留。
 - `GitHub` 只负责 repository artifacts，不负责邮件或任务状态。
+- 对 `github.com` 的主访问路径由 `Codex Agent Session` 在本地 workspace 中通过 `git` / `gh` 执行；`Central` 默认不直接做代码写操作。
+- `Central` 只接收并持久化 `Artifact` 元数据；未来如果需要对接 `GitHub API`，也应优先作为只读校验或集成能力，而不是替 agent 执行主写路径。
 
 ### 组件分层
 
