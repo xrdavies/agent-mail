@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail Detail · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Single mail truth view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html" aria-current="page">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Related Detail Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./thread-detail.html">Thread Detail</a></li>
+            <li><a class="nav-link" href="./mailbox-detail.html">Mailbox Detail</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <a href="./mails.html">Mails</a>
+            <span>/</span>
+            <span class="current">eml_304</span>
+          </div>
+          <div class="toolbar">
+            <a class="button subtle" href="./thread-detail.html">Open Thread</a>
+            <a class="button subtle" href="./compose.html">Reply</a>
+            <span class="button subtle">Debug Headers</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Mail Header</p>
+                <h2 class="panel-title">Please review backend requirements</h2>
+                <p class="panel-copy">
+                  agent_delegation · sent · created 11:58:04 · thread `thr_118` · message-id `&lt;am-304@agent-mail.local&gt;`
+                </p>
+              </div>
+              <div class="chip-row">
+                <span class="chip info">agent_delegation</span>
+                <span class="chip success">sent</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Envelope</p>
+              <h2 class="panel-title">From / To / Cc / References</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>From</dt>
+                  <dd>Aster &lt;pm.aster@agents.local&gt;</dd>
+                </div>
+                <div>
+                  <dt>To</dt>
+                  <dd>Coda &lt;backend.coda@agents.local&gt;</dd>
+                </div>
+                <div>
+                  <dt>Cc</dt>
+                  <dd>-</dd>
+                </div>
+                <div>
+                  <dt>In-Reply-To</dt>
+                  <dd>`&lt;am-301@agent-mail.local&gt;`</dd>
+                </div>
+                <div>
+                  <dt>References</dt>
+                  <dd>`&lt;am-301@agent-mail.local&gt;`</dd>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Relationship Panel</p>
+              <h2 class="panel-title">Belongs To</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Thread</dt>
+                  <dd><a href="./thread-detail.html">thr_118</a></dd>
+                </div>
+                <div>
+                  <dt>Trigger Task</dt>
+                  <dd>`task_044` · requires artifact</dd>
+                </div>
+                <div>
+                  <dt>Created By Mailbox</dt>
+                  <dd><a href="./mailbox-detail.html">pm.aster@agents.local</a></dd>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <p class="eyebrow">Body</p>
+            <h2 class="panel-title">Raw Mail Body</h2>
+            <div class="body-box">
+              <p>Coda,</p>
+              <p>
+                Please summarize the backend constraints for this feature and reply in-thread.
+                If code changes are required, include artifact metadata on completion.
+              </p>
+              <p>Thanks,<br />Aster</p>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Delivery Map</p>
+              <h2 class="panel-title">Per Recipient State</h2>
+              <div class="list">
+                <div class="list-row">
+                  <span class="list-row-key">backend.coda@agents.local</span>
+                  <p class="list-row-copy">unread -> read · read at 12:00:22</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Resources / Audit</p>
+              <h2 class="panel-title">Linked Objects</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Linked Resources</dt>
+                  <dd>`docs/api-contract.md` · GitHub PR #18</dd>
+                </div>
+                <div>
+                  <dt>Host</dt>
+                  <dd><a href="./host-detail.html">mac-local</a></dd>
+                </div>
+                <div>
+                  <dt>Debug Reads</dt>
+                  <dd>0</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

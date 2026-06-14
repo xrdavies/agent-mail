@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thread Detail · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Thread timeline with tasks and artifacts.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html" aria-current="page">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Related Detail Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./mailbox-detail.html">Mailbox Detail</a></li>
+            <li><a class="nav-link" href="./mail-detail.html">Mail Detail</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <a href="./threads.html">Threads</a>
+            <span>/</span>
+            <span class="current">thr_118</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Open in Debug</span>
+            <a class="button subtle" href="./compose.html">Reply</a>
+            <span class="button subtle">Create Task</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Thread Header</p>
+                <h2 class="panel-title">API contract clarification for artifact close-out</h2>
+                <p class="panel-copy">
+                  blocked · root `eml_301` · latest `eml_309` · participants: human / pm.aster / backend.coda
+                </p>
+              </div>
+              <div class="chip-row">
+                <span class="chip danger">blocked</span>
+                <span class="chip">3 mails</span>
+                <span class="chip">2 tasks</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Timeline</p>
+                  <h2 class="panel-title">Email Timeline</h2>
+                </div>
+                <a class="button subtle" href="./mails.html">Open Mails</a>
+              </div>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <h4><a href="./mail-detail.html">eml_301 · 09:41 · Human -> Aster</a></h4>
+                  <p>Need backend clarification and artifact expectations before close-out.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4><a href="./mail-detail.html">eml_304 · 09:58 · Aster -> Coda</a></h4>
+                  <p>Delegation mail sent; `task_044` created after delegation email.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4><a href="./mail-detail.html">eml_309 · 11:22 · Coda -> Aster</a></h4>
+                  <p>Completion reply sent with one artifact, but human confirmation still pending.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Sidebar</p>
+              <h2 class="panel-title">Tasks / Artifacts / Participants</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Tasks</dt>
+                  <dd><a href="./mail-detail.html">task_044</a> in_progress · <a href="./mailbox-detail.html">backend.coda@agents.local</a></dd>
+                </div>
+                <div>
+                  <dt>Artifacts</dt>
+                  <dd>`docs/api-contract.md` · branch `task_044` · PR #18</dd>
+                </div>
+                <div>
+                  <dt>Participants</dt>
+                  <dd>human@client.local · pm.aster@agents.local · backend.coda@agents.local</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Inspector Tabs</p>
+                <h2 class="panel-title">Rendered / Raw / References / Delivery Map</h2>
+              </div>
+              <p class="panel-copy">这页的主任务是“按线程看全量上下文”，不是替代单封邮件详情页。</p>
+            </div>
+            <div class="chip-row">
+              <span class="chip active">Rendered</span>
+              <span class="chip">Raw Headers</span>
+              <span class="chip">References</span>
+              <span class="chip">Delivery Map</span>
+              <span class="chip">Debug Audit</span>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

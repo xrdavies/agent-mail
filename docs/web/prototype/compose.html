@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compose · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Operator compose drawer view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html" aria-current="page">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Compose Paths</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Back to Overview</a></li>
+            <li><a class="nav-link" href="./mailbox-detail.html">Target Mailbox</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Compose</span>
+          </div>
+          <div class="toolbar">
+            <a class="button subtle" href="./overview.html">Close Drawer</a>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="compose-stage">
+            <div class="stack compose-shadow">
+              <section class="stats-grid">
+                <article class="stat-card">
+                  <p class="stat-label">Unread Deliveries</p>
+                  <p class="stat-value">12</p>
+                </article>
+                <article class="stat-card">
+                  <p class="stat-label">Waiting Human</p>
+                  <p class="stat-value">4</p>
+                </article>
+                <article class="stat-card">
+                  <p class="stat-label">Blocked Tasks</p>
+                  <p class="stat-value">3</p>
+                </article>
+                <article class="stat-card">
+                  <p class="stat-label">Online Hosts</p>
+                  <p class="stat-value">2 / 3</p>
+                </article>
+              </section>
+
+              <section class="panel">
+                <p class="eyebrow">Compose Pattern</p>
+                <h2 class="panel-title">保留抽屉心智，不做独立写信产品</h2>
+                <p class="panel-copy">
+                  Compose 更适合作为 operator 在控制面板里的一个临时动作，而不是独立主视图。
+                </p>
+              </section>
+            </div>
+
+            <aside class="panel drawer">
+              <p class="eyebrow">New Email</p>
+              <h2 class="panel-title">Compose Human Inbound</h2>
+              <div class="field-list">
+                <div class="field">
+                  <label>From</label>
+                  <div class="input">Human Operator</div>
+                </div>
+                <div class="field">
+                  <label>To</label>
+                  <div class="input">pm.aster@agents.local</div>
+                </div>
+                <div class="field">
+                  <label>Cc</label>
+                  <div class="input">optional</div>
+                </div>
+                <div class="field">
+                  <label>Subject</label>
+                  <div class="input">Need API follow-up</div>
+                </div>
+                <div class="field">
+                  <label>Body</label>
+                  <div class="textarea">
+                    Please review the backend constraints and reply in-thread with the artifact link once complete.
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Linked Resources</label>
+                  <div class="input">+ Add URL</div>
+                </div>
+              </div>
+              <div class="button-row">
+                <a class="button subtle" href="./overview.html">Cancel</a>
+                <a class="button" href="./overview.html">Send Email</a>
+              </div>
+              <p class="footer-note">原型中用单独页面表达抽屉状态，后续实现可回收成右侧 drawer。</p>
+            </aside>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

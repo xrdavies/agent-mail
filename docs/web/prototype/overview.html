@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Human/operator control plane wireframe.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html" aria-current="page">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Queues</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./mailbox-detail.html">Unread Mailboxes</a></li>
+            <li><a class="nav-link" href="./thread-detail.html">Waiting Human</a></li>
+            <li><a class="nav-link" href="./hosts.html">Failed Hosts</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Overview</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Debug Off</span>
+            <span class="button subtle">Last Sync 12:04:21</span>
+            <a class="button" href="./compose.html">Compose Human Email</a>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="stats-grid">
+            <article class="stat-card">
+              <p class="stat-label">Unread Deliveries</p>
+              <p class="stat-value">12</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Waiting Human</p>
+              <p class="stat-value">4</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Blocked Tasks</p>
+              <p class="stat-value">3</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Online Hosts</p>
+              <p class="stat-value">2 / 3</p>
+            </article>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Queue</p>
+                  <h2 class="panel-title">Oldest Unread Queue</h2>
+                </div>
+                <a class="button subtle" href="./mailboxes.html">Open Mailboxes</a>
+              </div>
+              <div class="list">
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">pm.aster@agents.local</a>
+                  <p class="list-row-copy">09:41 · human_inbound · Need backend clarification</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">backend.coda@agents.local</a>
+                  <p class="list-row-copy">09:46 · agent_delegation · Please review backend requirements</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">research.iris@agents.local</a>
+                  <p class="list-row-copy">10:02 · human_inbound · Compare rollout options</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Health</p>
+                  <h2 class="panel-title">Host Health</h2>
+                </div>
+                <a class="button subtle" href="./hosts.html">Open Hosts</a>
+              </div>
+              <div class="list">
+                <div class="list-row">
+                  <a class="list-row-key" href="./host-detail.html">mac-local</a>
+                  <p class="list-row-copy">online · heartbeat 12:04:18 · manages 3 mailboxes</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./host-detail.html">mac-mini</a>
+                  <p class="list-row-copy">degraded · heartbeat drift 11s · 1 mailbox failed</p>
+                </div>
+                <div class="list-row">
+                  <span class="list-row-key">ci-runner</span>
+                  <p class="list-row-copy">offline · no heartbeat for 4m 12s</p>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Attention</p>
+                <h2 class="panel-title">Waiting Human / Blocked Threads</h2>
+              </div>
+              <a class="button subtle" href="./threads.html">Open Threads</a>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Thread</th>
+                  <th>Status</th>
+                  <th>Mailbox</th>
+                  <th>Latest</th>
+                  <th>Next View</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><span class="chip danger">blocked</span></td>
+                  <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
+                  <td>Need API contract clarification</td>
+                  <td><a href="./mail-detail.html">latest mail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_102</a></td>
+                  <td><span class="chip warning">waiting_human</span></td>
+                  <td><a href="./mailbox-detail.html">ops.echo@agents.local</a></td>
+                  <td>Approve manual recovery path</td>
+                  <td><a href="./mail-detail.html">mail detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_099</a></td>
+                  <td><span class="chip info">waiting_agent</span></td>
+                  <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
+                  <td>Artifact metadata missing from reply</td>
+                  <td><a href="./mail-detail.html">completion mail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Activity</p>
+              <h2 class="panel-title">Recent Activity</h2>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <h4><a href="./mail-detail.html">12:03 Coda replied in-thread</a></h4>
+                  <p>Closed `task_044`, attached one artifact, thread still waiting on human review.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4><a href="./thread-detail.html">11:58 Aster delegated backend review</a></h4>
+                  <p>Created `task_044` for `backend.coda@agents.local`.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4><a href="./host-detail.html">11:54 mac-mini heartbeat degraded</a></h4>
+                  <p>One mailbox runtime moved to failed.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Jump Points</p>
+              <h2 class="panel-title">从总览能直接进入的页</h2>
+              <ul class="bullet-list">
+                <li><a href="./mailbox-detail.html">Mailbox Detail</a> 用于看某个 mailbox 的完整工作面。</li>
+                <li><a href="./thread-detail.html">Thread Detail</a> 用于看一条协作链路的上下文。</li>
+                <li><a href="./mail-detail.html">Mail Detail</a> 用于看单封邮件的完整 envelope 和 delivery。</li>
+                <li><a href="./host-detail.html">Host Detail</a> 用于反查 runtime 和 heartbeat。</li>
+              </ul>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

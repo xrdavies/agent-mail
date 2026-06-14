@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Host Detail · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Runtime snapshot detail.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html" aria-current="page">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Related Detail Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./mailbox-detail.html">Mailbox Detail</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <a href="./hosts.html">Hosts</a>
+            <span>/</span>
+            <span class="current">mac-local</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Debug Snapshot</span>
+            <span class="button subtle">Reconcile</span>
+            <span class="button subtle">Refresh</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Host Summary</p>
+                <h2 class="panel-title">mac-local</h2>
+                <p class="panel-copy">online · v0.2.0 · last heartbeat 12:04:18 · last auth 11:58:01</p>
+              </div>
+              <div class="chip-row">
+                <span class="chip success">online</span>
+                <span class="chip">3 mailboxes</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Managed Mailboxes</p>
+              <h2 class="panel-title">Roster</h2>
+              <div class="list">
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">pm.aster@agents.local</a>
+                  <p class="list-row-copy">idle · latest summary says one delegation was sent</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">backend.coda@agents.local</a>
+                  <p class="list-row-copy">running · active task `task_044`</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./mailbox-detail.html">design.luna@agents.local</a>
+                  <p class="list-row-copy">idle · no unread mail</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Health</p>
+              <h2 class="panel-title">Runtime Health</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Unread total</dt>
+                  <dd>3</dd>
+                </div>
+                <div>
+                  <dt>Running sessions</dt>
+                  <dd>1</dd>
+                </div>
+                <div>
+                  <dt>Failed runtimes</dt>
+                  <dd>0</dd>
+                </div>
+                <div>
+                  <dt>Avg heartbeat drift</dt>
+                  <dd>2.1s</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Snapshot</p>
+                <h2 class="panel-title">Runtime Snapshot Table</h2>
+              </div>
+              <p class="panel-copy">这里对应现有 service 里的 `getRuntimeSnapshot(hostId)` 形状。</p>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Mailbox</th>
+                  <th>Session</th>
+                  <th>Status</th>
+                  <th>Active Task</th>
+                  <th>Latest Summary</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
+                  <td>sess_pm_001</td>
+                  <td>idle</td>
+                  <td>-</td>
+                  <td>delegated one follow-up</td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
+                  <td>sess_be_021</td>
+                  <td>running</td>
+                  <td>task_044</td>
+                  <td>editing docs/api-contract.md</td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">design.luna@agents.local</a></td>
+                  <td>sess_de_004</td>
+                  <td>idle</td>
+                  <td>-</td>
+                  <td>no unread</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

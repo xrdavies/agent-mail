@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hosts · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Infrastructure and runtime view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html" aria-current="page">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Host States</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./host-detail.html">online</a></li>
+            <li><a class="nav-link" href="./host-detail.html">degraded</a></li>
+            <li><a class="nav-link" href="./host-detail.html">offline</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Hosts</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Status: All</span>
+            <span class="button subtle">Health Window 30s</span>
+            <span class="button subtle">Refresh</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Runtime Index</p>
+                <h2 class="panel-title">Hosts</h2>
+              </div>
+              <p class="panel-copy">这一层优先回答“Host 是否活着，是否拖累 mailbox”。</p>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Host</th>
+                  <th>Status</th>
+                  <th>Heartbeat</th>
+                  <th>Managed Mailboxes</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./host-detail.html">mac-local</a></td>
+                  <td><span class="chip success">online</span></td>
+                  <td>12:04:18</td>
+                  <td>3</td>
+                  <td><a href="./host-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./host-detail.html">mac-mini</a></td>
+                  <td><span class="chip warning">degraded</span></td>
+                  <td>12:03:49</td>
+                  <td>2</td>
+                  <td><a href="./host-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td>ci-runner</td>
+                  <td><span class="chip danger">offline</span></td>
+                  <td>11:59:07</td>
+                  <td>0</td>
+                  <td>-</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Why This Page Exists</p>
+              <h2 class="panel-title">Host 视角和 Mailbox 视角不是一回事</h2>
+              <ul class="bullet-list">
+                <li>Mailbox 看工作负载，Host 看承载这些工作负载的运行时。</li>
+                <li>当 mailbox failed 时，常常需要回到 host 详情看 heartbeat 和 snapshot。</li>
+              </ul>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Next Hop</p>
+              <h2 class="panel-title">从这里往下钻</h2>
+              <ul class="bullet-list">
+                <li><a href="./host-detail.html">Host Detail</a> 看 runtime snapshot。</li>
+                <li><a href="./mailbox-detail.html">Mailbox Detail</a> 反查具体 mailbox 的完整收发活动。</li>
+              </ul>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

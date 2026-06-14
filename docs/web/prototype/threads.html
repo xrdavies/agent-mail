@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Thread-first context view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html" aria-current="page">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Thread States</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./thread-detail.html">Blocked</a></li>
+            <li><a class="nav-link" href="./thread-detail.html">Waiting Human</a></li>
+            <li><a class="nav-link" href="./thread-detail.html">Completed</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Threads</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Status: All</span>
+            <span class="button subtle">Mailbox: All</span>
+            <span class="button subtle">Sort: Latest</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Context List</p>
+                <h2 class="panel-title">Threads</h2>
+              </div>
+              <p class="panel-copy">这一层回答“当前有哪些协作链路，每条链路处于什么状态”。</p>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Thread</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Participants</th>
+                  <th>Latest Mail</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td>API contract clarification for artifact close-out</td>
+                  <td><span class="chip danger">blocked</span></td>
+                  <td>Aster / Coda / Human</td>
+                  <td><a href="./mail-detail.html">eml_309</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_102</a></td>
+                  <td>Manual recovery approval</td>
+                  <td><span class="chip warning">waiting_human</span></td>
+                  <td>Echo / Human</td>
+                  <td><a href="./mail-detail.html">eml_287</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_099</a></td>
+                  <td>Backend delivery completed</td>
+                  <td><span class="chip success">completed</span></td>
+                  <td>Coda / Aster</td>
+                  <td><a href="./mail-detail.html">eml_277</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Why This Page Exists</p>
+              <h2 class="panel-title">线程视角不是邮件列表视角</h2>
+              <ul class="bullet-list">
+                <li>这里看的是协作链路，不是单封邮件。</li>
+                <li>主体信息是 root subject、thread status、latest mail、related tasks。</li>
+                <li>进入详情页后，时间线才是主视图。</li>
+              </ul>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Next Hop</p>
+              <h2 class="panel-title">从这里往下钻</h2>
+              <ul class="bullet-list">
+                <li><a href="./thread-detail.html">Thread Detail</a> 查看完整上下文。</li>
+                <li><a href="./mail-detail.html">Mail Detail</a> 查看某封关键邮件。</li>
+                <li><a href="./mailbox-detail.html">Mailbox Detail</a> 反查参与 mailbox 的完整活动。</li>
+              </ul>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

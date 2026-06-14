@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailboxes · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Mailbox roster and local runtime view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Mailbox States</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./mailbox-detail.html">Unread</a></li>
+            <li><a class="nav-link" href="./mailbox-detail.html">Running</a></li>
+            <li><a class="nav-link" href="./mailbox-detail.html">Failed</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Mailboxes</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Status: All</span>
+            <span class="button subtle">Host: All</span>
+            <span class="button subtle">Search</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Roster</p>
+                <h2 class="panel-title">Mailbox List</h2>
+              </div>
+              <p class="panel-copy">这一层先解决“谁在运行、谁有未读、谁应该被点进去看”。</p>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Mailbox</th>
+                  <th>Runtime</th>
+                  <th>Unread</th>
+                  <th>Active Task</th>
+                  <th>Host</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>2</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-local</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
+                  <td><span class="chip success">running</span></td>
+                  <td>1</td>
+                  <td><a href="./thread-detail.html">task_044</a></td>
+                  <td><a href="./host-detail.html">mac-local</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">ops.echo@agents.local</a></td>
+                  <td><span class="chip danger">failed</span></td>
+                  <td>0</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-mini</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">research.iris@agents.local</a></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>5</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-mini</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Selected</p>
+              <h2 class="panel-title">Mailbox Summary</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Mailbox</dt>
+                  <dd>pm.aster@agents.local</dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd>PM agent responsible for intake, clarification, coordination and synthesis.</dd>
+                </div>
+                <div>
+                  <dt>Session</dt>
+                  <dd>`sess_pm_001` · latest summary says one unread mail was delegated.</dd>
+                </div>
+                <div>
+                  <dt>Next step</dt>
+                  <dd><a href="./mailbox-detail.html">Open Mailbox Detail</a> to inspect complete sent and received activity.</dd>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Adjacent Views</p>
+              <h2 class="panel-title">这个列表页应该把你带到哪里</h2>
+              <ul class="bullet-list">
+                <li><a href="./mailbox-detail.html">Mailbox Detail</a> 查看完整收发活动，而不只是 unread。</li>
+                <li><a href="./thread-detail.html">Thread Detail</a> 沿着某个 thread 追上下文。</li>
+                <li><a href="./mail-detail.html">Mail Detail</a> 查看具体一封邮件的原始真相。</li>
+                <li><a href="./host-detail.html">Host Detail</a> 从运行时角度排查 mailbox 问题。</li>
+              </ul>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mails · Agent Mail Prototype</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">Prototype</div>
+          <h1 class="brand-title">Agent Mail</h1>
+          <p class="brand-copy">Mail-level truth view.</p>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Primary Pages</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html" aria-current="page">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Mail Kinds</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./mail-detail.html">human_inbound</a></li>
+            <li><a class="nav-link" href="./mail-detail.html">agent_delegation</a></li>
+            <li><a class="nav-link" href="./mail-detail.html">agent_reply</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Prototype</a>
+            <span>/</span>
+            <span class="current">Mails</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Kind: All</span>
+            <span class="button subtle">Mailbox: All</span>
+            <span class="button subtle">Search Headers</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Mail List</p>
+                <h2 class="panel-title">Mails</h2>
+              </div>
+              <p class="panel-copy">这一层解决“我要看单封邮件的真相”，而不是只看 thread 摘要。</p>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Mail</th>
+                  <th>Kind</th>
+                  <th>From</th>
+                  <th>Subject</th>
+                  <th>Thread</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./mail-detail.html">eml_301</a></td>
+                  <td><span class="chip warning">human_inbound</span></td>
+                  <td>human@client.local</td>
+                  <td>Need backend clarification</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mail-detail.html">eml_304</a></td>
+                  <td><span class="chip info">agent_delegation</span></td>
+                  <td>pm.aster@agents.local</td>
+                  <td>Please review backend requirements</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mail-detail.html">eml_309</a></td>
+                  <td><span class="chip success">agent_reply</span></td>
+                  <td>backend.coda@agents.local</td>
+                  <td>Re: API contract follow-up</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">detail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Mail vs Thread</p>
+              <h2 class="panel-title">为什么单封邮件页仍然需要存在</h2>
+              <ul class="bullet-list">
+                <li>只有这层适合看完整 envelope、header、delivery map。</li>
+                <li>Thread 页适合看上下文，不适合承载原始邮件真相。</li>
+                <li>Mailbox 页适合看完整活动，不适合展开每封邮件的细节。</li>
+              </ul>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Downstream</p>
+              <h2 class="panel-title">进入 Mail Detail 后要看到的东西</h2>
+              <ul class="bullet-list">
+                <li>完整 subject、body、from/to/cc。</li>
+                <li>`in_reply_to`、`references`、所属 thread。</li>
+                <li>delivery 状态、linked resources、related tasks。</li>
+              </ul>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
