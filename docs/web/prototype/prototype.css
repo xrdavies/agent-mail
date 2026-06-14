@@ -521,6 +521,12 @@ button.button {
   gap: 0.6rem;
 }
 
+.log-stream-live {
+  max-height: 28rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
 .log-line {
   overflow-x: auto;
   padding: 0.85rem 0.95rem;
@@ -531,6 +537,23 @@ button.button {
   font-family: var(--font-mono);
   font-size: 0.82rem;
   line-height: 1.45;
+}
+
+.debug-stream-controls {
+  justify-content: space-between;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.toggle input {
+  margin: 0;
 }
 
 .compose-form-page {
