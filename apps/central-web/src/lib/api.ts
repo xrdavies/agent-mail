@@ -2,6 +2,8 @@ import {
   debugLogsResponseSchema,
   hostsListResponseSchema,
   runtimeSnapshotSchema,
+  threadDetailResponseSchema,
+  webThreadsResponseSchema,
   webOverviewResponseSchema,
   type CentralLogEvent,
   type Host
@@ -81,6 +83,8 @@ export interface HostSummary {
 
 export type HostsListResponse = ReturnType<typeof hostsListResponseSchema.parse>;
 export type RuntimeSnapshot = ReturnType<typeof runtimeSnapshotSchema.parse>;
+export type WebThreadsResponse = ReturnType<typeof webThreadsResponseSchema.parse>;
+export type ThreadDetailResponse = ReturnType<typeof threadDetailResponseSchema.parse>;
 
 export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
 
@@ -106,4 +110,20 @@ export async function getHostDetail(hostId: string): Promise<RuntimeSnapshot> {
     throw new Error(`Failed to load host detail: ${response.status}`);
   }
   return runtimeSnapshotSchema.parse(await response.json());
+}
+
+export async function getThreads(): Promise<WebThreadsResponse> {
+  const response = await fetch("/api/v1/web/threads?limit=50");
+  if (!response.ok) {
+    throw new Error(`Failed to load threads: ${response.status}`);
+  }
+  return webThreadsResponseSchema.parse(await response.json());
+}
+
+export async function getThreadDetail(threadId: string): Promise<ThreadDetailResponse> {
+  const response = await fetch(`/api/v1/web/threads/${encodeURIComponent(threadId)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load thread detail: ${response.status}`);
+  }
+  return threadDetailResponseSchema.parse(await response.json());
 }

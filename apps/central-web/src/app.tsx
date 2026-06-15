@@ -7,6 +7,8 @@ import { HostDetailPage } from "./routes/host-detail-page.js";
 import { HostsPage } from "./routes/hosts-page.js";
 import { OverviewPage } from "./routes/overview-page.js";
 import { PlaceholderPage } from "./routes/placeholder-page.js";
+import { ThreadDetailPage } from "./routes/thread-detail-page.js";
+import { ThreadsPage } from "./routes/threads-page.js";
 
 const navItems = [
   { to: "/overview", label: "Overview", icon: Home },
@@ -115,10 +117,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Threads"
-                summary="Thread list/detail will use /api/v1/web/threads and /api/v1/web/threads/:thread_id."
-              />
+              <ThreadsPage />
             </PageShell>
           }
         />
@@ -133,10 +132,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Thread Detail"
-                summary="Thread detail UI will use /api/v1/web/threads/:thread_id."
-              />
+              <ThreadDetailPage />
             </PageShell>
           }
         />

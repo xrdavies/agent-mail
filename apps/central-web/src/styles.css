@@ -432,6 +432,32 @@ button.button {
   font-size: 0.92rem;
 }
 
+.definition-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.definition-list div {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.definition-list div:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.definition-list dt {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.definition-list dd {
+  margin: 0;
+  color: var(--muted);
+}
+
 .card-link {
   display: block;
   padding: var(--space-4);
