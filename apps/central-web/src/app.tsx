@@ -1,4 +1,5 @@
-import { Activity, Bug, FileText, Home, Inbox, Layers, Server } from "lucide-react";
+import type { ReactNode } from "react";
+import { Bug, FileText, Home, Inbox, Layers, Server } from "lucide-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 
 import { DebugPage } from "./routes/debug-page.js";
@@ -15,89 +16,171 @@ const navItems = [
 
 export function App() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)]">
-      <div className="mx-auto grid min-h-screen max-w-[1600px] grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="border-r border-[var(--line)] bg-[var(--panel)]/80 px-6 py-8 backdrop-blur">
-          <div className="mb-8">
-            <p className="text-sm uppercase tracking-[0.18em] text-[var(--muted)]">Central</p>
-            <h1 className="mt-3 text-5xl leading-none tracking-tight text-[var(--display)]">
-              Agent Mail
-            </h1>
-          </div>
+    <div className="prototype-shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <h1 className="brand-title">Agent Mail</h1>
+        </div>
 
-          <nav className="space-y-2">
+        <div className="nav-group">
+          <ul className="nav-list">
             {navItems.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  [
-                    "flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition",
-                    isActive
-                      ? "border-[var(--line)] bg-[var(--card)] shadow-[0_0_0_1px_rgba(17,24,39,0.04)]"
-                      : "border-transparent text-[var(--muted)] hover:border-[var(--line-soft)] hover:bg-white/60"
-                  ].join(" ")
-                }
-              >
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
-              </NavLink>
+              <li key={to}>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) => (isActive ? "nav-link is-active" : "nav-link")}
+                >
+                  <span className="nav-link-content">
+                    <Icon className="nav-link-icon" />
+                    <span>{label}</span>
+                  </span>
+                </NavLink>
+              </li>
             ))}
-          </nav>
-        </aside>
+          </ul>
+        </div>
+      </aside>
 
-        <main className="min-w-0">
-          <Routes>
-            <Route path="/" element={<Navigate to="/debug" replace />} />
-            <Route
-              path="/overview"
-              element={
-                <PlaceholderPage
-                  title="Overview"
-                  summary="Overview UI will use /api/v1/web/overview."
-                />
+      <Routes>
+        <Route path="/" element={<Navigate to="/debug" replace />} />
+        <Route
+          path="/overview"
+          element={
+            <PageShell
+              breadcrumbCurrent="Overview"
+              toolbar={
+                <>
+                  <span className="button subtle">Debug</span>
+                  <span className="button subtle">Last Sync 12:04:21</span>
+                </>
               }
-            />
-            <Route
-              path="/mailboxes"
-              element={
-                <PlaceholderPage
-                  title="Mailboxes"
-                  summary="Mailbox pages will use /api/v1/web/mailboxes and /api/v1/web/mailboxes/:mailbox."
-                />
+            >
+              <PlaceholderPage
+                title="Overview"
+                summary="Overview UI will use /api/v1/web/overview."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/mailboxes"
+          element={
+            <PageShell
+              breadcrumbCurrent="Mailboxes"
+              toolbar={
+                <>
+                  <span className="button subtle">Status: All</span>
+                  <span className="button subtle">Host: All</span>
+                  <span className="button subtle">Search</span>
+                </>
               }
-            />
-            <Route
-              path="/threads"
-              element={
-                <PlaceholderPage
-                  title="Threads"
-                  summary="Thread list/detail will use /api/v1/web/threads and /api/v1/web/threads/:thread_id."
-                />
+            >
+              <PlaceholderPage
+                title="Mailboxes"
+                summary="Mailbox pages will use /api/v1/web/mailboxes and /api/v1/web/mailboxes/:mailbox."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/threads"
+          element={
+            <PageShell
+              breadcrumbCurrent="Threads"
+              toolbar={
+                <>
+                  <span className="button subtle">Status: All</span>
+                  <span className="button subtle">Mailbox: All</span>
+                  <span className="button subtle">Sort: Latest</span>
+                </>
               }
-            />
-            <Route
-              path="/mails"
-              element={
-                <PlaceholderPage
-                  title="Mails"
-                  summary="Mail list/detail will use /api/v1/web/emails and /api/v1/web/emails/:email_id."
-                />
+            >
+              <PlaceholderPage
+                title="Threads"
+                summary="Thread list/detail will use /api/v1/web/threads and /api/v1/web/threads/:thread_id."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/mails"
+          element={
+            <PageShell
+              breadcrumbCurrent="Mails"
+              toolbar={
+                <>
+                  <span className="button subtle">Kind: All</span>
+                  <span className="button subtle">Mailbox: All</span>
+                  <span className="button subtle">Search Headers</span>
+                </>
               }
-            />
-            <Route
-              path="/hosts"
-              element={
-                <PlaceholderPage
-                  title="Hosts"
-                  summary="Host pages will use /api/v1/hosts and /api/v1/hosts/:host_id."
-                />
+            >
+              <PlaceholderPage
+                title="Mails"
+                summary="Mail list/detail will use /api/v1/web/emails and /api/v1/web/emails/:email_id."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/hosts"
+          element={
+            <PageShell
+              breadcrumbCurrent="Hosts"
+              toolbar={
+                <>
+                  <span className="button subtle">Status: All</span>
+                  <span className="button subtle">Health Window 30s</span>
+                  <span className="button subtle">Refresh</span>
+                </>
               }
-            />
-            <Route path="/debug" element={<DebugPage />} />
-          </Routes>
-        </main>
-      </div>
+            >
+              <PlaceholderPage
+                title="Hosts"
+                summary="Host pages will use /api/v1/hosts and /api/v1/hosts/:host_id."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/debug"
+          element={
+            <PageShell
+              breadcrumbCurrent="Debug"
+              toolbar={
+                <>
+                  <span className="button subtle">Central</span>
+                  <span className="button subtle">Last Read</span>
+                  <span className="button subtle">Tail 120</span>
+                </>
+              }
+            >
+              <DebugPage />
+            </PageShell>
+          }
+        />
+      </Routes>
+    </div>
+  );
+}
+
+function PageShell(props: {
+  breadcrumbCurrent: string;
+  toolbar?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="workspace">
+      <header className="topbar">
+        <div className="breadcrumbs">
+          <span>Home</span>
+          <span>/</span>
+          <span className="current">{props.breadcrumbCurrent}</span>
+        </div>
+        {props.toolbar ? <div className="toolbar">{props.toolbar}</div> : null}
+      </header>
+
+      <main className="content stack">{props.children}</main>
     </div>
   );
 }
