@@ -13,6 +13,11 @@
 
 - [Host Web 页面与 API 草案](./host-web.md)
 
+额外原型目录：
+
+- `docs/web/prototype/`
+- `docs/web/prototype-host-web/`
+
 ## 设计边界
 
 - 这是线框原型，不是最终产品前端
@@ -22,9 +27,13 @@
 
 ## 打开方式
 
-从原型入口页开始：
+Central Web 原型入口：
 
 - `docs/web/prototype/index.html`
+
+Host Web 原型入口：
+
+- `docs/web/prototype-host-web/index.html`
 
 也可以直接打开具体页面：
 
@@ -83,7 +92,16 @@ docs/web/
     mail-detail.html
     hosts.html
     host-detail.html
+    tasks.html
+    task-detail.html
+    debug.html
     compose.html
+    prototype.css
+  prototype-host-web/
+    index.html
+    overview.html
+    mailboxes.html
+    mailbox-detail.html
     prototype.css
 ```
 

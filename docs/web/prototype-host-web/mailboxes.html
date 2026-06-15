@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailboxes · Host Web</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">Host Web</span>
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Local Runtime</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <span class="current">Mailboxes</span>
+          </div>
+          <div class="toolbar">
+            <label class="toolbar-search">
+              <span class="meta">Search</span>
+              <input class="toolbar-input" type="text" value="coda / aster / luna" />
+            </label>
+            <span class="button subtle">mac-local</span>
+            <span class="button">re-auth</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Roster</p>
+                <h2 class="panel-title">Local Mailbox Management</h2>
+              </div>
+              <div class="chip-row">
+                <span class="chip active">All 2</span>
+                <span class="chip">Enabled 1</span>
+                <span class="chip">Disabled 1</span>
+                <span class="chip danger">Failed 1</span>
+                <span class="chip">Has unread 1</span>
+              </div>
+            </div>
+            <div class="filter-bar">
+              <span class="button subtle">management: all</span>
+              <span class="button subtle">binding: all</span>
+              <span class="button subtle">runtime: all</span>
+              <span class="button subtle">unread: all</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Table</p>
+                <h2 class="panel-title">Mailbox Runtime Table</h2>
+              </div>
+            </div>
+            <table class="table host-mailbox-table">
+              <thead>
+                <tr>
+                  <th>Mailbox</th>
+                  <th>Role</th>
+                  <th>Binding</th>
+                  <th>Mgmt</th>
+                  <th>Runtime</th>
+                  <th>Unread</th>
+                  <th>Session</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="table-stack">
+                      <a href="./mailbox-detail.html">pm.aster@agents.local</a>
+                      <span class="table-copy">error: -</span>
+                    </div>
+                  </td>
+                  <td>pm</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip success">enabled</span></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>1</td>
+                  <td>sess_pm_aster...</td>
+                  <td>12:04:58</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <a class="button subtle" href="./mailbox-detail.html">detail</a>
+                      <span class="button subtle">disable</span>
+                      <span class="button subtle">resume now</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="table-stack">
+                      <a href="./mailbox-detail.html">backend.coda@agents.local</a>
+                      <span class="table-copy">error: resume command exited with code 1</span>
+                    </div>
+                  </td>
+                  <td>backend</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip success">enabled</span></td>
+                  <td><span class="chip danger">failed</span></td>
+                  <td>2</td>
+                  <td>sess_backend...</td>
+                  <td>12:01:13</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <a class="button subtle" href="./mailbox-detail.html">detail</a>
+                      <span class="button subtle">clear failure</span>
+                      <span class="button subtle">resume now</span>
+                      <span class="button subtle">remove local binding</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="table-stack">
+                      <a href="./mailbox-detail.html">design.luna@agents.local</a>
+                      <span class="table-copy">error: manually disabled for workspace maintenance</span>
+                    </div>
+                  </td>
+                  <td>design</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip warning">disabled</span></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>0</td>
+                  <td>sess_design...</td>
+                  <td>11:50:22</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <a class="button subtle" href="./mailbox-detail.html">detail</a>
+                      <span class="button subtle">enable</span>
+                      <span class="button subtle">remove local binding</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
