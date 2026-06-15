@@ -121,49 +121,6 @@ export function DebugPage() {
         </div>
       </section>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <p className="eyebrow">Central Request Audit</p>
-            <h2 className="panel-title">HTTP Request Events</h2>
-          </div>
-        </div>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Event</th>
-              <th>Method</th>
-              <th>Path</th>
-              <th>Status</th>
-              <th>Duration</th>
-              <th>Host</th>
-              <th>Debug</th>
-              <th>Request ID</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(events.slice(-20).reverse()).map((event) => (
-              <tr key={event.id}>
-                <td>{formatTimestamp(event.ts)}</td>
-                <td>
-                  <span className={`chip ${event.level === "error" ? "danger" : "info"}`}>
-                    {event.event}
-                  </span>
-                </td>
-                <td>{event.method ?? "-"}</td>
-                <td className="mono">{event.path ?? "-"}</td>
-                <td>{event.status ?? "-"}</td>
-                <td>{event.duration_ms !== null ? `${event.duration_ms} ms` : "-"}</td>
-                <td>{event.auth_host_id ?? "-"}</td>
-                <td>{event.debug ? "true" : "false"}</td>
-                <td className="mono">{event.request_id ?? "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
       <section className="grid-2">
         <article className="panel">
           <p className="eyebrow">Errors</p>
@@ -230,6 +187,49 @@ export function DebugPage() {
             )}
           </div>
         </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <p className="eyebrow">Central Request Audit</p>
+            <h2 className="panel-title">HTTP Request Events</h2>
+          </div>
+        </div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Method</th>
+              <th>Path</th>
+              <th>Status</th>
+              <th>Duration</th>
+              <th>Host</th>
+              <th>Debug</th>
+              <th>Request ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(events.slice(-20).reverse()).map((event) => (
+              <tr key={event.id}>
+                <td>{formatTimestamp(event.ts)}</td>
+                <td>
+                  <span className={`chip ${event.level === "error" ? "danger" : "info"}`}>
+                    {event.event}
+                  </span>
+                </td>
+                <td>{event.method ?? "-"}</td>
+                <td className="mono">{event.path ?? "-"}</td>
+                <td>{event.status ?? "-"}</td>
+                <td>{event.duration_ms !== null ? `${event.duration_ms} ms` : "-"}</td>
+                <td>{event.auth_host_id ?? "-"}</td>
+                <td>{event.debug ? "true" : "false"}</td>
+                <td className="mono">{event.request_id ?? "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
     </>
   );
