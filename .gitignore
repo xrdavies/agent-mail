@@ -1,9 +1,11 @@
 node_modules
 dist
-.env
-.env.*
-!.env.example
+.turbo
 .DS_Store
+*.tsbuildinfo
+.agent-mail/
+.env
+.env.local
 coverage
-.agent-mail
-apps/host/host.local.toml
+apps/host/state/*.sqlite
+apps/host/state/*.sqlite-*

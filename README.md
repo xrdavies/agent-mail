@@ -1,94 +1,132 @@
 # Agent Mail
 
-Agent Mail 正在从以文档为主的基线，重建为一个遵循 `docs/` 中 POC 架构的 TypeScript monorepo。
+Agent Mail 现在包含一套按文档实现的 email-oriented POC 代码基线：
 
-当前面向 email 的 POC 澄清文档位于 [docs/poc-v0.1-email-central-host.md](/Users/m4002/Projects/agent-mail/docs/poc-v0.1-email-central-host.md:1)。
+- `packages/contracts`
+  - Central API、Host thin HTTP、Host MCP 的共享 Zod schema 与类型
+- `apps/central`
+  - Hono + Drizzle + PostgreSQL 的控制面服务
+- `apps/host`
+  - Hono + MCP SDK + SQLite 的本地 Host runtime
+- `docs/*`
+  - 架构、数据模型、API、prompt、实现计划与技术栈说明
 
-## 当前工作区
+## 当前能力
 
-- `apps/central`：基于 Hono 的 control-plane service，使用 Drizzle/Postgres 持久化
-- `apps/host`：machine-local daemon，负责注册、本地 session registry、heartbeat、本地 MCP，以及自动 `codex exec/resume`
-- `packages/shared`：共享 enums、payload schemas 和 response contracts
-- `apps/web`：面向 human/operator 的 React/Vite workbench，用于查看 threads、tasks、hosts 和 sessions
+- Host bootstrap key -> Central long-lived host token 交换
+- Host register / heartbeat
+- Agent profile 注册与 mailbox binding
+- Email / Delivery / Thread / Task 主链路
+- Host MCP 12 个 tools
+- Host 本地 SQLite 状态与自动轮询 `resume`
+- Drizzle migration
+- Central 关键约束测试
 
-## 本地开发
+## 数据库边界
 
-目前最快的脚本化启动方式是：
+- `PostgreSQL` 是 Central 的实际运行时数据库，开发和本地联调也使用它。
+- `PGlite` 只用于 `apps/central/test` 下的测试执行，用来无外部依赖地跑 service 级验证。
+- 这不是运行时数据库切换，生产与本地主链路仍然基于 PostgreSQL。
 
-```bash
-pnpm local:start
-pnpm local:status
+## 目录结构
+
+```text
+apps/
+  central/
+  host/
+packages/
+  contracts/
+docs/
 ```
 
-如果需要一个全新的本地数据库并清空 Host session state：
+## 本地启动
+
+1. 安装依赖：
+
+```bash
+pnpm install
+```
+
+2. 启动 PostgreSQL：
+
+```bash
+docker compose up -d postgres
+```
+
+3. 配置环境变量：
+
+- Central 参考 [apps/central/.env.example](./apps/central/.env.example)
+- Host 参考 [apps/host/.env.example](./apps/host/.env.example)
+
+4. 生成并执行 migration：
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+```
+
+5. 启动 Central：
+
+```bash
+pnpm dev:central
+```
+
+6. 启动 Host：
+
+```bash
+pnpm dev:host
+```
+
+7. 查看 Host MCP 配置：
+
+```bash
+curl http://127.0.0.1:8788/mcp-config
+```
+
+## 本地联调脚本
 
 ```bash
 pnpm local:start -- --fresh
+pnpm local:status
+pnpm local:bootstrap
+pnpm e2e:smoke
+pnpm local:stop
 ```
 
-1. 启动 PostgreSQL：
+- `local:start`
+  - 创建/复用 mailbox worktree，启动 Postgres、Central、Host，并在 `--fresh` 下重置数据库与 Host 本地状态。
+- `local:status`
+  - 输出 Postgres / Central / Host / mailbox runtime 的当前状态。
+- `local:bootstrap`
+  - 为 `pm.aster@agents.local` 和 `backend.coda@agents.local` 跑真实首次启动，让各自会话写入 `AGENTS.md` 并调用 `bootstrap_agent`。
+- `e2e:smoke`
+  - 种入一封 `human_inbound`，等待 Host 自动轮询、Aster 委派、Coda 产出 artifact 并关闭 task、Aster 最终回 human。
+- `local:stop`
+  - 停掉 Host / Central；默认同时停掉本地 Postgres，可用 `-- --keep-postgres` 保留数据库。
 
-   ```bash
-   docker compose up -d
-   ```
+更正式的步骤和排障说明见 [docs/runbook-local-smoke.md](./docs/runbook-local-smoke.md)。
 
-2. 准备 Central 和 Host 的 env 文件：
+## 验证
 
-   ```bash
-   cp apps/central/.env.example apps/central/.env
-   cp apps/host/.env.example apps/host/.env
-   ```
-
-3. 生成并应用 migrations：
-
-   ```bash
-   DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:generate
-   DATABASE_URL=postgres://postgres:postgres@localhost:5432/agent_mail pnpm db:migrate
-   ```
-
-4. 启动 Central service：
-
-   ```bash
-   pnpm dev:central
-   ```
-
-5. 在第二个终端启动 Host daemon：
-
-   ```bash
-   pnpm dev:host
-   ```
-
-6. 在第三个终端启动 operator Web UI：
-
-   ```bash
-   pnpm dev:web
-   ```
-
-7. 如果你希望手动启动的 Codex session 走同一个本地 MCP bridge，需要把 Host MCP endpoint 注册到 Codex：
-
-   ```bash
-   codex mcp add agent-mail-host --url http://localhost:8788/mcp
-   ```
-
-当 Host daemon 为待处理 mailbox work 启动 `codex exec` 或 `codex exec resume` 时，也会自动注入这个 MCP endpoint。
-
-8. 运行校验：
-
-   ```bash
-   pnpm test
-   pnpm build
-   ```
-
-9. 运行正式的 end-to-end validation 流程：
-
-   ```bash
-   pnpm validate:phase10
-   ```
-
-`validate:phase10` 现在是 implementation plan 的默认 proof path。它会准备临时验证栈，驱动 Phase 10 中的 mailbox/session 场景，验证 operator Web surface，并输出最终 JSON report。
-
-如果你希望保留临时 workspaces、logs 和 report 以便调试，请使用：
+推荐顺序：
 
 ```bash
-pnpm validate:phase10 -- --keep-temp
+pnpm build
+pnpm typecheck
+pnpm test
 ```
+
+- `build`、`typecheck`、`lint` 走 root solution 入口，统一由根级 `tsconfig.json` 驱动。
+- `test` 同样保留根入口 `pnpm test`，但底层按 package 执行。
+- 这是刻意保留的边界：测试更适合按应用/包分别管理运行时环境、fixture 和工具链，而不是强行并入 TypeScript solution build 语义。
+
+## 规范文档
+
+- [docs/poc-v0.1-email-central-host.md](./docs/poc-v0.1-email-central-host.md)
+- [docs/data-model.md](./docs/data-model.md)
+- [docs/api-contract.md](./docs/api-contract.md)
+- [docs/prompt-specification.md](./docs/prompt-specification.md)
+- [docs/implementation-plan.md](./docs/implementation-plan.md)
+- [docs/tech-stack.md](./docs/tech-stack.md)
+- [PROMPT_ASTER.md](./PROMPT_ASTER.md)
+- [PROMPT_CODA.md](./PROMPT_CODA.md)

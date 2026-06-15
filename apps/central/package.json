@@ -1,27 +1,29 @@
 {
   "name": "@agent-mail/central",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "main": "./src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
+    "build": "rm -rf dist && tsc -b tsconfig.json",
+    "typecheck": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
+    "test": "pnpm --filter @agent-mail/contracts build && vitest run",
+    "lint": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
     "dev": "tsx watch src/index.ts",
-    "migrate": "tsx src/db/migrate.ts",
-    "test": "vitest run"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
-    "@agent-mail/shared": "workspace:*",
-    "@hono/node-server": "^2.0.4",
-    "@hono/zod-validator": "^0.8.0",
-    "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.23",
-    "postgres": "^3.4.9",
-    "zod": "^4.4.3"
+    "@agent-mail/contracts": "workspace:*",
+    "@hono/node-server": "^1.14.4",
+    "drizzle-orm": "^0.44.2",
+    "hono": "^4.8.5",
+    "pg": "^8.16.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.1"
+    "@electric-sql/pglite": "^0.3.8",
+    "drizzle-kit": "^0.31.4"
   }
 }

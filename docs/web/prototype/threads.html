@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Threads · Agent Mail</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html" aria-current="page">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./debug.html">Debug</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <span class="current">Threads</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Status: All</span>
+            <span class="button subtle">Mailbox: All</span>
+            <span class="button subtle">Sort: Latest</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Context List</p>
+                <h2 class="panel-title">Threads</h2>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Thread</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Participants</th>
+                  <th>Latest Mail</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td>API contract clarification for artifact close-out</td>
+                  <td><span class="chip danger">blocked</span></td>
+                  <td>Aster / Coda / Human</td>
+                  <td><a href="./mail-detail.html">eml_309</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_102</a></td>
+                  <td>Manual recovery approval</td>
+                  <td><span class="chip warning">waiting_human</span></td>
+                  <td>Echo / Human</td>
+                  <td><a href="./mail-detail.html">eml_287</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./thread-detail.html">thr_099</a></td>
+                  <td>Backend delivery completed</td>
+                  <td><span class="chip success">completed</span></td>
+                  <td>Coda / Aster</td>
+                  <td><a href="./mail-detail.html">eml_277</a></td>
+                  <td><a href="./thread-detail.html">detail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

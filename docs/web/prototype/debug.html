@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug · Agent Mail</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./debug.html" aria-current="page">Debug</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <span class="current">Debug</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Central</span>
+            <span class="button subtle" id="debug-last-read">Last Read 12:04:24</span>
+            <span class="button subtle">Tail 120</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="stats-grid">
+            <article class="stat-card">
+              <p class="stat-label">Requests</p>
+              <p class="stat-value">128</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Errors</p>
+              <p class="stat-value">3</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Debug Reads</p>
+              <p class="stat-value">11</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Avg Duration</p>
+              <p class="stat-value">42 ms</p>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div class="chip-row">
+                <span class="chip active">All</span>
+                <span class="chip">Errors Only</span>
+                <span class="chip">Debug Only</span>
+                <span class="chip">Host mac-local</span>
+                <span class="chip">/api/v1/tasks</span>
+              </div>
+              <div class="button-row">
+                <span class="button subtle">request_id</span>
+                <span class="button subtle">status >= 400</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Central Request Audit</p>
+                <h2 class="panel-title">HTTP Request Events</h2>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Event</th>
+                  <th>Method</th>
+                  <th>Path</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Host</th>
+                  <th>Debug</th>
+                  <th>Request ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>12:04:24</td>
+                  <td><span class="chip info">http_request</span></td>
+                  <td>GET</td>
+                  <td>/api/v1/threads/thr_118</td>
+                  <td>200</td>
+                  <td>14 ms</td>
+                  <td>mac-local</td>
+                  <td>true</td>
+                  <td class="mono">req_01jz5p8r4q</td>
+                </tr>
+                <tr>
+                  <td>12:04:19</td>
+                  <td><span class="chip info">http_request</span></td>
+                  <td>PATCH</td>
+                  <td>/api/v1/tasks/task_044/status</td>
+                  <td>200</td>
+                  <td>37 ms</td>
+                  <td>mac-local</td>
+                  <td>false</td>
+                  <td class="mono">req_01jz5p8nzc</td>
+                </tr>
+                <tr>
+                  <td>12:04:13</td>
+                  <td><span class="chip danger">http_request</span></td>
+                  <td>POST</td>
+                  <td>/api/v1/emails/send</td>
+                  <td>500</td>
+                  <td>92 ms</td>
+                  <td>mac-mini</td>
+                  <td>false</td>
+                  <td class="mono">req_01jz5p8j1f</td>
+                </tr>
+                <tr>
+                  <td>12:04:10</td>
+                  <td><span class="chip info">http_request</span></td>
+                  <td>GET</td>
+                  <td>/api/v1/mailboxes/pm.aster@agents.local/unread-deliveries/oldest</td>
+                  <td>200</td>
+                  <td>11 ms</td>
+                  <td>mac-local</td>
+                  <td>false</td>
+                  <td class="mono">req_01jz5p8gq0</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Errors</p>
+              <h2 class="panel-title">Recent Failures</h2>
+              <div class="timeline">
+                <div class="timeline-item">
+                  <h4>12:04:13 · POST /api/v1/emails/send · 500</h4>
+                  <p>Internal server error while resolving thread linkage for a reply email.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4>11:58:44 · GET /api/v1/tasks · 401</h4>
+                  <p>Missing bearer token on a debug request issued outside host-authenticated flow.</p>
+                </div>
+                <div class="timeline-item">
+                  <h4>11:54:09 · POST /api/v1/hosts/mac-mini/heartbeat · 403</h4>
+                  <p>Host identity mismatch after token rotation.</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Live Tail</p>
+                  <h2 class="panel-title">Central Log Stream</h2>
+                </div>
+                <div class="button-row">
+                  <span class="chip success" id="debug-connection-state">connected</span>
+                  <button class="button subtle" type="button" id="debug-pause">Pause</button>
+                  <button class="button subtle" type="button" id="debug-clear">Clear</button>
+                </div>
+              </div>
+              <div class="button-row debug-stream-controls">
+                <label class="toggle">
+                  <input type="checkbox" id="debug-autoscroll" checked />
+                  <span>Auto-scroll</span>
+                </label>
+                <span class="button subtle">Mock SSE</span>
+              </div>
+              <div class="log-stream log-stream-live terminal-stream" id="debug-live-stream" aria-live="polite">
+                <div class="log-line">{&quot;event&quot;:&quot;http_request&quot;,&quot;request_id&quot;:&quot;req_01jz5p8r4q&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;path&quot;:&quot;/api/v1/threads/thr_118&quot;,&quot;status&quot;:200,&quot;duration_ms&quot;:14,&quot;auth_host_id&quot;:&quot;mac-local&quot;,&quot;debug&quot;:true}</div>
+                <div class="log-line">{&quot;event&quot;:&quot;http_request&quot;,&quot;request_id&quot;:&quot;req_01jz5p8nzc&quot;,&quot;method&quot;:&quot;PATCH&quot;,&quot;path&quot;:&quot;/api/v1/tasks/task_044/status&quot;,&quot;status&quot;:200,&quot;duration_ms&quot;:37,&quot;auth_host_id&quot;:&quot;mac-local&quot;}</div>
+                <div class="log-line">{&quot;event&quot;:&quot;http_request&quot;,&quot;request_id&quot;:&quot;req_01jz5p8j1f&quot;,&quot;method&quot;:&quot;POST&quot;,&quot;path&quot;:&quot;/api/v1/emails/send&quot;,&quot;status&quot;:500,&quot;duration_ms&quot;:92,&quot;auth_host_id&quot;:&quot;mac-mini&quot;}</div>
+                <div class="log-line">Error: Thread resolution failed at CentralService.sendEmail (...stack omitted)</div>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script>
+      (() => {
+        const stream = document.getElementById("debug-live-stream");
+        const pauseButton = document.getElementById("debug-pause");
+        const clearButton = document.getElementById("debug-clear");
+        const autoScrollCheckbox = document.getElementById("debug-autoscroll");
+        const connectionState = document.getElementById("debug-connection-state");
+        const lastRead = document.getElementById("debug-last-read");
+
+        if (!stream || !pauseButton || !clearButton || !autoScrollCheckbox || !connectionState || !lastRead) {
+          return;
+        }
+
+        const mockLines = [
+          '{"event":"http_request","request_id":"req_01jz5p97sc","method":"GET","path":"/api/v1/mailboxes/pm.aster@agents.local/unread-deliveries","status":200,"duration_ms":12,"auth_host_id":"mac-local"}',
+          '{"event":"http_request","request_id":"req_01jz5p98tj","method":"GET","path":"/api/v1/emails/eml_309","status":200,"duration_ms":8,"auth_host_id":"mac-local","debug":true}',
+          '{"event":"http_request","request_id":"req_01jz5p99zf","method":"POST","path":"/api/v1/hosts/mac-local/heartbeat","status":200,"duration_ms":16,"auth_host_id":"mac-local"}',
+          '{"event":"http_request","request_id":"req_01jz5p9a6b","method":"GET","path":"/api/v1/tasks?thread_id=thr_118","status":200,"duration_ms":18,"auth_host_id":"mac-local","debug":true}',
+          '{"event":"http_request","request_id":"req_01jz5p9bk2","method":"POST","path":"/api/v1/emails/send","status":500,"duration_ms":101,"auth_host_id":"mac-mini"}',
+          'Error: Host identity mismatch while handling mac-mini heartbeat audit trail'
+        ];
+
+        let paused = false;
+        let nextIndex = 0;
+
+        const formatClock = (date) => {
+          const pad = (value) => String(value).padStart(2, "0");
+          return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        };
+
+        const scrollToBottom = () => {
+          if (autoScrollCheckbox.checked) {
+            stream.scrollTop = stream.scrollHeight;
+          }
+        };
+
+        const appendLine = (text) => {
+          const line = document.createElement("div");
+          line.className = "log-line";
+          line.textContent = text;
+          stream.appendChild(line);
+
+          while (stream.children.length > 120) {
+            stream.removeChild(stream.firstElementChild);
+          }
+
+          lastRead.textContent = `Last Read ${formatClock(new Date())}`;
+          scrollToBottom();
+        };
+
+        pauseButton.addEventListener("click", () => {
+          paused = !paused;
+          pauseButton.textContent = paused ? "Resume" : "Pause";
+          connectionState.textContent = paused ? "paused" : "connected";
+          connectionState.className = paused ? "chip warning" : "chip success";
+        });
+
+        clearButton.addEventListener("click", () => {
+          stream.innerHTML = "";
+        });
+
+        autoScrollCheckbox.addEventListener("change", scrollToBottom);
+
+        scrollToBottom();
+
+        window.setInterval(() => {
+          if (paused) {
+            return;
+          }
+
+          const timestamp = formatClock(new Date());
+          const suffix = mockLines[nextIndex % mockLines.length];
+          appendLine(`${timestamp} ${suffix}`);
+          nextIndex += 1;
+        }, 1800);
+      })();
+    </script>
+  </body>
+</html>

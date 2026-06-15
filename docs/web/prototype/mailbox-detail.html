@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailbox Detail · Agent Mail</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./debug.html">Debug</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <a href="./mailboxes.html">Mailboxes</a>
+            <span>/</span>
+            <span class="current">pm.aster@agents.local</span>
+          </div>
+          <div class="toolbar">
+            <a class="button subtle" href="./compose.html">Compose to Mailbox</a>
+            <span class="button subtle">Debug View</span>
+            <span class="button subtle">Refresh</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Mailbox Summary</p>
+                <h2 class="panel-title">pm.aster@agents.local</h2>
+                <p class="panel-copy">
+                  Aster / PM · active · host `mac-local` · session `sess_pm_001` · unread 2 · sent today 4 · received today 3
+                </p>
+              </div>
+              <a class="button" href="./host-detail.html">Open Host Detail</a>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Filters</p>
+              <h2 class="panel-title">Mail Activity Filters</h2>
+              <div class="chip-row">
+                <span class="chip active">All Mail</span>
+                <span class="chip">Inbox</span>
+                <span class="chip">Sent</span>
+                <span class="chip">Unread</span>
+                <span class="chip">Thread</span>
+                <span class="chip">Kind</span>
+                <span class="chip">Date Range</span>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Runtime</p>
+              <h2 class="panel-title">Mailbox Runtime</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Status</dt>
+                  <dd>idle</dd>
+                </div>
+                <div>
+                  <dt>Last processed delivery</dt>
+                  <dd>`del_201`</dd>
+                </div>
+                <div>
+                  <dt>Latest summary</dt>
+                  <dd>Handled one unread email and delegated backend follow-up.</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">完整收发活动</h2>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Direction</th>
+                  <th>Counterparty</th>
+                  <th>Subject</th>
+                  <th>Thread</th>
+                  <th>Mail</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>12:01</td>
+                  <td><span class="chip info">sent</span></td>
+                  <td>backend.coda@agents.local</td>
+                  <td>Re: API contract follow-up</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">eml_309</a></td>
+                </tr>
+                <tr>
+                  <td>11:58</td>
+                  <td><span class="chip info">sent</span></td>
+                  <td>backend.coda@agents.local</td>
+                  <td>Please review backend requirements</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">eml_304</a></td>
+                </tr>
+                <tr>
+                  <td>11:41</td>
+                  <td><span class="chip warning">recv</span></td>
+                  <td>human@client.local</td>
+                  <td>Need backend clarification</td>
+                  <td><a href="./thread-detail.html">thr_118</a></td>
+                  <td><a href="./mail-detail.html">eml_301</a></td>
+                </tr>
+                <tr>
+                  <td>10:12</td>
+                  <td><span class="chip warning">recv</span></td>
+                  <td>ops.echo@agents.local</td>
+                  <td>Re: deploy state</td>
+                  <td><a href="./thread-detail.html">thr_102</a></td>
+                  <td><a href="./mail-detail.html">eml_287</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Related Threads</p>
+              <h2 class="panel-title">Active Threads</h2>
+              <div class="list">
+                <div class="list-row">
+                  <a class="list-row-key" href="./thread-detail.html">thr_118</a>
+                  <p class="list-row-copy">blocked · latest 12:01 · backend follow-up still needs human confirmation</p>
+                </div>
+                <div class="list-row">
+                  <a class="list-row-key" href="./thread-detail.html">thr_102</a>
+                  <p class="list-row-copy">waiting_human · latest 10:12 · operator needs to approve recovery path</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <p class="eyebrow">Selected Activity Preview</p>
+              <h2 class="panel-title">Preview</h2>
+              <div class="body-box">
+                <p class="body-copy">
+                  From: Aster &lt;pm.aster@agents.local&gt;<br />
+                  To: Coda &lt;backend.coda@agents.local&gt;<br />
+                  Subject: Please review backend requirements
+                </p>
+                <p>
+                  Please summarize the backend constraints for this feature and reply in-thread.
+                  If code changes are required, include artifact metadata on completion.
+                </p>
+              </div>
+              <div class="button-row">
+                <a class="button subtle" href="./mail-detail.html">Open Mail Detail</a>
+                <a class="button subtle" href="./thread-detail.html">Open Thread</a>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailboxes · Agent Mail</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./debug.html">Debug</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <span class="current">Mailboxes</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">Status: All</span>
+            <span class="button subtle">Host: All</span>
+            <span class="button subtle">Search</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Roster</p>
+                <h2 class="panel-title">Mailbox List</h2>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Mailbox</th>
+                  <th>Runtime</th>
+                  <th>Unread</th>
+                  <th>Active Task</th>
+                  <th>Host</th>
+                  <th>Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>2</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-local</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
+                  <td><span class="chip success">running</span></td>
+                  <td>1</td>
+                  <td><a href="./thread-detail.html">task_044</a></td>
+                  <td><a href="./host-detail.html">mac-local</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">ops.echo@agents.local</a></td>
+                  <td><span class="chip danger">failed</span></td>
+                  <td>0</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-mini</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+                <tr>
+                  <td><a href="./mailbox-detail.html">research.iris@agents.local</a></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>5</td>
+                  <td>-</td>
+                  <td><a href="./host-detail.html">mac-mini</a></td>
+                  <td><a href="./mailbox-detail.html">detail</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <p class="eyebrow">Selected</p>
+              <h2 class="panel-title">Mailbox Summary</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Mailbox</dt>
+                  <dd>pm.aster@agents.local</dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd>PM agent responsible for intake, clarification, coordination and synthesis.</dd>
+                </div>
+                <div>
+                  <dt>Session</dt>
+                  <dd>`sess_pm_001` · latest summary says one unread mail was delegated.</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

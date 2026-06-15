@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/contracts"
+    },
+    {
+      "path": "./apps/central"
+    },
+    {
+      "path": "./apps/host"
+    }
+  ]
+}
