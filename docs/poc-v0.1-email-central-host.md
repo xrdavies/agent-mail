@@ -144,6 +144,13 @@
 - 触发人工恢复和清理动作
 - 提供调试入口
 
+当前运行约束：
+
+- `Central` 的 Web 前端由 `Central` 自己提供静态资源
+- `Host` 的本地管理前端由 `Host` 自己提供静态资源
+- 不要求用户额外部署一个独立前端服务
+- 前端源码仍应与后端源码分开组织，以便独立开发和构建
+
 不负责：
 
 - 直接调度 Codex
@@ -400,8 +407,9 @@ POC 接受重复处理，但副作用要受控：
 当前推荐部署模型：
 
 - 1 个 Central
-- 1 个 Web
 - N 个 Host
+- `Central UI` 由 `Central` 自己提供
+- 每个 `Host UI` 由对应 `Host` 自己提供
 - 每个 Host 管理若干 mailboxes
 - 每个 mailbox 对应 1 个长期 session
 
@@ -411,6 +419,14 @@ POC 接受重复处理，但副作用要受控：
 - 不依赖 queue middleware
 - 不依赖复杂调度器
 - 通过 mailbox binding 实现分布式执行定位
+- 用户只需启动 `Central` 与 `Host`，不需额外启动第三个独立前端服务
+
+开发方式建议：
+
+- `central-web` 作为 `Central UI` 的前端源码工程
+- `host-web` 作为 `Host UI` 的前端源码工程
+- 开发时前端各自通过 dev server 代理到对应后端
+- 部署时前端 build 产物回收到 `Central` / `Host` 自己提供
 
 ### 向 SMTP 演进的兼容设计
 

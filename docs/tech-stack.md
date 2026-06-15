@@ -112,6 +112,73 @@
 - Web 不应阻塞第一轮主流程实现
 - 是否引入 client-side router，仍可在恢复 Web 代码时按页面复杂度决定
 
+#### Web 源码与运行边界
+
+当前正式约定如下：
+
+- `Central` 的前端源码应独立于 `Central API` 代码组织
+- `Host` 的前端源码也应独立于 `Host runtime` 代码组织
+- 但在**运行时**，不额外要求用户再启动一个独立 `Web` 服务
+
+推荐形态：
+
+- `apps/central-web`
+  - `Central` 管理台前端源码
+- `apps/host-web`
+  - `Host` 本地管理台前端源码
+- `apps/central`
+  - `Central API`
+  - 同时负责提供 `central-web` 的构建产物
+- `apps/host`
+  - `Host runtime`
+  - 同时负责提供 `host-web` 的构建产物
+
+这是一条明确的工程边界：
+
+- **开发态**：前端源码独立运行，便于热更新和代理联调
+- **部署态**：构建后的静态资源由 `Central` / `Host` 自己提供
+
+这不是“第三个常驻前端服务”方案。
+
+#### Web 开发方式
+
+后续恢复 Web 时，推荐：
+
+- `central-web` 使用 `Vite dev server`
+- `host-web` 也使用 `Vite dev server`
+- 开发时分别代理到对应后端：
+  - `central-web` -> `Central`
+  - `host-web` -> `Host`
+
+这样做的目的：
+
+- 保持前端开发体验
+- 不污染 `Central` / `Host` 的运行时代码
+- 不要求在开发时把静态文件打包进后端再看效果
+
+#### Web 部署方式
+
+部署时推荐：
+
+- `central-web build`
+  - 产物复制到 `Central` 可服务的静态目录
+- `host-web build`
+  - 产物复制到 `Host` 可服务的静态目录
+
+最终用户使用时只需要：
+
+- 启动 `Central`
+- 启动 `Host`
+
+不需要额外部署一个独立的前端服务。
+
+这条规则的意义是：
+
+- **源码独立**
+- **运行内置**
+
+既保留工程边界，也满足“只启动 `Central` / `Host` 就能用”的目标。
+
 ### 7. Git 与 GitHub 操作
 
 - `git`
@@ -221,6 +288,8 @@
 apps/
   central/
   host/
+  central-web/   # future
+  host-web/      # future
 packages/
   contracts/
 docs/
@@ -228,8 +297,9 @@ docs/
 
 说明：
 
-- `Web` 可在后续阶段再补回
+- `Web` 前端源码会在后续阶段补回
 - 第一阶段只保留 `Central`、`Host`、`contracts` 三块最小结构
+- 恢复 Web 时应优先按 `central-web` / `host-web` 这两个独立源码边界落地
 
 ## 与实现计划的对应关系
 
