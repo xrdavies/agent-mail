@@ -9,6 +9,10 @@
 - 避免过早锁定最终视觉系统
 - 让后续 React 实现有明确的布局参考
 
+当前补充文档：
+
+- [Host Web 页面与 API 草案](./host-web.md)
+
 ## 设计边界
 
 - 这是线框原型，不是最终产品前端
@@ -67,6 +71,7 @@
 ```text
 docs/web/
   README.md
+  host-web.md
   prototype/
     index.html
     overview.html
