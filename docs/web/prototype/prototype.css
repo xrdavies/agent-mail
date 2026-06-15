@@ -672,6 +672,11 @@ button.button {
   resize: vertical;
 }
 
+.compose-row .input {
+  padding-top: 0.44rem;
+  padding-bottom: 0.44rem;
+}
+
 .field select.input,
 .compose-row select.input {
   appearance: auto;
