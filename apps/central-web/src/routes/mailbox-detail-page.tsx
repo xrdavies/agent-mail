@@ -53,7 +53,6 @@ export function MailboxDetailPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Mailbox Summary</p>
             <h2 className="panel-title">{data.profile.mailbox}</h2>
             <p className="panel-copy">
               {data.profile.name} / {data.profile.role} · {data.binding?.binding_status ?? "unbound"} · host{" "}
@@ -74,7 +73,6 @@ export function MailboxDetailPage() {
 
       <section className="grid-2">
         <article className="panel">
-          <p className="eyebrow">Runtime</p>
           <h2 className="panel-title">Mailbox Runtime</h2>
           <div className="definition-list">
             <div>
@@ -98,7 +96,6 @@ export function MailboxDetailPage() {
 
         <div className="stack">
           <article className="panel">
-            <p className="eyebrow">Related Threads</p>
             <h2 className="panel-title">Active Threads</h2>
             <div className="list">
               {data.threads.map((thread) => (
@@ -115,7 +112,6 @@ export function MailboxDetailPage() {
           </article>
 
           <article className="panel">
-            <p className="eyebrow">Open Tasks</p>
             <h2 className="panel-title">Tasks</h2>
             <div className="list">
               {openTasks.length === 0 ? (
@@ -138,11 +134,11 @@ export function MailboxDetailPage() {
       </section>
 
       <section className="panel">
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title">完整收发活动</h2>
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title">Full Mail Activity</h2>
+            </div>
           </div>
-        </div>
         <div className="mailbox-activity-filters">
           <div className="chip-row">
             <span className="chip active">All Mail</span>
@@ -198,7 +194,6 @@ export function MailboxDetailPage() {
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Selected Activity Preview</p>
         <h2 className="panel-title">Preview</h2>
         <div className="body-box">
           {preview ? (

@@ -58,7 +58,6 @@ export function ThreadDetailPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Thread Header</p>
             <h2 className="panel-title">{data.thread.root_subject}</h2>
             <p className="panel-copy">
               {data.thread.thread_status} · root {data.thread.root_email_id} · latest{" "}
@@ -79,7 +78,6 @@ export function ThreadDetailPage() {
         <article className="panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">Timeline</p>
               <h2 className="panel-title">Email Timeline</h2>
             </div>
             <Link className="button subtle" to="/mails">
@@ -102,7 +100,6 @@ export function ThreadDetailPage() {
         </article>
 
         <article className="panel">
-          <p className="eyebrow">Sidebar</p>
           <h2 className="panel-title">Tasks / Artifacts / Participants</h2>
           <div className="definition-list">
             <div>

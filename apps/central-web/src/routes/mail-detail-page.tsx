@@ -49,7 +49,6 @@ export function MailDetailPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Mail Header</p>
             <h2 className="panel-title">{data.subject}</h2>
             <p className="panel-copy">
               {data.email_kind} · {data.send_state} · created {formatTimestamp(data.created_at)} · thread{" "}
@@ -112,7 +111,6 @@ export function MailDetailPage() {
         </article>
 
         <article className="panel">
-          <p className="eyebrow">Relationship Panel</p>
           <div className="definition-list">
             <div>
               <dt>Thread</dt>

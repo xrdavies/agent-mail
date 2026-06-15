@@ -107,7 +107,6 @@ export function DebugPage() {
 
       <section className="grid-2">
         <article className="panel">
-          <p className="eyebrow">Errors</p>
           <h2 className="panel-title">Recent Failures</h2>
           <div className="timeline">
             {(events
@@ -127,7 +126,6 @@ export function DebugPage() {
         <article className="panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">Live Tail</p>
               <h2 className="panel-title">Central Log Stream</h2>
             </div>
             <div className="button-row">
@@ -176,7 +174,6 @@ export function DebugPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Central Request Audit</p>
             <h2 className="panel-title">HTTP Request Events</h2>
           </div>
         </div>

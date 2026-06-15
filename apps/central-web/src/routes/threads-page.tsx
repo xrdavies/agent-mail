@@ -20,7 +20,6 @@ export function ThreadsPage() {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Context List</p>
           <h2 className="panel-title">Threads</h2>
         </div>
       </div>

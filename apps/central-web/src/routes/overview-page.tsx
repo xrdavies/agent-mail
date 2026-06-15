@@ -74,7 +74,6 @@ export function OverviewPage() {
         <article className="panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">Queue</p>
               <h2 className="panel-title">Oldest Unread Queue</h2>
             </div>
             <Link className="button subtle" to="/mailboxes">
@@ -107,7 +106,6 @@ export function OverviewPage() {
         <article className="panel">
           <div className="panel-header">
             <div>
-              <p className="eyebrow">Health</p>
               <h2 className="panel-title">Host Health</h2>
             </div>
             <Link className="button subtle" to="/hosts">
@@ -132,7 +130,6 @@ export function OverviewPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Attention</p>
             <h2 className="panel-title">Waiting Human / Blocked Threads</h2>
           </div>
           <Link className="button subtle" to="/threads">
@@ -181,7 +178,6 @@ export function OverviewPage() {
 
       <section className="grid-2">
         <article className="panel">
-          <p className="eyebrow">Activity</p>
           <h2 className="panel-title">Recent Activity</h2>
           <div className="timeline">
             {data.recent_activity.length === 0 ? (

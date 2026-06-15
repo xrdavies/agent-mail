@@ -27,7 +27,6 @@ export function HostsPage() {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Runtime Index</p>
           <h2 className="panel-title">Hosts</h2>
         </div>
       </div>

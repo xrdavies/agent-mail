@@ -57,7 +57,6 @@ export function HostDetailPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Host Summary</p>
             <h2 className="panel-title">{host.host_id}</h2>
             <p className="panel-copy">
               {host.host_status} · v{host.host_version ?? "unknown"} · last heartbeat {formatTimestamp(host.last_heartbeat_at)} · last auth {formatTimestamp(host.last_authenticated_at)}
@@ -72,7 +71,6 @@ export function HostDetailPage() {
 
       <section className="grid-2">
         <article className="panel">
-          <p className="eyebrow">Managed Mailboxes</p>
           <h2 className="panel-title">Roster</h2>
           <div className="list">
             {bindings.length === 0 ? (
@@ -100,7 +98,6 @@ export function HostDetailPage() {
         </article>
 
         <article className="panel">
-          <p className="eyebrow">Health</p>
           <h2 className="panel-title">Runtime Health</h2>
           <div className="list">
             <div className="list-row">
@@ -126,7 +123,6 @@ export function HostDetailPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Snapshot</p>
             <h2 className="panel-title">Runtime Snapshot Table</h2>
           </div>
         </div>

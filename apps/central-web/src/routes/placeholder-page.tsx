@@ -8,7 +8,6 @@ export function PlaceholderPage({ title, summary }: PlaceholderPageProps) {
     <section className="panel">
       <div className="panel-header">
         <div>
-          <p className="eyebrow">Pending</p>
           <h2 className="panel-title">{title}</h2>
         </div>
       </div>

@@ -20,7 +20,6 @@ export function MailboxesPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <p className="eyebrow">Roster</p>
             <h2 className="panel-title">Mailbox List</h2>
           </div>
         </div>
