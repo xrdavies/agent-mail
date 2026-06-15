@@ -5,6 +5,7 @@ import {
   emailKindSchema,
   hostStatusSchema,
   identifierSchema,
+  isoTimestampSchema,
   linkedResourceInputSchema,
   mailboxRuntimeStatusSchema,
   mailboxSchema,
@@ -206,6 +207,35 @@ export const runtimeSnapshotSchema = z.object({
   runtimes: z.array(mailboxRuntimeSchema)
 });
 
+export const centralLogEventSchema = z.object({
+  id: identifierSchema,
+  ts: isoTimestampSchema,
+  level: z.enum(["info", "error"]),
+  event: z.string().min(1),
+  request_id: identifierSchema.nullable(),
+  method: z.string().min(1).nullable(),
+  path: z.string().min(1).nullable(),
+  status: z.number().int().nullable(),
+  duration_ms: z.number().int().nonnegative().nullable(),
+  auth_host_id: identifierSchema.nullable(),
+  debug: z.boolean(),
+  message: z.string().nullable(),
+  stack: z.string().nullable()
+});
+
+export const debugLogsQuerySchema = z.object({
+  tail: z.coerce.number().int().positive().max(500).optional(),
+  errors_only: z.coerce.boolean().optional(),
+  debug_only: z.coerce.boolean().optional(),
+  host_id: identifierSchema.optional(),
+  path: z.string().min(1).optional(),
+  request_id: identifierSchema.optional()
+});
+
+export const debugLogsResponseSchema = z.object({
+  events: z.array(centralLogEventSchema)
+});
+
 export type HostAuthExchangeRequest = z.infer<typeof hostAuthExchangeRequestSchema>;
 export type HostRegisterRequest = z.infer<typeof hostRegisterRequestSchema>;
 export type HostHeartbeatRequest = z.infer<typeof hostHeartbeatRequestSchema>;
@@ -213,3 +243,4 @@ export type RegisterAgentRequest = z.infer<typeof registerAgentRequestSchema>;
 export type SendEmailRequest = z.infer<typeof sendEmailRequestSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
 export type UpdateTaskStatusRequest = z.infer<typeof updateTaskStatusRequestSchema>;
+export type CentralLogEvent = z.infer<typeof centralLogEventSchema>;

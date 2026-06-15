@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc -b tsconfig.json",
     "typecheck": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "pnpm --filter @agent-mail/contracts build && vitest run",
     "lint": "pnpm --filter @agent-mail/contracts build && tsc -p tsconfig.json --noEmit",
     "dev": "tsx watch src/index.ts",
     "db:generate": "drizzle-kit generate",

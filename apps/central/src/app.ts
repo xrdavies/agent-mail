@@ -2,6 +2,8 @@ import {
   agentsListQuerySchema,
   createTaskRequestSchema,
   deliveriesListQuerySchema,
+  debugLogsQuerySchema,
+  debugLogsResponseSchema,
   healthResponseSchema,
   hostAuthExchangeRequestSchema,
   hostHeartbeatRequestSchema,
@@ -21,10 +23,12 @@ import { HTTPException } from "hono/http-exception";
 import type { CentralConfig } from "./config.js";
 import { createDatabase, createPool } from "./db/client.js";
 import { HttpError, isHttpError } from "./lib/errors.js";
+import { CentralLogger, matchesCentralLogFilter, type CentralLogFilter } from "./lib/logger.js";
 import { CentralService, type AuthenticatedHost } from "./service.js";
 
 type AppVariables = {
   auth: AuthenticatedHost;
+  debug: boolean;
   requestId: string;
 };
 
@@ -40,27 +44,32 @@ function jsonError(status: number, message: string, details?: unknown): Response
   );
 }
 
-function logRequest(input: {
-  requestId: string;
-  method: string;
-  path: string;
-  status: number;
-  durationMs: number;
-  authHostId?: string;
-  debug?: boolean;
-}): void {
-  console.log(
-    JSON.stringify({
-      event: "http_request",
-      request_id: input.requestId,
-      method: input.method,
-      path: input.path,
-      status: input.status,
-      duration_ms: input.durationMs,
-      ...(input.authHostId ? { auth_host_id: input.authHostId } : {}),
-      ...(input.debug ? { debug: true } : {})
-    })
-  );
+function toLogFilter(input: z.infer<typeof debugLogsQuerySchema>): CentralLogFilter {
+  return {
+    ...(input.errors_only ? { errorsOnly: true } : {}),
+    ...(input.debug_only ? { debugOnly: true } : {}),
+    ...(input.host_id ? { hostId: input.host_id } : {}),
+    ...(input.path ? { path: input.path } : {}),
+    ...(input.request_id ? { requestId: input.request_id } : {})
+  };
+}
+
+function setDebugResponseHeaders(c: Context<{ Variables: AppVariables }>): void {
+  c.header("Access-Control-Allow-Origin", "*");
+  c.header("Cache-Control", "no-store");
+}
+
+function formatSseEvent(input: {
+  id?: string;
+  event: string;
+  data: unknown;
+}): string {
+  const lines = [
+    ...(input.id ? [`id: ${input.id}`] : []),
+    `event: ${input.event}`,
+    `data: ${JSON.stringify(input.data)}`
+  ];
+  return `${lines.join("\n")}\n\n`;
 }
 
 async function parseJson<T>(
@@ -75,10 +84,18 @@ function parseQuery<T>(c: Context<{ Variables: AppVariables }>, schema: z.ZodTyp
   return schema.parse(c.req.query());
 }
 
-export function createApp(config: CentralConfig) {
-  const pool = createPool(config.databaseUrl);
-  const db = createDatabase(pool);
-  const service = new CentralService(db, new Set(config.bootstrapKeys));
+export function createApp(
+  config: CentralConfig,
+  deps: {
+    logger?: CentralLogger;
+    pool?: ReturnType<typeof createPool> | null;
+    service?: CentralService;
+  } = {}
+) {
+  const logger = deps.logger ?? new CentralLogger();
+  const pool = deps.pool ?? (deps.service ? null : createPool(config.databaseUrl));
+  const db = deps.service ? null : createDatabase(pool!);
+  const service = deps.service ?? new CentralService(db!, new Set(config.bootstrapKeys));
 
   const app = new Hono<{ Variables: AppVariables }>();
 
@@ -87,9 +104,10 @@ export function createApp(config: CentralConfig) {
     const startedAt = Date.now();
     const debug = c.req.header("x-agent-mail-debug") === "true";
     c.set("requestId", requestId);
+    c.set("debug", debug);
     c.header("x-request-id", requestId);
     await next();
-    logRequest({
+    logger.logRequest({
       requestId,
       method: c.req.method,
       path: c.req.path,
@@ -105,20 +123,135 @@ export function createApp(config: CentralConfig) {
       await next();
     } catch (error) {
       if (isHttpError(error)) {
+        logger.logError({
+          error,
+          event: "http_error",
+          requestId: c.get("requestId"),
+          method: c.req.method,
+          path: c.req.path,
+          status: error.status,
+          authHostId: c.get("auth")?.hostId,
+          debug: c.get("debug")
+        });
         return jsonError(error.status, error.message, error.details);
       }
       if (error instanceof HTTPException) {
+        logger.logError({
+          error,
+          event: "http_error",
+          requestId: c.get("requestId"),
+          method: c.req.method,
+          path: c.req.path,
+          status: error.status,
+          authHostId: c.get("auth")?.hostId,
+          debug: c.get("debug")
+        });
         return jsonError(error.status, error.message);
       }
-      console.error(error);
+      logger.logError({
+        error,
+        requestId: c.get("requestId"),
+        method: c.req.method,
+        path: c.req.path,
+        status: 500,
+        authHostId: c.get("auth")?.hostId,
+        debug: c.get("debug")
+      });
       return jsonError(500, "Internal server error");
     }
   });
 
   app.get("/api/v1/health", async (c) => c.json(healthResponseSchema.parse({ ok: true })));
 
+  app.get("/api/v1/debug/logs", (c) => {
+    setDebugResponseHeaders(c);
+    const query = parseQuery(c, debugLogsQuerySchema);
+    const response = {
+      events: logger.query(toLogFilter(query), query.tail ?? 100)
+    };
+    return c.json(debugLogsResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/debug/logs/stream", (c) => {
+    const query = parseQuery(c, debugLogsQuerySchema);
+    const filter = toLogFilter(query);
+    const tail = query.tail ?? 50;
+    const encoder = new TextEncoder();
+    let cleanup = () => {};
+
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        let closed = false;
+        let heartbeat: ReturnType<typeof setInterval> | null = null;
+
+        const push = (chunk: string) => {
+          if (closed) {
+            return;
+          }
+          controller.enqueue(encoder.encode(chunk));
+        };
+
+        const close = () => {
+          if (closed) {
+            return;
+          }
+          closed = true;
+          if (heartbeat) {
+            clearInterval(heartbeat);
+          }
+          unsubscribe();
+          try {
+            controller.close();
+          } catch {
+            // The reader may cancel after the controller has already been closed.
+          }
+        };
+
+        cleanup = close;
+
+        const unsubscribe = logger.subscribe((event) => {
+          if (!matchesCentralLogFilter(event, filter)) {
+            return;
+          }
+          push(formatSseEvent({ id: event.id, event: "log", data: event }));
+        });
+
+        push("retry: 3000\n\n");
+        push(formatSseEvent({ event: "ready", data: { ok: true } }));
+
+        for (const event of logger.query(filter, tail)) {
+          push(formatSseEvent({ id: event.id, event: "log", data: event }));
+        }
+
+        heartbeat = setInterval(() => {
+          push(formatSseEvent({ event: "ping", data: { ts: new Date().toISOString() } }));
+        }, 15_000);
+
+        c.req.raw.signal.addEventListener("abort", close, { once: true });
+      },
+      cancel() {
+        cleanup();
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
+        Connection: "keep-alive",
+        "Content-Type": "text/event-stream",
+        "X-Accel-Buffering": "no"
+      }
+    });
+  });
+
   app.use("/api/v1/*", async (c, next) => {
-    if (c.req.path === "/api/v1/health" || c.req.path === "/api/v1/host-auth/exchange") {
+    if (
+      c.req.path === "/api/v1/health" ||
+      c.req.path === "/api/v1/host-auth/exchange" ||
+      c.req.path === "/api/v1/debug/logs" ||
+      c.req.path === "/api/v1/debug/logs/stream"
+    ) {
       return next();
     }
 
@@ -255,7 +388,7 @@ export function createApp(config: CentralConfig) {
     return c.json(response, 200);
   });
 
-  return { app, pool, service };
+  return { app, pool, service, logger };
 }
 
 export type CentralApp = ReturnType<typeof createApp>;

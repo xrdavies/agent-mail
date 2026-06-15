@@ -4,7 +4,7 @@ import { loadCentralConfig } from "./config.js";
 import { createApp } from "./app.js";
 
 const config = loadCentralConfig();
-const { app } = createApp(config);
+const { app, logger } = createApp(config);
 
 serve(
   {
@@ -13,6 +13,9 @@ serve(
     hostname: config.host
   },
   (info) => {
-    console.log(`Agent Mail Central listening on http://${info.address}:${info.port}`);
+    logger.logInfo({
+      event: "server_started",
+      message: `Agent Mail Central listening on http://${info.address}:${info.port}`
+    });
   }
 );
