@@ -12,6 +12,7 @@
 当前补充文档：
 
 - [Host Web 页面与 API 草案](./host-web.md)
+- [Host Web 字符稿](./host-web-wireframes.md)
 
 ## 设计边界
 
@@ -72,6 +73,7 @@
 docs/web/
   README.md
   host-web.md
+  host-web-wireframes.md
   prototype/
     index.html
     overview.html
