@@ -1,5 +1,8 @@
 import {
   debugLogsResponseSchema,
+  hostsListResponseSchema,
+  runtimeSnapshotSchema,
+  webOverviewResponseSchema,
   type CentralLogEvent,
   type Host
 } from "@agent-mail/contracts";
@@ -74,4 +77,33 @@ export interface HostSummary {
   running_mailboxes: number;
   failed_mailboxes: number;
   unread_deliveries: number;
+}
+
+export type HostsListResponse = ReturnType<typeof hostsListResponseSchema.parse>;
+export type RuntimeSnapshot = ReturnType<typeof runtimeSnapshotSchema.parse>;
+
+export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
+
+export async function getWebOverview(): Promise<WebOverviewResponse> {
+  const response = await fetch("/api/v1/web/overview");
+  if (!response.ok) {
+    throw new Error(`Failed to load overview: ${response.status}`);
+  }
+  return webOverviewResponseSchema.parse(await response.json());
+}
+
+export async function getHosts(): Promise<HostsListResponse> {
+  const response = await fetch("/api/v1/hosts");
+  if (!response.ok) {
+    throw new Error(`Failed to load hosts: ${response.status}`);
+  }
+  return hostsListResponseSchema.parse(await response.json());
+}
+
+export async function getHostDetail(hostId: string): Promise<RuntimeSnapshot> {
+  const response = await fetch(`/api/v1/hosts/${encodeURIComponent(hostId)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load host detail: ${response.status}`);
+  }
+  return runtimeSnapshotSchema.parse(await response.json());
 }

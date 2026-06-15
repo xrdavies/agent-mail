@@ -3,6 +3,9 @@ import { Bug, FileText, Home, Inbox, Layers, Server } from "lucide-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 
 import { DebugPage } from "./routes/debug-page.js";
+import { HostDetailPage } from "./routes/host-detail-page.js";
+import { HostsPage } from "./routes/hosts-page.js";
+import { OverviewPage } from "./routes/overview-page.js";
 import { PlaceholderPage } from "./routes/placeholder-page.js";
 
 const navItems = [
@@ -50,15 +53,14 @@ export function App() {
               breadcrumbCurrent="Overview"
               toolbar={
                 <>
-                  <span className="button subtle">Debug</span>
+                  <NavLink className="button subtle" to="/debug">
+                    Debug
+                  </NavLink>
                   <span className="button subtle">Last Sync 12:04:21</span>
                 </>
               }
             >
-              <PlaceholderPage
-                title="Overview"
-                summary="Overview UI will use /api/v1/web/overview."
-              />
+              <OverviewPage />
             </PageShell>
           }
         />
@@ -78,6 +80,24 @@ export function App() {
               <PlaceholderPage
                 title="Mailboxes"
                 summary="Mailbox pages will use /api/v1/web/mailboxes and /api/v1/web/mailboxes/:mailbox."
+              />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/mailboxes/:mailbox"
+          element={
+            <PageShell
+              breadcrumbCurrent="Mailbox Detail"
+              toolbar={
+                <>
+                  <span className="button subtle">Detail</span>
+                </>
+              }
+            >
+              <PlaceholderPage
+                title="Mailbox Detail"
+                summary="Mailbox detail UI will use /api/v1/web/mailboxes/:mailbox."
               />
             </PageShell>
           }
@@ -103,6 +123,24 @@ export function App() {
           }
         />
         <Route
+          path="/threads/:threadId"
+          element={
+            <PageShell
+              breadcrumbCurrent="Thread Detail"
+              toolbar={
+                <>
+                  <span className="button subtle">Detail</span>
+                </>
+              }
+            >
+              <PlaceholderPage
+                title="Thread Detail"
+                summary="Thread detail UI will use /api/v1/web/threads/:thread_id."
+              />
+            </PageShell>
+          }
+        />
+        <Route
           path="/mails"
           element={
             <PageShell
@@ -123,6 +161,24 @@ export function App() {
           }
         />
         <Route
+          path="/mails/:emailId"
+          element={
+            <PageShell
+              breadcrumbCurrent="Mail Detail"
+              toolbar={
+                <>
+                  <span className="button subtle">Detail</span>
+                </>
+              }
+            >
+              <PlaceholderPage
+                title="Mail Detail"
+                summary="Mail detail UI will use /api/v1/web/emails/:email_id."
+              />
+            </PageShell>
+          }
+        />
+        <Route
           path="/hosts"
           element={
             <PageShell
@@ -135,10 +191,22 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Hosts"
-                summary="Host pages will use /api/v1/hosts and /api/v1/hosts/:host_id."
-              />
+              <HostsPage />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/hosts/:hostId"
+          element={
+            <PageShell
+              breadcrumbCurrent="Host Detail"
+              toolbar={
+                <>
+                  <span className="button subtle">Detail</span>
+                </>
+              }
+            >
+              <HostDetailPage />
             </PageShell>
           }
         />
