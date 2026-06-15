@@ -666,7 +666,7 @@ button.button {
   appearance: auto;
 }
 
-.textarea-body {
+.field .textarea.textarea-body {
   min-height: 22rem;
 }
 
