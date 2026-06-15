@@ -7,13 +7,14 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "build": "rm -rf packages/contracts/dist apps/central/dist apps/host/dist && pnpm exec tsc -b tsconfig.json",
-    "typecheck": "pnpm exec tsc -b tsconfig.json --noEmit",
+    "build": "rm -rf packages/contracts/dist apps/central/dist apps/host/dist apps/central-web/dist && pnpm exec tsc -b tsconfig.json && pnpm --filter @agent-mail/central-web build",
+    "typecheck": "pnpm exec tsc -b tsconfig.json --noEmit && pnpm --filter @agent-mail/central-web typecheck",
     "test": "pnpm -r test",
-    "lint": "pnpm exec tsc -b tsconfig.json --noEmit",
+    "lint": "pnpm exec tsc -b tsconfig.json --noEmit && pnpm --filter @agent-mail/central-web typecheck",
     "db:generate": "pnpm --filter @agent-mail/central db:generate",
     "db:migrate": "pnpm --filter @agent-mail/central db:migrate",
     "dev:central": "pnpm --filter @agent-mail/central dev",
+    "dev:central-web": "pnpm --filter @agent-mail/central-web dev",
     "dev:host": "pnpm --filter @agent-mail/host dev",
     "local:start": "tsx scripts/local-start.ts",
     "local:status": "tsx scripts/local-status.ts",
