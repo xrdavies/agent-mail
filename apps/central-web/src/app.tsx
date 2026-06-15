@@ -6,6 +6,8 @@ import { DebugPage } from "./routes/debug-page.js";
 import { HostDetailPage } from "./routes/host-detail-page.js";
 import { HostsPage } from "./routes/hosts-page.js";
 import { MailDetailPage } from "./routes/mail-detail-page.js";
+import { MailboxDetailPage } from "./routes/mailbox-detail-page.js";
+import { MailboxesPage } from "./routes/mailboxes-page.js";
 import { MailsPage } from "./routes/mails-page.js";
 import { OverviewPage } from "./routes/overview-page.js";
 import { PlaceholderPage } from "./routes/placeholder-page.js";
@@ -81,10 +83,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Mailboxes"
-                summary="Mailbox pages will use /api/v1/web/mailboxes and /api/v1/web/mailboxes/:mailbox."
-              />
+              <MailboxesPage />
             </PageShell>
           }
         />
@@ -99,10 +98,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Mailbox Detail"
-                summary="Mailbox detail UI will use /api/v1/web/mailboxes/:mailbox."
-              />
+              <MailboxDetailPage />
             </PageShell>
           }
         />

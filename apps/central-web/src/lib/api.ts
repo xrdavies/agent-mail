@@ -4,6 +4,8 @@ import {
   hostsListResponseSchema,
   runtimeSnapshotSchema,
   threadDetailResponseSchema,
+  webMailboxDetailResponseSchema,
+  webMailboxesResponseSchema,
   webEmailsResponseSchema,
   webThreadsResponseSchema,
   webOverviewResponseSchema,
@@ -89,6 +91,8 @@ export type WebThreadsResponse = ReturnType<typeof webThreadsResponseSchema.pars
 export type ThreadDetailResponse = ReturnType<typeof threadDetailResponseSchema.parse>;
 export type WebEmailsResponse = ReturnType<typeof webEmailsResponseSchema.parse>;
 export type MailDetailResponse = ReturnType<typeof emailSchema.parse>;
+export type WebMailboxesResponse = ReturnType<typeof webMailboxesResponseSchema.parse>;
+export type MailboxDetailResponse = ReturnType<typeof webMailboxDetailResponseSchema.parse>;
 
 export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
 
@@ -146,4 +150,20 @@ export async function getMailDetail(emailId: string): Promise<MailDetailResponse
     throw new Error(`Failed to load mail detail: ${response.status}`);
   }
   return emailSchema.parse(await response.json());
+}
+
+export async function getMailboxes(): Promise<WebMailboxesResponse> {
+  const response = await fetch("/api/v1/web/mailboxes");
+  if (!response.ok) {
+    throw new Error(`Failed to load mailboxes: ${response.status}`);
+  }
+  return webMailboxesResponseSchema.parse(await response.json());
+}
+
+export async function getMailboxDetail(mailbox: string): Promise<MailboxDetailResponse> {
+  const response = await fetch(`/api/v1/web/mailboxes/${encodeURIComponent(mailbox)}?activity_limit=50`);
+  if (!response.ok) {
+    throw new Error(`Failed to load mailbox detail: ${response.status}`);
+  }
+  return webMailboxDetailResponseSchema.parse(await response.json());
 }
