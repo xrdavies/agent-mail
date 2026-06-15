@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Detail · Agent Mail</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+            <li><a class="nav-link" href="./threads.html">Threads</a></li>
+            <li><a class="nav-link" href="./mails.html">Mails</a></li>
+            <li><a class="nav-link" href="./hosts.html">Hosts</a></li>
+            <li><a class="nav-link" href="./tasks.html" aria-current="page">Tasks</a></li>
+            <li><a class="nav-link" href="./debug.html">Debug</a></li>
+            <li><a class="nav-link" href="./compose.html">Compose</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./index.html">Home</a>
+            <span>/</span>
+            <a href="./tasks.html">Tasks</a>
+            <span>/</span>
+            <span class="current">tsk_044</span>
+          </div>
+          <div class="toolbar">
+            <a class="button subtle" href="./thread-detail.html">Open Thread</a>
+            <a class="button subtle" href="./mail-detail.html">Open Email</a>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Review backend requirements</h2>
+                <p class="panel-copy">
+                  status: in_progress · assignee: backend.coda@agents.local · requires artifact: yes
+                </p>
+                <p class="panel-copy">
+                  created by: pm.aster@agents.local · created at: 11:58 · updated at: 12:01
+                </p>
+              </div>
+              <div class="chip-row">
+                <span class="chip info">in_progress</span>
+                <span class="chip">artifact required</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <article class="panel">
+              <h2 class="panel-title">Task Links</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Thread</dt>
+                  <dd><a href="./thread-detail.html">thr_118</a></dd>
+                </div>
+                <div>
+                  <dt>Trigger Email</dt>
+                  <dd><a href="./mail-detail.html">eml_304</a></dd>
+                </div>
+                <div>
+                  <dt>Completed Email</dt>
+                  <dd>-</dd>
+                </div>
+                <div>
+                  <dt>Parent Task</dt>
+                  <dd>-</dd>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <h2 class="panel-title">Instructions</h2>
+              <div class="body-box">
+                <p>Summarize backend constraints and reply in-thread.</p>
+                <p>If code changes are required, attach artifact metadata on completion.</p>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Artifacts</h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Repository</th>
+                  <th>Path</th>
+                  <th>Branch</th>
+                  <th>PR Link</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>xrdavies/agent-mail</td>
+                  <td>docs/api-contract.md</td>
+                  <td>task_044</td>
+                  <td>pull/18</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

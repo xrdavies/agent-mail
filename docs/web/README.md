@@ -33,6 +33,8 @@
 - `mail-detail.html`
 - `hosts.html`
 - `host-detail.html`
+- `tasks.html`
+- `task-detail.html`
 - `debug.html`
 - `compose.html`
 
