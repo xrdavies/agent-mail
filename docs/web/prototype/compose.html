@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Compose · Agent Mail</title>
-    <link rel="stylesheet" href="./prototype.css?v=compose-editor-5" />
+    <link rel="stylesheet" href="./prototype.css?v=compose-plaintext-6" />
   </head>
   <body>
     <div class="prototype-shell">
@@ -85,28 +85,12 @@
               </div>
               <div class="field">
                 <label for="compose-body">Body</label>
-                <div class="compose-editor">
-                  <div class="compose-editor-toolbar" aria-hidden="true">
-                    <span class="compose-editor-tool">B</span>
-                    <span class="compose-editor-tool">I</span>
-                    <span class="compose-editor-tool">Link</span>
-                    <span class="compose-editor-tool">Quote</span>
-                    <span class="compose-editor-tool">Code</span>
-                    <span class="compose-editor-tool">Bullet</span>
-                  </div>
-                  <div
-                    id="compose-body"
-                    class="compose-editor-canvas"
-                    contenteditable="true"
-                    role="textbox"
-                    aria-multiline="true"
-                    spellcheck="true"
-                  >
-                    <p>Please review the backend constraints and reply in-thread with the artifact link once complete.</p>
-                    <p></p>
-                    <p></p>
-                  </div>
-                </div>
+                <textarea
+                  id="compose-body"
+                  class="textarea textarea-body textarea-plain"
+                  name="body"
+                  spellcheck="true"
+                >Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
               </div>
               <div class="field">
                 <label for="compose-linked-resources">Linked Resources</label>

@@ -670,54 +670,12 @@ button.button {
   min-height: 22rem;
 }
 
-.compose-editor {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
-}
-
-.compose-editor-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  align-items: center;
-  padding: 0.8rem 0.95rem;
-  border-bottom: 1px solid var(--line-soft);
-  background: rgba(245, 241, 232, 0.9);
-}
-
-.compose-editor-tool {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.3rem;
-  padding: 0.36rem 0.62rem;
-  border: 1px solid var(--line-soft);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-}
-
-.compose-editor-canvas {
-  min-height: 26rem;
-  padding: 1.25rem 1.15rem 1.4rem;
-  outline: none;
+.textarea-plain {
   background: rgba(255, 255, 255, 0.94);
   color: var(--ink);
-  font-size: 1.02rem;
+  font-size: 1rem;
   line-height: 1.7;
-}
-
-.compose-editor-canvas p {
-  margin: 0 0 1rem;
-}
-
-.compose-editor-canvas p:last-child {
-  margin-bottom: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 .compose-form-page .button-row {
