@@ -5,6 +5,7 @@ import {
   debugLogsQuerySchema,
   debugLogsResponseSchema,
   healthResponseSchema,
+  hostsListResponseSchema,
   hostAuthExchangeRequestSchema,
   hostHeartbeatRequestSchema,
   hostRegisterRequestSchema,
@@ -15,6 +16,18 @@ import {
   sendEmailRequestSchema,
   unreadDeliveriesQuerySchema,
   updateTaskStatusRequestSchema
+  ,
+  runtimeSnapshotSchema,
+  taskSchema,
+  webEmailsQuerySchema,
+  webEmailsResponseSchema,
+  webMailboxDetailQuerySchema,
+  webMailboxDetailResponseSchema,
+  webMailboxesQuerySchema,
+  webMailboxesResponseSchema,
+  webOverviewResponseSchema,
+  webThreadsQuerySchema,
+  webThreadsResponseSchema
 } from "@agent-mail/contracts";
 import { z } from "zod";
 import { Hono, type Context } from "hono";
@@ -250,7 +263,11 @@ export function createApp(
       c.req.path === "/api/v1/health" ||
       c.req.path === "/api/v1/host-auth/exchange" ||
       c.req.path === "/api/v1/debug/logs" ||
-      c.req.path === "/api/v1/debug/logs/stream"
+      c.req.path === "/api/v1/debug/logs/stream" ||
+      (c.req.method === "GET" && c.req.path === "/api/v1/hosts") ||
+      (c.req.method === "GET" && /^\/api\/v1\/hosts\/[^/]+$/.test(c.req.path)) ||
+      (c.req.method === "GET" && c.req.path.startsWith("/api/v1/web/")) ||
+      (c.req.method === "GET" && /^\/api\/v1\/tasks\/[^/]+$/.test(c.req.path))
     ) {
       return next();
     }
@@ -312,6 +329,16 @@ export function createApp(
     return c.json(response, 200);
   });
 
+  app.get("/api/v1/hosts", async (c) => {
+    const response = await service.listHosts();
+    return c.json(hostsListResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/hosts/:host_id", async (c) => {
+    const response = await service.getRuntimeSnapshot(c.req.param("host_id"));
+    return c.json(runtimeSnapshotSchema.parse(response), 200);
+  });
+
   app.post("/api/v1/emails/send", async (c) => {
     const request = await parseJson(c, sendEmailRequestSchema);
     const response = await service.sendEmail(c.get("auth"), {
@@ -364,10 +391,61 @@ export function createApp(
     return c.json(response, 200);
   });
 
+  app.get("/api/v1/web/threads", async (c) => {
+    const query = parseQuery(c, webThreadsQuerySchema);
+    const response = await service.listWebThreads({
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.mailbox ? { mailbox: query.mailbox } : {}),
+      ...(query.limit ? { limit: query.limit } : {})
+    });
+    return c.json(webThreadsResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/emails", async (c) => {
+    const query = parseQuery(c, webEmailsQuerySchema);
+    const response = await service.listWebEmails({
+      ...(query.mailbox ? { mailbox: query.mailbox } : {}),
+      ...(query.thread_id ? { threadId: query.thread_id } : {}),
+      ...(query.kind ? { kind: query.kind } : {}),
+      ...(query.direction ? { direction: query.direction } : {}),
+      ...(query.limit ? { limit: query.limit } : {})
+    });
+    return c.json(webEmailsResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/mailboxes", async (c) => {
+    const query = parseQuery(c, webMailboxesQuerySchema);
+    const response = await service.listWebMailboxes({
+      ...(query.host_id ? { hostId: query.host_id } : {}),
+      ...(query.runtime_status ? { runtimeStatus: query.runtime_status } : {}),
+      ...(query.binding_status ? { bindingStatus: query.binding_status } : {}),
+      ...(query.has_unread !== undefined ? { hasUnread: query.has_unread } : {})
+    });
+    return c.json(webMailboxesResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/mailboxes/:mailbox", async (c) => {
+    const query = parseQuery(c, webMailboxDetailQuerySchema);
+    const response = await service.getWebMailboxDetail(c.req.param("mailbox"), {
+      ...(query.activity_limit ? { activityLimit: query.activity_limit } : {})
+    });
+    return c.json(webMailboxDetailResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/overview", async (c) => {
+    const response = await service.getWebOverview();
+    return c.json(webOverviewResponseSchema.parse(response), 200);
+  });
+
   app.post("/api/v1/tasks", async (c) => {
     const request = await parseJson(c, createTaskRequestSchema);
     const response = await service.createTask(c.get("auth"), request);
     return c.json(response, 201);
+  });
+
+  app.get("/api/v1/tasks/:task_id", async (c) => {
+    const response = await service.getTask(c.req.param("task_id"));
+    return c.json(taskSchema.parse(response), 200);
   });
 
   app.get("/api/v1/tasks", async (c) => {

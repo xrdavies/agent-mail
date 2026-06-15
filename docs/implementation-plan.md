@@ -35,11 +35,11 @@
 1. 先锁最小技术路线，再开始实现。
 2. 技术路线锁定后，再冻结规格与接口面。
 3. 先做 `Central` 数据与接口，再做 `Host` 和 `MCP`。
-4. 先打通一条最小闭环，再补调试与观测能力。
+4. 先打通一条最小闭环，再建设调试与观测能力。
 5. 先让一封邮件跑通，再扩大到更多角色和更多边界场景。
 6. `Web` 在第一阶段明确后置，不阻塞主链路实现。
 7. 所有实现都应直接遵循当前文档，不引入与文档冲突的实现路径。
-8. 恢复 `Web` 时，前端源码应独立组织，但运行时由 `Central` / `Host` 自己提供静态资源，不新增第三个常驻前端服务。
+8. 实现 `Web` 时，前端源码应独立组织，但运行时由 `Central` / `Host` 自己提供静态资源，不新增第三个常驻前端服务。
 
 ## 实施阶段总览
 
@@ -285,6 +285,44 @@
 
 - `GET /api/v1/mailboxes/:mailbox/deliveries`
 - `POST /api/v1/idempotency-keys/issue`
+
+### `central-web` 首批只读接口补充
+
+为了让 `central-web` 能按当前 prototype 逐页落地，`Central HTTP API` 在上述正式主链路之外，还应补一层面向 Web 的只读聚合接口。
+
+这批接口不替代现有资源接口，而是补充 `central-web` 所需的 read-model。
+
+#### P0：先补可直接支撑首批页面的接口
+
+- `GET /api/v1/hosts`
+  - `Hosts` 列表页
+- `GET /api/v1/hosts/:host_id`
+  - `Host Detail` 页
+- `GET /api/v1/tasks/:task_id`
+  - task 单项详情
+- `GET /api/v1/web/threads`
+  - `Threads` 列表页
+- `GET /api/v1/web/emails`
+  - `Mails` 列表页
+
+#### P1：再补 mailbox 与 dashboard 聚合接口
+
+- `GET /api/v1/web/mailboxes`
+  - `Mailboxes` 列表页
+- `GET /api/v1/web/mailboxes/:mailbox`
+  - `Mailbox Detail` 页
+- `GET /api/v1/web/overview`
+  - `Overview` 聚合页
+
+#### 单独后置，不放入本轮 P0/P1
+
+- `POST /api/v1/web/emails/human-send`
+
+原因：
+
+- 这是写接口，不是只读聚合接口
+- 它需要单独定义 human/operator 身份与 auth 语义
+- 不应与本轮 `central-web` 首批只读页面的实现混在一起
 
 ### 产物
 

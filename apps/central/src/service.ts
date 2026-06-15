@@ -449,6 +449,55 @@ export class CentralService {
     return mapAgentProfile(row);
   }
 
+  async listHosts(): Promise<{
+    hosts: Array<{
+      host: Host;
+      managed_mailboxes: number;
+      running_mailboxes: number;
+      failed_mailboxes: number;
+      unread_deliveries: number;
+    }>;
+  }> {
+    const [hostRows, bindingRows, runtimeRows, unreadRows] = await Promise.all([
+      this.db.select().from(hosts).orderBy(asc(hosts.label)),
+      this.db.select().from(mailboxBindings).orderBy(desc(mailboxBindings.createdAt)),
+      this.db.select().from(mailboxRuntimes),
+      this.db
+        .select()
+        .from(deliveries)
+        .where(eq(deliveries.readStatus, "unread"))
+    ]);
+
+    const latestBindings = latestByMailbox(bindingRows);
+    const runtimeByMailbox = new Map(runtimeRows.map((row) => [row.mailbox, row]));
+    const unreadCountByMailbox = countUnreadByMailbox(unreadRows);
+
+    return {
+      hosts: hostRows.map((row) => {
+        const activeBindings = [...latestBindings.values()].filter(
+          (binding) => binding.hostId === row.hostId && binding.bindingStatus === "active"
+        );
+        const mailboxes = activeBindings.map((binding) => binding.mailbox);
+        const hostRuntimes = mailboxes
+          .map((mailbox) => runtimeByMailbox.get(mailbox))
+          .filter((item): item is MailboxRuntimeRow => Boolean(item));
+
+        return {
+          host: mapHost(row),
+          managed_mailboxes: mailboxes.length,
+          running_mailboxes: hostRuntimes.filter((item) => item.mailboxRuntimeStatus === "running")
+            .length,
+          failed_mailboxes: hostRuntimes.filter((item) => item.mailboxRuntimeStatus === "failed")
+            .length,
+          unread_deliveries: mailboxes.reduce(
+            (sum, mailbox) => sum + (unreadCountByMailbox.get(mailbox) ?? 0),
+            0
+          )
+        };
+      })
+    };
+  }
+
   async sendEmail(auth: AuthenticatedHost, request: SendEmailRequest): Promise<{
     email: Email;
     deliveries: Delivery[];
@@ -934,6 +983,462 @@ export class CentralService {
       emails: emailRows.map(mapEmail),
       linked_resources: linkedRows.map(mapLinkedResource),
       tasks: taskRows.map(mapTask)
+    };
+  }
+
+  async listWebThreads(options: {
+    status?: Thread["thread_status"];
+    mailbox?: string;
+    limit?: number;
+  }): Promise<{
+    threads: Array<{
+      thread: Thread;
+      participants: string[];
+      latest_email: Email | null;
+      open_task_count: number;
+    }>;
+  }> {
+    const threadRows = await this.db
+      .select()
+      .from(threads)
+      .where(options.status ? eq(threads.threadStatus, options.status) : undefined)
+      .orderBy(desc(threads.updatedAt));
+
+    const threadIds = threadRows.map((row) => row.threadId);
+    if (threadIds.length === 0) {
+      return { threads: [] };
+    }
+
+    const [emailRows, taskRows] = await Promise.all([
+      this.db
+        .select()
+        .from(emails)
+        .where(inArray(emails.threadId, threadIds))
+        .orderBy(asc(emails.createdAt)),
+      this.db
+        .select()
+        .from(tasks)
+        .where(inArray(tasks.threadId, threadIds))
+        .orderBy(desc(tasks.updatedAt))
+    ]);
+
+    const emailsByThread = groupBy(emailRows, (row) => row.threadId);
+    const tasksByThread = groupBy(taskRows, (row) => row.threadId);
+
+    const summaries = threadRows
+      .map((row) => {
+        const emailsForThread = emailsByThread.get(row.threadId) ?? [];
+        const tasksForThread = tasksByThread.get(row.threadId) ?? [];
+        const participants = collectParticipants(emailsForThread);
+        const latestEmail = emailsForThread.at(-1) ?? null;
+
+        return {
+          thread: mapThread(row),
+          participants,
+          latest_email: latestEmail ? mapEmail(latestEmail) : null,
+          open_task_count: tasksForThread.filter((item) => item.status !== "done").length,
+          _matchesMailbox:
+            !options.mailbox ||
+            participants.includes(options.mailbox) ||
+            tasksForThread.some(
+              (item) =>
+                item.assigneeMailbox === options.mailbox || item.createdByMailbox === options.mailbox
+            )
+        };
+      })
+      .filter((item) => item._matchesMailbox)
+      .map(({ _matchesMailbox: _unused, ...item }) => item);
+
+    return {
+      threads: options.limit ? summaries.slice(0, options.limit) : summaries
+    };
+  }
+
+  async listWebEmails(options: {
+    mailbox?: string;
+    threadId?: string;
+    kind?: Email["email_kind"];
+    direction?: "sent" | "received";
+    limit?: number;
+  }): Promise<{
+    emails: Array<{
+      email: Email;
+      direction: "sent" | "received" | null;
+      counterparty: string | null;
+    }>;
+  }> {
+    const conditions = [];
+    if (options.threadId) {
+      conditions.push(eq(emails.threadId, options.threadId));
+    }
+    if (options.kind) {
+      conditions.push(eq(emails.emailKind, options.kind));
+    }
+
+    const emailRows = await this.db
+      .select()
+      .from(emails)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(emails.createdAt));
+
+    const emailIds = emailRows.map((row) => row.emailId);
+    const deliveryRows = emailIds.length
+      ? await this.db
+          .select()
+          .from(deliveries)
+          .where(inArray(deliveries.emailId, emailIds))
+      : [];
+    const deliveriesByEmail = groupBy(deliveryRows, (row) => row.emailId);
+
+    const summaries = emailRows
+      .map((row) => {
+        const deliveriesForEmail = deliveriesByEmail.get(row.emailId) ?? [];
+        let direction: "sent" | "received" | null = null;
+        let counterparty: string | null = null;
+
+        if (options.mailbox) {
+          if (row.createdByMailbox === options.mailbox || row.fromJson.address === options.mailbox) {
+            direction = "sent";
+            counterparty = firstCounterparty(row, options.mailbox);
+          } else if (
+            deliveriesForEmail.some((delivery) => delivery.recipientMailbox === options.mailbox)
+          ) {
+            direction = "received";
+            counterparty = row.fromJson.address;
+          }
+        } else {
+          direction = row.createdByMailbox ? "sent" : deliveriesForEmail.length > 0 ? "received" : null;
+          counterparty = direction === "sent" ? firstCounterparty(row, row.fromJson.address) : row.fromJson.address;
+        }
+
+        return {
+          email: mapEmail(row),
+          direction,
+          counterparty
+        };
+      })
+      .filter((item) => {
+        if (options.mailbox && item.direction === null) {
+          return false;
+        }
+        if (options.direction && item.direction !== options.direction) {
+          return false;
+        }
+        return true;
+      });
+
+    return {
+      emails: options.limit ? summaries.slice(0, options.limit) : summaries
+    };
+  }
+
+  async listWebMailboxes(options: {
+    hostId?: string;
+    runtimeStatus?: "bootstrapping" | "idle" | "running" | "failed" | "cleared";
+    bindingStatus?: "active" | "inactive" | "failed";
+    hasUnread?: boolean;
+  }): Promise<{
+    mailboxes: Array<{
+      profile: AgentProfile;
+      binding: MailboxBinding | null;
+      runtime: ReturnType<typeof mapMailboxRuntime> | null;
+      host: Host | null;
+      unread_deliveries: number;
+      open_task_count: number;
+    }>;
+  }> {
+    const [profileRows, bindingRows, runtimeRows, hostRows, unreadRows, taskRows] = await Promise.all([
+      this.db
+        .select()
+        .from(agentProfiles)
+        .where(eq(agentProfiles.profileStatus, "active"))
+        .orderBy(asc(agentProfiles.mailbox)),
+      this.db.select().from(mailboxBindings).orderBy(desc(mailboxBindings.createdAt)),
+      this.db.select().from(mailboxRuntimes),
+      this.db.select().from(hosts),
+      this.db
+        .select()
+        .from(deliveries)
+        .where(eq(deliveries.readStatus, "unread")),
+      this.db
+        .select()
+        .from(tasks)
+        .where(ne(tasks.status, "done"))
+    ]);
+
+    const latestBindings = latestByMailbox(bindingRows);
+    const runtimeByMailbox = new Map(runtimeRows.map((row) => [row.mailbox, row]));
+    const hostById = new Map(hostRows.map((row) => [row.hostId, row]));
+    const unreadCountByMailbox = countUnreadByMailbox(unreadRows);
+    const openTaskCountByMailbox = countOpenTasksByMailbox(taskRows);
+
+    const mailboxes = profileRows
+      .map((row) => {
+        const bindingRow = latestBindings.get(row.mailbox) ?? null;
+        const runtimeRow = runtimeByMailbox.get(row.mailbox) ?? null;
+        const hostRow = hostById.get(runtimeRow?.hostId ?? bindingRow?.hostId ?? "") ?? null;
+        const unreadCount = unreadCountByMailbox.get(row.mailbox) ?? 0;
+
+        return {
+          profile: mapAgentProfile(row),
+          binding: bindingRow ? mapMailboxBinding(bindingRow) : null,
+          runtime: runtimeRow ? mapMailboxRuntime(runtimeRow) : null,
+          host: hostRow ? mapHost(hostRow) : null,
+          unread_deliveries: unreadCount,
+          open_task_count: openTaskCountByMailbox.get(row.mailbox) ?? 0
+        };
+      })
+      .filter((item) => {
+        if (options.hostId) {
+          const currentHostId = item.runtime?.host_id ?? item.binding?.host_id ?? null;
+          if (currentHostId !== options.hostId) {
+            return false;
+          }
+        }
+        if (options.runtimeStatus && item.runtime?.mailbox_runtime_status !== options.runtimeStatus) {
+          return false;
+        }
+        if (options.bindingStatus && item.binding?.binding_status !== options.bindingStatus) {
+          return false;
+        }
+        if (options.hasUnread !== undefined) {
+          if (options.hasUnread && item.unread_deliveries === 0) {
+            return false;
+          }
+          if (!options.hasUnread && item.unread_deliveries > 0) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+    return { mailboxes };
+  }
+
+  async getWebMailboxDetail(
+    mailbox: string,
+    options: {
+      activityLimit?: number;
+    } = {}
+  ): Promise<{
+    profile: AgentProfile;
+    binding: MailboxBinding | null;
+    runtime: ReturnType<typeof mapMailboxRuntime> | null;
+    host: Host | null;
+    activity: Array<{
+      direction: "sent" | "received";
+      email: Email;
+      delivery: Delivery | null;
+    }>;
+    threads: Thread[];
+    tasks: Task[];
+  }> {
+    const activityLimit = options.activityLimit ?? 50;
+    const profile = await this.getAgentByMailbox(mailbox);
+
+    const [bindingRow, runtimeRow, sentEmailRows, receivedDeliveryRows, taskRows] = await Promise.all([
+      this.db
+        .select()
+        .from(mailboxBindings)
+        .where(eq(mailboxBindings.mailbox, mailbox))
+        .orderBy(desc(mailboxBindings.createdAt))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      this.db
+        .select()
+        .from(mailboxRuntimes)
+        .where(eq(mailboxRuntimes.mailbox, mailbox))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      this.db
+        .select()
+        .from(emails)
+        .where(eq(emails.createdByMailbox, mailbox))
+        .orderBy(desc(emails.createdAt))
+        .limit(activityLimit),
+      this.db
+        .select()
+        .from(deliveries)
+        .where(eq(deliveries.recipientMailbox, mailbox))
+        .orderBy(desc(deliveries.createdAt))
+        .limit(activityLimit),
+      this.db
+        .select()
+        .from(tasks)
+        .where(or(eq(tasks.assigneeMailbox, mailbox), eq(tasks.createdByMailbox, mailbox)))
+        .orderBy(desc(tasks.updatedAt))
+    ]);
+
+    const hostRow =
+      runtimeRow || bindingRow
+        ? (
+            await this.db
+              .select()
+              .from(hosts)
+              .where(eq(hosts.hostId, runtimeRow?.hostId ?? bindingRow!.hostId))
+              .limit(1)
+          )[0] ?? null
+        : null;
+
+    const activityEmailIds = [
+      ...sentEmailRows.map((row) => row.emailId),
+      ...receivedDeliveryRows.map((row) => row.emailId)
+    ];
+    const uniqueEmailIds = [...new Set(activityEmailIds)];
+    const activityEmailRows = uniqueEmailIds.length
+      ? await this.db.select().from(emails).where(inArray(emails.emailId, uniqueEmailIds))
+      : [];
+    const emailById = new Map(activityEmailRows.map((row) => [row.emailId, row]));
+
+    const activity = [
+      ...sentEmailRows.map((row) => ({
+        sortAt: row.createdAt.getTime(),
+        direction: "sent" as const,
+        email: mapEmail(row),
+        delivery: null
+      })),
+      ...receivedDeliveryRows
+        .map((row) => {
+          const emailRow = emailById.get(row.emailId);
+          if (!emailRow) {
+            return null;
+          }
+          return {
+            sortAt: row.createdAt.getTime(),
+            direction: "received" as const,
+            email: mapEmail(emailRow),
+            delivery: mapDelivery(row)
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    ]
+      .sort((a, b) => b.sortAt - a.sortAt)
+      .slice(0, activityLimit)
+      .map(({ sortAt: _sortAt, ...item }) => item);
+
+    const threadIds = [
+      ...new Set([
+        ...activity.map((item) => item.email.thread_id),
+        ...taskRows.map((row) => row.threadId)
+      ])
+    ];
+    const threadRows = threadIds.length
+      ? await this.db
+          .select()
+          .from(threads)
+          .where(inArray(threads.threadId, threadIds))
+          .orderBy(desc(threads.updatedAt))
+      : [];
+
+    return {
+      profile,
+      binding: bindingRow ? mapMailboxBinding(bindingRow) : null,
+      runtime: runtimeRow ? mapMailboxRuntime(runtimeRow) : null,
+      host: hostRow ? mapHost(hostRow) : null,
+      activity,
+      threads: threadRows.map(mapThread),
+      tasks: taskRows.map(mapTask)
+    };
+  }
+
+  async getWebOverview(): Promise<{
+    counters: {
+      unread_deliveries: number;
+      waiting_human_threads: number;
+      blocked_tasks: number;
+      online_hosts: number;
+    };
+    oldest_unread: Array<{
+      delivery: Delivery;
+      email: Email;
+    }>;
+    host_health: Array<{
+      host: Host;
+      managed_mailboxes: number;
+      running_mailboxes: number;
+      failed_mailboxes: number;
+      unread_deliveries: number;
+    }>;
+    attention_threads: Array<{
+      thread: Thread;
+      participants: string[];
+      latest_email: Email | null;
+      open_task_count: number;
+    }>;
+    recent_activity: Array<{
+      type: "email" | "task" | "host";
+      title: string;
+      subtitle: string;
+      at: string;
+      thread_id: string | null;
+      email_id: string | null;
+      host_id: string | null;
+      mailbox: string | null;
+    }>;
+  }> {
+    const [hostHealth, unreadRows, threadRows, taskRows, recentEmailRows] = await Promise.all([
+      this.listHosts(),
+      this.db
+        .select()
+        .from(deliveries)
+        .where(eq(deliveries.readStatus, "unread"))
+        .orderBy(asc(deliveries.createdAt)),
+      this.db.select().from(threads),
+      this.db.select().from(tasks),
+      this.db.select().from(emails).orderBy(desc(emails.createdAt)).limit(10)
+    ]);
+
+    const oldestUnreadRows = unreadRows.slice(0, 10);
+    const oldestUnreadEmailIds = oldestUnreadRows.map((row) => row.emailId);
+    const oldestUnreadEmailRows = oldestUnreadEmailIds.length
+      ? await this.db.select().from(emails).where(inArray(emails.emailId, oldestUnreadEmailIds))
+      : [];
+    const emailById = new Map(oldestUnreadEmailRows.map((row) => [row.emailId, row]));
+
+    const attentionThreadIds = threadRows
+      .filter((row) => row.threadStatus === "waiting_human" || row.threadStatus === "blocked")
+      .map((row) => row.threadId);
+
+    const attentionThreadResponse = attentionThreadIds.length
+      ? await this.listWebThreads({ limit: 20 })
+      : { threads: [] };
+
+    return {
+      counters: {
+        unread_deliveries: unreadRows.length,
+        waiting_human_threads: threadRows.filter((row) => row.threadStatus === "waiting_human").length,
+        blocked_tasks: taskRows.filter((row) => row.status === "blocked").length,
+        online_hosts: hostHealth.hosts.filter((item) => item.host.host_status === "online").length
+      },
+      oldest_unread: oldestUnreadRows
+        .map((row) => {
+          const emailRow = emailById.get(row.emailId);
+          if (!emailRow) {
+            return null;
+          }
+          return {
+            delivery: mapDelivery(row),
+            email: mapEmail(emailRow)
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => Boolean(item)),
+      host_health: hostHealth.hosts,
+      attention_threads: attentionThreadResponse.threads
+        .filter(
+          (item) =>
+            item.thread.thread_status === "waiting_human" || item.thread.thread_status === "blocked"
+        )
+        .slice(0, 10),
+      recent_activity: recentEmailRows.map((row) => ({
+        type: "email" as const,
+        title: `${row.fromJson.display_name} · ${row.subject}`,
+        subtitle: row.emailKind,
+        at: row.createdAt.toISOString(),
+        thread_id: row.threadId,
+        email_id: row.emailId,
+        host_id: row.createdByHostId ?? null,
+        mailbox: row.createdByMailbox ?? row.fromJson.address
+      }))
     };
   }
 
@@ -1529,6 +2034,70 @@ function mapLinkedResource(row: LinkedResourceRow): LinkedResource {
     size_bytes: row.sizeBytes ?? null,
     created_at: row.createdAt.toISOString()
   };
+}
+
+function latestByMailbox<T extends { mailbox: string; createdAt: Date }>(rows: T[]): Map<string, T> {
+  const map = new Map<string, T>();
+  for (const row of rows) {
+    if (!map.has(row.mailbox)) {
+      map.set(row.mailbox, row);
+    }
+  }
+  return map;
+}
+
+function groupBy<T>(rows: T[], getKey: (row: T) => string): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  for (const row of rows) {
+    const key = getKey(row);
+    const group = map.get(key);
+    if (group) {
+      group.push(row);
+    } else {
+      map.set(key, [row]);
+    }
+  }
+  return map;
+}
+
+function collectParticipants(rows: EmailRow[]): string[] {
+  const participants = new Set<string>();
+  for (const row of rows) {
+    participants.add(row.fromJson.address);
+    for (const item of row.toJson) {
+      participants.add(item.address);
+    }
+    for (const item of row.ccJson) {
+      participants.add(item.address);
+    }
+  }
+  return [...participants];
+}
+
+function countUnreadByMailbox(rows: DeliveryRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    if (!row.recipientMailbox) {
+      continue;
+    }
+    counts.set(row.recipientMailbox, (counts.get(row.recipientMailbox) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function countOpenTasksByMailbox(rows: TaskRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    counts.set(row.assigneeMailbox, (counts.get(row.assigneeMailbox) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function firstCounterparty(row: EmailRow, mailbox: string): string | null {
+  const recipients = [...row.toJson, ...row.ccJson]
+    .map((item) => item.address)
+    .filter((address) => address !== mailbox);
+  return recipients[0] ?? null;
 }
 
 function isHostHealthy(host: HostRow): boolean {

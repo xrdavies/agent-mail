@@ -9,7 +9,8 @@ import {
   linkedResourceInputSchema,
   mailboxRuntimeStatusSchema,
   mailboxSchema,
-  taskMutableStatusSchema
+  taskMutableStatusSchema,
+  threadStatusSchema
 } from "./primitives.js";
 import {
   agentProfileSchema,
@@ -234,6 +235,124 @@ export const debugLogsQuerySchema = z.object({
 
 export const debugLogsResponseSchema = z.object({
   events: z.array(centralLogEventSchema)
+});
+
+export const hostSummarySchema = z.object({
+  host: hostSchema,
+  managed_mailboxes: z.number().int().nonnegative(),
+  running_mailboxes: z.number().int().nonnegative(),
+  failed_mailboxes: z.number().int().nonnegative(),
+  unread_deliveries: z.number().int().nonnegative()
+});
+
+export const hostsListResponseSchema = z.object({
+  hosts: z.array(hostSummarySchema)
+});
+
+export const webThreadsQuerySchema = z.object({
+  status: threadStatusSchema.optional(),
+  mailbox: mailboxSchema.optional(),
+  limit: z.coerce.number().int().positive().max(200).optional()
+});
+
+export const webThreadSummarySchema = z.object({
+  thread: threadSchema,
+  participants: z.array(mailboxSchema),
+  latest_email: emailSchema.nullable(),
+  open_task_count: z.number().int().nonnegative()
+});
+
+export const webThreadsResponseSchema = z.object({
+  threads: z.array(webThreadSummarySchema)
+});
+
+export const webEmailsQuerySchema = z.object({
+  mailbox: mailboxSchema.optional(),
+  thread_id: identifierSchema.optional(),
+  kind: emailKindSchema.optional(),
+  direction: z.enum(["sent", "received"]).optional(),
+  limit: z.coerce.number().int().positive().max(200).optional()
+});
+
+export const webEmailSummarySchema = z.object({
+  email: emailSchema,
+  direction: z.enum(["sent", "received"]).nullable(),
+  counterparty: mailboxSchema.nullable()
+});
+
+export const webEmailsResponseSchema = z.object({
+  emails: z.array(webEmailSummarySchema)
+});
+
+export const webMailboxesQuerySchema = z.object({
+  host_id: identifierSchema.optional(),
+  runtime_status: mailboxRuntimeStatusSchema.optional(),
+  binding_status: z.enum(["active", "inactive", "failed"]).optional(),
+  has_unread: z.coerce.boolean().optional()
+});
+
+export const webMailboxSummarySchema = z.object({
+  profile: agentProfileSchema,
+  binding: mailboxBindingSchema.nullable(),
+  runtime: mailboxRuntimeSchema.nullable(),
+  host: hostSchema.nullable(),
+  unread_deliveries: z.number().int().nonnegative(),
+  open_task_count: z.number().int().nonnegative()
+});
+
+export const webMailboxesResponseSchema = z.object({
+  mailboxes: z.array(webMailboxSummarySchema)
+});
+
+export const webMailboxDetailQuerySchema = z.object({
+  activity_limit: z.coerce.number().int().positive().max(200).optional()
+});
+
+export const webMailboxActivityItemSchema = z.object({
+  direction: z.enum(["sent", "received"]),
+  email: emailSchema,
+  delivery: deliverySchema.nullable()
+});
+
+export const webMailboxDetailResponseSchema = z.object({
+  profile: agentProfileSchema,
+  binding: mailboxBindingSchema.nullable(),
+  runtime: mailboxRuntimeSchema.nullable(),
+  host: hostSchema.nullable(),
+  activity: z.array(webMailboxActivityItemSchema),
+  threads: z.array(threadSchema),
+  tasks: z.array(taskSchema)
+});
+
+export const webOverviewCountersSchema = z.object({
+  unread_deliveries: z.number().int().nonnegative(),
+  waiting_human_threads: z.number().int().nonnegative(),
+  blocked_tasks: z.number().int().nonnegative(),
+  online_hosts: z.number().int().nonnegative()
+});
+
+export const webOverviewUnreadItemSchema = z.object({
+  delivery: deliverySchema,
+  email: emailSchema
+});
+
+export const webRecentActivityItemSchema = z.object({
+  type: z.enum(["email", "task", "host"]),
+  title: z.string().min(1),
+  subtitle: z.string().min(1),
+  at: isoTimestampSchema,
+  thread_id: identifierSchema.nullable(),
+  email_id: identifierSchema.nullable(),
+  host_id: identifierSchema.nullable(),
+  mailbox: mailboxSchema.nullable()
+});
+
+export const webOverviewResponseSchema = z.object({
+  counters: webOverviewCountersSchema,
+  oldest_unread: z.array(webOverviewUnreadItemSchema),
+  host_health: z.array(hostSummarySchema),
+  attention_threads: z.array(webThreadSummarySchema),
+  recent_activity: z.array(webRecentActivityItemSchema)
 });
 
 export type HostAuthExchangeRequest = z.infer<typeof hostAuthExchangeRequestSchema>;

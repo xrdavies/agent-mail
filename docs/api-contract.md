@@ -404,7 +404,8 @@ Structured address objects 是规范形式。
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -428,7 +429,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -478,7 +480,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -513,7 +516,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -552,7 +556,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -570,7 +575,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -586,7 +592,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -816,6 +823,24 @@ Auth：
 
 - `Task[]`
 
+### `GET /api/v1/tasks/:task_id`
+
+用途：
+
+- 供 Web / Debug / 详情页按 id 获取单个 task
+
+Auth：
+
+- 必需
+
+响应 `200`：
+
+- `Task`
+
+响应 `404`：
+
+- task 不存在
+
 ### `PATCH /api/v1/tasks/:task_id/status`
 
 用途：
@@ -865,6 +890,225 @@ Auth：
   - completion email 属于同一 thread
   - completion email sender 与 task assignee 一致
   - completion email 的创建时间晚于 task 创建时间
+
+## Web Read Model API
+
+这些接口服务于 `central-web`，目的是减少前端自己用多个底层接口做 N+1 拼装。
+
+### `GET /api/v1/hosts`
+
+用途：
+
+- 供 `Hosts` 列表页读取 host 摘要
+
+Auth：
+
+- 必需
+
+响应 `200`：
+
+```json
+{
+  "hosts": [
+    {
+      "host": "Host",
+      "managed_mailboxes": 3,
+      "running_mailboxes": 1,
+      "failed_mailboxes": 0,
+      "unread_deliveries": 3
+    }
+  ]
+}
+```
+
+### `GET /api/v1/hosts/:host_id`
+
+用途：
+
+- 供 `Host Detail` 页读取 host runtime snapshot
+
+Auth：
+
+- 必需
+
+响应 `200`：
+
+- `runtimeSnapshotSchema`
+
+### `GET /api/v1/web/threads`
+
+用途：
+
+- 供 `Threads` 列表页读取 thread summary 列表
+
+Auth：
+
+- 必需
+
+查询参数：
+
+- `status`
+- `mailbox`
+- `limit`
+
+响应 `200`：
+
+```json
+{
+  "threads": [
+    {
+      "thread": "Thread",
+      "participants": ["pm.aster@agents.local", "backend.coda@agents.local"],
+      "latest_email": "Email",
+      "open_task_count": 1
+    }
+  ]
+}
+```
+
+### `GET /api/v1/web/emails`
+
+用途：
+
+- 供 `Mails` 列表页读取 email summary 列表
+
+Auth：
+
+- 必需
+
+查询参数：
+
+- `mailbox`
+- `thread_id`
+- `kind`
+- `direction`
+- `limit`
+
+响应 `200`：
+
+```json
+{
+  "emails": [
+    {
+      "email": "Email",
+      "direction": "sent",
+      "counterparty": "backend.coda@agents.local"
+    }
+  ]
+}
+```
+
+### `GET /api/v1/web/mailboxes`
+
+用途：
+
+- 供 `Mailboxes` 列表页读取 mailbox summary 列表
+
+Auth：
+
+- 必需
+
+查询参数：
+
+- `host_id`
+- `runtime_status`
+- `binding_status`
+- `has_unread`
+
+响应 `200`：
+
+```json
+{
+  "mailboxes": [
+    {
+      "profile": "AgentProfile",
+      "binding": "MailboxBinding",
+      "runtime": "MailboxRuntime",
+      "host": "Host",
+      "unread_deliveries": 2,
+      "open_task_count": 1
+    }
+  ]
+}
+```
+
+### `GET /api/v1/web/mailboxes/:mailbox`
+
+用途：
+
+- 供 `Mailbox Detail` 页读取 mailbox 聚合详情
+
+Auth：
+
+- 必需
+
+查询参数：
+
+- `activity_limit`
+
+响应 `200`：
+
+```json
+{
+  "profile": "AgentProfile",
+  "binding": "MailboxBinding",
+  "runtime": "MailboxRuntime",
+  "host": "Host",
+  "activity": [
+    {
+      "direction": "sent",
+      "email": "Email",
+      "delivery": null
+    },
+    {
+      "direction": "received",
+      "email": "Email",
+      "delivery": "Delivery"
+    }
+  ],
+  "threads": ["Thread"],
+  "tasks": ["Task"]
+}
+```
+
+### `GET /api/v1/web/overview`
+
+用途：
+
+- 供 `Overview` 页读取 dashboard 聚合数据
+
+Auth：
+
+- 必需
+
+响应 `200`：
+
+```json
+{
+  "counters": {
+    "unread_deliveries": 12,
+    "waiting_human_threads": 4,
+    "blocked_tasks": 3,
+    "online_hosts": 2
+  },
+  "oldest_unread": [],
+  "host_health": [],
+  "attention_threads": [],
+  "recent_activity": []
+}
+```
+
+## Deferred Web Write API
+
+以下接口在本轮不纳入 P0/P1：
+
+### `POST /api/v1/web/emails/human-send`
+
+原因：
+
+- 这是 human/operator 写路径，不是只读 read-model
+- 需要单独定义 operator 身份与 auth 语义
+- 不应与 `central-web` 首批只读页面混在同一轮实现
 
 ## Debug 只读 API
 
