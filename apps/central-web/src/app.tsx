@@ -5,6 +5,8 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { DebugPage } from "./routes/debug-page.js";
 import { HostDetailPage } from "./routes/host-detail-page.js";
 import { HostsPage } from "./routes/hosts-page.js";
+import { MailDetailPage } from "./routes/mail-detail-page.js";
+import { MailsPage } from "./routes/mails-page.js";
 import { OverviewPage } from "./routes/overview-page.js";
 import { PlaceholderPage } from "./routes/placeholder-page.js";
 import { ThreadDetailPage } from "./routes/thread-detail-page.js";
@@ -149,10 +151,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Mails"
-                summary="Mail list/detail will use /api/v1/web/emails and /api/v1/web/emails/:email_id."
-              />
+              <MailsPage />
             </PageShell>
           }
         />
@@ -167,10 +166,7 @@ export function App() {
                 </>
               }
             >
-              <PlaceholderPage
-                title="Mail Detail"
-                summary="Mail detail UI will use /api/v1/web/emails/:email_id."
-              />
+              <MailDetailPage />
             </PageShell>
           }
         />

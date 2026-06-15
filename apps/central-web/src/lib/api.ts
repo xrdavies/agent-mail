@@ -1,8 +1,10 @@
 import {
   debugLogsResponseSchema,
+  emailSchema,
   hostsListResponseSchema,
   runtimeSnapshotSchema,
   threadDetailResponseSchema,
+  webEmailsResponseSchema,
   webThreadsResponseSchema,
   webOverviewResponseSchema,
   type CentralLogEvent,
@@ -85,6 +87,8 @@ export type HostsListResponse = ReturnType<typeof hostsListResponseSchema.parse>
 export type RuntimeSnapshot = ReturnType<typeof runtimeSnapshotSchema.parse>;
 export type WebThreadsResponse = ReturnType<typeof webThreadsResponseSchema.parse>;
 export type ThreadDetailResponse = ReturnType<typeof threadDetailResponseSchema.parse>;
+export type WebEmailsResponse = ReturnType<typeof webEmailsResponseSchema.parse>;
+export type MailDetailResponse = ReturnType<typeof emailSchema.parse>;
 
 export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
 
@@ -126,4 +130,20 @@ export async function getThreadDetail(threadId: string): Promise<ThreadDetailRes
     throw new Error(`Failed to load thread detail: ${response.status}`);
   }
   return threadDetailResponseSchema.parse(await response.json());
+}
+
+export async function getMails(): Promise<WebEmailsResponse> {
+  const response = await fetch("/api/v1/web/emails?limit=50");
+  if (!response.ok) {
+    throw new Error(`Failed to load mails: ${response.status}`);
+  }
+  return webEmailsResponseSchema.parse(await response.json());
+}
+
+export async function getMailDetail(emailId: string): Promise<MailDetailResponse> {
+  const response = await fetch(`/api/v1/web/emails/${encodeURIComponent(emailId)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load mail detail: ${response.status}`);
+  }
+  return emailSchema.parse(await response.json());
 }

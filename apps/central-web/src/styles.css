@@ -458,6 +458,51 @@ button.button {
   color: var(--muted);
 }
 
+.inline-details summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.inline-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.inline-details summary::before {
+  content: "+";
+  display: inline-block;
+  margin-right: 0.45rem;
+}
+
+.inline-details[open] summary::before {
+  content: "-";
+}
+
+.inline-details-content {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.body-box {
+  min-height: 14rem;
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.body-box p {
+  margin: 0 0 1rem;
+}
+
+.body-box p:last-child {
+  margin-bottom: 0;
+}
+
 .card-link {
   display: block;
   padding: var(--space-4);
