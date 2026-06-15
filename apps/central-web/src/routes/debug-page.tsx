@@ -105,22 +105,6 @@ export function DebugPage() {
         </article>
       </section>
 
-      <section className="panel">
-        <div className="panel-header">
-          <div className="chip-row">
-            <span className="chip active">All</span>
-            <span className="chip">Errors Only</span>
-            <span className="chip">Debug Only</span>
-            <span className="chip">Host mac-local</span>
-            <span className="chip">/api/v1/tasks</span>
-          </div>
-          <div className="button-row">
-            <span className="button subtle">request_id</span>
-            <span className="button subtle">status &gt;= 400</span>
-          </div>
-        </div>
-      </section>
-
       <section className="grid-2">
         <article className="panel">
           <p className="eyebrow">Errors</p>
