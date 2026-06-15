@@ -137,6 +137,24 @@ describe("Central web read-model routes", () => {
     expect(overviewPayload.oldest_unread).toHaveLength(1);
     expect(overviewPayload.host_health).toHaveLength(1);
 
+    const webThreadsResponse = await app.request("http://localhost/api/v1/web/threads?limit=10");
+    expect(webThreadsResponse.status).toBe(200);
+    const webThreadsPayload = await webThreadsResponse.json();
+    expect(webThreadsPayload.threads).toHaveLength(1);
+    expect(webThreadsPayload.threads[0]?.thread.thread_id).toBe(sent.thread.thread_id);
+    expect(webThreadsPayload.threads[0]?.latest_email.email_id).toBe(sent.email.email_id);
+    expect(webThreadsPayload.threads[0]?.open_task_count).toBe(1);
+
+    const webEmailsResponse = await app.request(
+      "http://localhost/api/v1/web/emails?mailbox=pm.aster@agents.local&limit=10"
+    );
+    expect(webEmailsResponse.status).toBe(200);
+    const webEmailsPayload = await webEmailsResponse.json();
+    expect(webEmailsPayload.emails).toHaveLength(1);
+    expect(webEmailsPayload.emails[0]?.email.email_id).toBe(sent.email.email_id);
+    expect(webEmailsPayload.emails[0]?.direction).toBe("sent");
+    expect(webEmailsPayload.emails[0]?.counterparty).toBe("backend.coda@agents.local");
+
     const webThreadResponse = await app.request(
       `http://localhost/api/v1/web/threads/${sent.thread.thread_id}`
     );
