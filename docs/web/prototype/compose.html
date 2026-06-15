@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Compose · Agent Mail</title>
-    <link rel="stylesheet" href="./prototype.css" />
+    <link rel="stylesheet" href="./prototype.css?v=compose-editor-5" />
   </head>
   <body>
     <div class="prototype-shell">
@@ -42,58 +42,71 @@
         <main class="content stack">
           <section class="panel compose-form-page">
             <form class="field-list">
-              <div class="field field-inline">
-                <label for="compose-from">From</label>
-                <div class="field-control">
-                  <input
-                    id="compose-from"
-                    class="input"
-                    type="text"
-                    name="from"
-                    value="Human Operator <human.operator@agents.local>"
-                  />
-                </div>
+              <div class="compose-row">
+                <label class="compose-label" for="compose-from">From</label>
+                <input
+                  id="compose-from"
+                  class="input"
+                  type="text"
+                  name="from"
+                  value="Human Operator <human.operator@agents.local>"
+                />
               </div>
-              <div class="field field-inline">
-                <label for="compose-to">To</label>
-                <div class="field-control">
-                  <select id="compose-to" class="input" name="to">
-                    <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
-                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                  </select>
-                </div>
+              <div class="compose-row">
+                <label class="compose-label" for="compose-to">To</label>
+                <select id="compose-to" class="input" name="to">
+                  <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
+                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                </select>
               </div>
-              <div class="field field-inline">
-                <label for="compose-cc">Cc</label>
-                <div class="field-control">
-                  <select id="compose-cc" class="input" name="cc">
-                    <option value="" selected>No Cc</option>
-                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                    <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
-                  </select>
-                </div>
+              <div class="compose-row">
+                <label class="compose-label" for="compose-cc">Cc</label>
+                <select id="compose-cc" class="input" name="cc">
+                  <option value="" selected>No Cc</option>
+                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                  <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
+                </select>
               </div>
-              <div class="field field-inline">
-                <label for="compose-subject">Subject</label>
-                <div class="field-control">
-                  <input
-                    id="compose-subject"
-                    class="input"
-                    type="text"
-                    name="subject"
-                    value="Need API follow-up"
-                  />
-                </div>
+              <div class="compose-row">
+                <label class="compose-label" for="compose-subject">Subject</label>
+                <input
+                  id="compose-subject"
+                  class="input"
+                  type="text"
+                  name="subject"
+                  value="Need API follow-up"
+                />
               </div>
               <div class="field">
                 <label for="compose-body">Body</label>
-                <textarea id="compose-body" class="textarea textarea-body" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
+                <div class="compose-editor">
+                  <div class="compose-editor-toolbar" aria-hidden="true">
+                    <span class="compose-editor-tool">B</span>
+                    <span class="compose-editor-tool">I</span>
+                    <span class="compose-editor-tool">Link</span>
+                    <span class="compose-editor-tool">Quote</span>
+                    <span class="compose-editor-tool">Code</span>
+                    <span class="compose-editor-tool">Bullet</span>
+                  </div>
+                  <div
+                    id="compose-body"
+                    class="compose-editor-canvas"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-multiline="true"
+                    spellcheck="true"
+                  >
+                    <p>Please review the backend constraints and reply in-thread with the artifact link once complete.</p>
+                    <p></p>
+                    <p></p>
+                  </div>
+                </div>
               </div>
               <div class="field">
                 <label for="compose-linked-resources">Linked Resources</label>
