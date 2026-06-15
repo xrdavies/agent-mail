@@ -41,62 +41,70 @@
 
         <main class="content stack">
           <section class="panel compose-form-page">
-            <p class="eyebrow">New Email</p>
-            <h2 class="panel-title">Compose Human Inbound</h2>
             <form class="field-list">
-              <div class="field">
+              <div class="field field-inline">
                 <label for="compose-from">From</label>
-                <input
-                  id="compose-from"
-                  class="input"
-                  type="text"
-                  name="from"
-                  value="Human Operator <human.operator@agents.local>"
-                />
+                <div class="field-control">
+                  <input
+                    id="compose-from"
+                    class="input"
+                    type="text"
+                    name="from"
+                    value="Human Operator <human.operator@agents.local>"
+                  />
+                </div>
               </div>
-              <div class="field">
+              <div class="field field-inline">
                 <label for="compose-to">To</label>
-                <select id="compose-to" class="input" name="to">
-                  <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
-                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                </select>
+                <div class="field-control">
+                  <select id="compose-to" class="input" name="to">
+                    <option value="pm.aster@agents.local" selected>Aster · pm.aster@agents.local</option>
+                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                  </select>
+                </div>
               </div>
-              <div class="field">
+              <div class="field field-inline">
                 <label for="compose-cc">Cc</label>
-                <select id="compose-cc" class="input" name="cc">
-                  <option value="" selected>No Cc</option>
-                  <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
-                  <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
-                  <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
-                  <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
-                  <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
-                </select>
+                <div class="field-control">
+                  <select id="compose-cc" class="input" name="cc">
+                    <option value="" selected>No Cc</option>
+                    <option value="backend.coda@agents.local">Coda · backend.coda@agents.local</option>
+                    <option value="ops.echo@agents.local">Echo · ops.echo@agents.local</option>
+                    <option value="research.iris@agents.local">Iris · research.iris@agents.local</option>
+                    <option value="design.luna@agents.local">Luna · design.luna@agents.local</option>
+                    <option value="pm.aster@agents.local">Aster · pm.aster@agents.local</option>
+                  </select>
+                </div>
               </div>
-              <div class="field">
+              <div class="field field-inline">
                 <label for="compose-subject">Subject</label>
-                <input
-                  id="compose-subject"
-                  class="input"
-                  type="text"
-                  name="subject"
-                  value="Need API follow-up"
-                />
+                <div class="field-control">
+                  <input
+                    id="compose-subject"
+                    class="input"
+                    type="text"
+                    name="subject"
+                    value="Need API follow-up"
+                  />
+                </div>
               </div>
               <div class="field">
                 <label for="compose-body">Body</label>
-                <textarea id="compose-body" class="textarea" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
+                <textarea id="compose-body" class="textarea textarea-body" name="body">Please review the backend constraints and reply in-thread with the artifact link once complete.</textarea>
               </div>
               <div class="field">
                 <label for="compose-linked-resources">Linked Resources</label>
-                <textarea
+                <input
                   id="compose-linked-resources"
-                  class="textarea textarea-compact"
+                  class="input"
+                  type="text"
                   name="linked-resources"
                   placeholder="https://github.com/xrdavies/agent-mail/pull/18"
-                >https://github.com/xrdavies/agent-mail/pull/18</textarea>
+                  value="https://github.com/xrdavies/agent-mail/pull/18"
+                />
               </div>
               <div class="button-row">
                 <a class="button subtle" href="./overview.html">Cancel</a>
