@@ -137,6 +137,21 @@ describe("Central web read-model routes", () => {
     expect(overviewPayload.oldest_unread).toHaveLength(1);
     expect(overviewPayload.host_health).toHaveLength(1);
 
+    const webThreadResponse = await app.request(
+      `http://localhost/api/v1/web/threads/${sent.thread.thread_id}`
+    );
+    expect(webThreadResponse.status).toBe(200);
+    const webThreadPayload = await webThreadResponse.json();
+    expect(webThreadPayload.thread.thread_id).toBe(sent.thread.thread_id);
+    expect(webThreadPayload.emails).toHaveLength(1);
+
+    const webEmailResponse = await app.request(
+      `http://localhost/api/v1/web/emails/${sent.email.email_id}`
+    );
+    expect(webEmailResponse.status).toBe(200);
+    const webEmailPayload = await webEmailResponse.json();
+    expect(webEmailPayload.email_id).toBe(sent.email.email_id);
+
     const taskResponse = await app.request(`http://localhost/api/v1/tasks/${task.task_id}`);
     expect(taskResponse.status).toBe(200);
     const taskPayload = await taskResponse.json();

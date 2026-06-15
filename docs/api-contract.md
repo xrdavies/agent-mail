@@ -653,7 +653,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -674,7 +675,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -694,7 +696,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -708,7 +711,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 请求：
 
@@ -737,7 +741,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -751,7 +756,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -774,7 +780,38 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+### `GET /api/v1/web/threads/:thread_id`
+
+用途：
+
+- 供 `Thread Detail` 页获取单个 thread 全量上下文
+
+Auth：
+
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+响应 `200`：
+
+- `threadDetailResponseSchema`
+
+### `GET /api/v1/web/emails/:email_id`
+
+用途：
+
+- 供 `Mail Detail` 页获取单封 email 详情
+
+Auth：
+
+- 当前 P0/P1 实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+响应 `200`：
+
+- `Email`
 
 请求：
 

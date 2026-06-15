@@ -4,6 +4,7 @@ import {
   deliveriesListQuerySchema,
   debugLogsQuerySchema,
   debugLogsResponseSchema,
+  emailSchema,
   healthResponseSchema,
   hostsListResponseSchema,
   hostAuthExchangeRequestSchema,
@@ -14,6 +15,7 @@ import {
   markDeliveryReadRequestSchema,
   registerAgentRequestSchema,
   sendEmailRequestSchema,
+  threadDetailResponseSchema,
   unreadDeliveriesQuerySchema,
   updateTaskStatusRequestSchema
   ,
@@ -389,6 +391,16 @@ export function createApp(
   app.get("/api/v1/threads/:thread_id", async (c) => {
     const response = await service.getThread(c.req.param("thread_id"));
     return c.json(response, 200);
+  });
+
+  app.get("/api/v1/web/threads/:thread_id", async (c) => {
+    const response = await service.getThread(c.req.param("thread_id"));
+    return c.json(threadDetailResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/emails/:email_id", async (c) => {
+    const response = await service.getEmail(c.req.param("email_id"));
+    return c.json(emailSchema.parse(response), 200);
   });
 
   app.get("/api/v1/web/threads", async (c) => {

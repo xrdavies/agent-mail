@@ -300,6 +300,10 @@
   - `Host Detail` 页
 - `GET /api/v1/tasks/:task_id`
   - task 单项详情
+- `GET /api/v1/web/threads/:thread_id`
+  - `Thread Detail` 页
+- `GET /api/v1/web/emails/:email_id`
+  - `Mail Detail` 页
 - `GET /api/v1/web/threads`
   - `Threads` 列表页
 - `GET /api/v1/web/emails`
