@@ -70,72 +70,16 @@
                   <th>Mailbox</th>
                   <th>Role</th>
                   <th>Binding</th>
-                  <th class="table-filter-head">
-                    <div class="table-filter-inline">
-                      <span class="table-head-label">Mgmt</span>
-                      <button
-                        type="button"
-                        class="table-filter-trigger"
-                        data-filter-trigger="management"
-                      >
-                        <span id="management-label">All</span>
-                        <span class="table-filter-caret">▾</span>
-                      </button>
-                      <div class="filter-popover" id="management-popover" hidden>
-                        <button type="button" class="filter-option is-active" data-filter-group="management" data-filter-value="all">All</button>
-                        <button type="button" class="filter-option" data-filter-group="management" data-filter-value="enabled">Enabled</button>
-                        <button type="button" class="filter-option" data-filter-group="management" data-filter-value="disabled">Disabled</button>
-                      </div>
-                    </div>
-                  </th>
-                  <th class="table-filter-head">
-                    <div class="table-filter-inline">
-                      <span class="table-head-label">Runtime</span>
-                      <button
-                        type="button"
-                        class="table-filter-trigger"
-                        data-filter-trigger="runtime"
-                      >
-                        <span id="runtime-label">All</span>
-                        <span class="table-filter-caret">▾</span>
-                      </button>
-                      <div class="filter-popover" id="runtime-popover" hidden>
-                        <button type="button" class="filter-option is-active" data-filter-group="runtime" data-filter-value="all">All</button>
-                        <button type="button" class="filter-option" data-filter-group="runtime" data-filter-value="failed">Failed</button>
-                        <button type="button" class="filter-option" data-filter-group="runtime" data-filter-value="idle">Idle</button>
-                      </div>
-                    </div>
-                  </th>
-                  <th class="table-filter-head">
-                    <div class="table-filter-inline">
-                      <span class="table-head-label">Unread</span>
-                      <button
-                        type="button"
-                        class="table-filter-trigger"
-                        data-filter-trigger="unread"
-                      >
-                        <span id="unread-label">All</span>
-                        <span class="table-filter-caret">▾</span>
-                      </button>
-                      <div class="filter-popover" id="unread-popover" hidden>
-                        <button type="button" class="filter-option is-active" data-filter-group="unread" data-filter-value="all">All</button>
-                        <button type="button" class="filter-option" data-filter-group="unread" data-filter-value="has_unread">Has unread</button>
-                        <button type="button" class="filter-option" data-filter-group="unread" data-filter-value="empty">Empty</button>
-                      </div>
-                    </div>
-                  </th>
+                  <th>Mgmt</th>
+                  <th>Runtime</th>
+                  <th>Unread</th>
                   <th>Session</th>
                   <th>Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="mailbox-table-body">
-                <tr
-                  data-management="enabled"
-                  data-runtime="idle"
-                  data-unread="has_unread"
-                  data-search="pm.aster@agents.local pm"
-                >
+                <tr data-search="pm.aster@agents.local pm">
                   <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
                   <td>pm</td>
                   <td><span class="chip info">active</span></td>
@@ -152,12 +96,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr
-                  data-management="enabled"
-                  data-runtime="failed"
-                  data-unread="has_unread"
-                  data-search="backend.coda@agents.local backend"
-                >
+                <tr data-search="backend.coda@agents.local backend">
                   <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
                   <td>backend</td>
                   <td><span class="chip info">active</span></td>
@@ -175,12 +114,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr
-                  data-management="disabled"
-                  data-runtime="idle"
-                  data-unread="empty"
-                  data-search="design.luna@agents.local design"
-                >
+                <tr data-search="design.luna@agents.local design">
                   <td><a href="./mailbox-detail.html">design.luna@agents.local</a></td>
                   <td>design</td>
                   <td><span class="chip info">active</span></td>
@@ -210,9 +144,6 @@
     <script>
       (function() {
         const state = {
-          management: "all",
-          runtime: "all",
-          unread: "all",
           search: ""
         };
 
@@ -220,25 +151,10 @@
         const visibleCount = document.getElementById("visible-count");
         const totalCount = document.getElementById("total-count");
         const searchInput = document.getElementById("mailbox-search");
-        const filterOptions = Array.from(document.querySelectorAll(".filter-option"));
-        const filterTriggers = Array.from(document.querySelectorAll("[data-filter-trigger]"));
-        const filterLabels = {
-          management: document.getElementById("management-label"),
-          runtime: document.getElementById("runtime-label"),
-          unread: document.getElementById("unread-label")
-        };
-        const filterTexts = {
-          management: { all: "All", enabled: "Enabled", disabled: "Disabled" },
-          runtime: { all: "All", failed: "Failed", idle: "Idle" },
-          unread: { all: "All", has_unread: "Has unread", empty: "Empty" }
-        };
 
         totalCount.textContent = String(rows.length);
 
         function rowMatches(row) {
-          if (state.management !== "all" && row.dataset.management !== state.management) return false;
-          if (state.runtime !== "all" && row.dataset.runtime !== state.runtime) return false;
-          if (state.unread !== "all" && row.dataset.unread !== state.unread) return false;
           if (state.search && !row.dataset.search.includes(state.search.toLowerCase())) return false;
           return true;
         }
@@ -252,50 +168,11 @@
           });
 
           visibleCount.textContent = String(count);
-
-          filterOptions.forEach((option) => {
-            const group = option.dataset.filterGroup;
-            const value = option.dataset.filterValue;
-            option.classList.toggle("is-active", state[group] === value);
-          });
-
-          Object.keys(filterLabels).forEach((group) => {
-            filterLabels[group].textContent = filterTexts[group][state[group]];
-          });
-        }
-
-        function closePopovers() {
-          document.querySelectorAll(".filter-popover").forEach((popover) => {
-            popover.hidden = true;
-          });
         }
 
         searchInput.addEventListener("input", () => {
           state.search = searchInput.value.trim().toLowerCase();
           render();
-        });
-
-        filterTriggers.forEach((trigger) => {
-          trigger.addEventListener("click", (event) => {
-            const group = trigger.dataset.filterTrigger;
-            const popover = document.getElementById(`${group}-popover`);
-            const nextState = popover.hidden;
-            closePopovers();
-            popover.hidden = !nextState;
-            event.stopPropagation();
-          });
-        });
-
-        filterOptions.forEach((option) => {
-          option.addEventListener("click", () => {
-            state[option.dataset.filterGroup] = option.dataset.filterValue;
-            closePopovers();
-            render();
-          });
-        });
-
-        document.addEventListener("click", () => {
-          closePopovers();
         });
 
         render();

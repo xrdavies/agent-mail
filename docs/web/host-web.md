@@ -64,7 +64,7 @@
 | 模块 | 展示内容 | 可操作项 | 主要数据来源 |
 | --- | --- | --- | --- |
 | List Counters | 全部 mailbox 数、`enabled`、`disabled`、`failed`、有未读数 | 无 | `GET /api/v1/web/mailboxes` |
-| Filters | 按 `management_status`、`binding_status`、`runtime_status`、是否有未读过滤；按 mailbox / name 搜索 | 无 | `GET /api/v1/web/mailboxes` |
+| Search | 按 mailbox / name 搜索 | 无 | `GET /api/v1/web/mailboxes` |
 | Mailbox Table | 每行展示 `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、`current_session_id`、`next_resume_after`、`updated_at`、`last_error` 摘要 | `enable`、`disable`、`resume now`、`clear failure`、`remove local binding`、进入详情页 | `GET /api/v1/web/mailboxes` |
 
 说明：
@@ -209,10 +209,6 @@
 
 查询参数建议：
 
-- `management_status`
-- `binding_status`
-- `runtime_status`
-- `has_unread`
 - `q`
 
 响应建议：
