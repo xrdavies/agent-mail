@@ -217,9 +217,24 @@ button.button {
   background: transparent;
 }
 
+.button.is-active,
 .button.active,
 .chip.active {
   background: var(--accent-soft);
+}
+
+.button.is-danger {
+  border-color: rgba(143, 59, 47, 0.4);
+  background: rgba(143, 59, 47, 0.1);
+  color: var(--danger);
+}
+
+.button.is-disabled,
+.button[aria-disabled="true"],
+button.button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .content {
@@ -813,6 +828,47 @@ button.button {
   margin-top: 1rem;
 }
 
+.interactive-filter-stack {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.filter-group-block {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.filter-label {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.filter-button.is-active {
+  border-color: var(--line);
+  background: var(--accent-soft);
+}
+
+.result-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: center;
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.result-summary {
+  margin: 0;
+  color: var(--muted);
+}
+
 .host-code-block {
   min-height: auto;
 }
@@ -831,6 +887,12 @@ button.button {
   font-size: 0.82rem;
 }
 
+.table-footnote {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .table-actions .button {
   padding: 0.42rem 0.68rem;
   font-size: 0.76rem;
@@ -845,6 +907,12 @@ button.button {
   background: linear-gradient(180deg, rgba(143, 59, 47, 0.06), transparent 75%), var(--panel);
 }
 
+.host-action-state-row {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
 .modal-preview .body-box {
   min-height: auto;
 }
@@ -855,9 +923,58 @@ button.button {
   margin-top: 1rem;
 }
 
+.modal-open {
+  overflow: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(23, 21, 18, 0.42);
+  backdrop-filter: blur(6px);
+}
+
+.modal-dialog {
+  width: min(38rem, calc(100vw - 2rem));
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--panel);
+  box-shadow: 0 24px 60px rgba(23, 21, 18, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.modal-body {
+  min-height: auto;
+  margin-top: 1rem;
+}
+
+.modal-actions {
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
 @media (max-width: 900px) {
   .toolbar-input {
     min-width: 0;
+    width: 100%;
+  }
+
+  .result-bar {
+    align-items: start;
+  }
+
+  .modal-dialog {
     width: 100%;
   }
 }

@@ -33,10 +33,10 @@
             <span class="current">backend.coda@agents.local</span>
           </div>
           <div class="toolbar">
-            <span class="button subtle">clear failure</span>
-            <span class="button subtle">resume now</span>
-            <span class="button subtle">disable</span>
-            <span class="button">remove local binding</span>
+            <button type="button" class="button subtle">clear failure</button>
+            <button type="button" class="button subtle">resume now</button>
+            <button type="button" class="button subtle">disable</button>
+            <button type="button" class="button is-danger" data-open-unbind-modal>remove local binding</button>
           </div>
         </header>
 
@@ -93,6 +93,15 @@
                   <dd>2 unread · last processed `del_011` · latest summary says API contract editing stopped mid-run.</dd>
                 </div>
               </div>
+              <div class="button-row host-action-state-row">
+                <button type="button" class="button subtle is-disabled" disabled>enable</button>
+                <button type="button" class="button subtle">disable</button>
+                <button type="button" class="button subtle">resume now</button>
+                <button type="button" class="button subtle">clear failure</button>
+              </div>
+              <p class="panel-copy">
+                Unavailable actions stay visible but muted, so operators can see why a mailbox cannot move to a given state.
+              </p>
             </article>
           </section>
 
@@ -195,29 +204,124 @@
                   <span class="list-row-key">Should be blocked while runtime is currently running.</span>
                 </div>
               </div>
+              <div class="button-row">
+                <button type="button" class="button subtle" data-open-unbind-modal>open confirmation</button>
+                <span class="button subtle is-disabled" aria-disabled="true">remove blocked while running</span>
+              </div>
             </article>
 
             <article class="panel modal-preview">
-              <p class="eyebrow">Modal Preview</p>
-              <h2 class="panel-title">Remove Local Binding</h2>
-              <div class="body-box">
-                <p class="body-copy">mailbox: backend.coda@agents.local</p>
-                <p class="body-copy">host: mac-local</p>
-                <p class="body-copy">This will stop Host management and release the active binding if Central still points here.</p>
-                <p class="body-copy">This will not re-bootstrap the agent and will not delete workspace files.</p>
-                <label class="confirm-field">
-                  <span class="meta">Type mailbox to confirm</span>
-                  <input class="toolbar-input" type="text" value="backend.coda@agents.local" />
-                </label>
-              </div>
-              <div class="button-row">
-                <span class="button subtle">cancel</span>
-                <span class="button">remove local binding</span>
+              <p class="eyebrow">Interaction Notes</p>
+              <h2 class="panel-title">Prototype Behaviors</h2>
+              <div class="list">
+                <div class="list-row">
+                  <span class="list-row-key">Click `remove local binding` to open a real modal overlay.</span>
+                </div>
+                <div class="list-row">
+                  <span class="list-row-key">The destructive confirm button stays disabled until mailbox text matches exactly.</span>
+                </div>
+                <div class="list-row">
+                  <span class="list-row-key">Use `#unbind-modal` in the URL to load the page directly in modal-open state.</span>
+                </div>
               </div>
             </article>
           </section>
         </main>
       </div>
     </div>
+    <div class="modal-overlay" id="unbind-modal" hidden>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="unbind-modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Danger Zone</p>
+            <h2 class="panel-title" id="unbind-modal-title">Remove Local Binding</h2>
+            <p class="panel-copy">Confirm before removing `backend.coda@agents.local` from this Host.</p>
+          </div>
+          <button type="button" class="button subtle" data-close-unbind-modal>close</button>
+        </div>
+
+        <div class="body-box modal-body">
+          <p class="body-copy">mailbox: backend.coda@agents.local</p>
+          <p class="body-copy">host: mac-local</p>
+          <p class="body-copy">This will stop Host management and release the current Host binding if Central still points here.</p>
+          <p class="body-copy">This will not re-bootstrap the agent and will not delete workspace files.</p>
+          <label class="confirm-field">
+            <span class="meta">Type mailbox to confirm</span>
+            <input
+              class="toolbar-input"
+              id="unbind-confirm-input"
+              type="text"
+              value=""
+              placeholder="backend.coda@agents.local"
+            />
+          </label>
+        </div>
+
+        <div class="button-row modal-actions">
+          <button type="button" class="button subtle" data-close-unbind-modal>cancel</button>
+          <button type="button" class="button is-danger is-disabled" id="unbind-confirm-button" disabled>
+            remove local binding
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        const body = document.body;
+        const overlay = document.getElementById("unbind-modal");
+        const openButtons = Array.from(document.querySelectorAll("[data-open-unbind-modal]"));
+        const closeButtons = Array.from(document.querySelectorAll("[data-close-unbind-modal]"));
+        const confirmInput = document.getElementById("unbind-confirm-input");
+        const confirmButton = document.getElementById("unbind-confirm-button");
+        const expected = "backend.coda@agents.local";
+
+        function syncConfirmState() {
+          const ready = confirmInput.value.trim() === expected;
+          confirmButton.disabled = !ready;
+          confirmButton.classList.toggle("is-disabled", !ready);
+        }
+
+        function openModal() {
+          overlay.hidden = false;
+          body.classList.add("modal-open");
+          syncConfirmState();
+          confirmInput.focus();
+          window.history.replaceState(null, "", "#unbind-modal");
+        }
+
+        function closeModal() {
+          overlay.hidden = true;
+          body.classList.remove("modal-open");
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+
+        openButtons.forEach((button) => {
+          button.addEventListener("click", openModal);
+        });
+
+        closeButtons.forEach((button) => {
+          button.addEventListener("click", closeModal);
+        });
+
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !overlay.hidden) {
+            closeModal();
+          }
+        });
+
+        confirmInput.addEventListener("input", syncConfirmState);
+        syncConfirmState();
+
+        if (window.location.hash === "#unbind-modal") {
+          openModal();
+        }
+      })();
+    </script>
   </body>
 </html>
