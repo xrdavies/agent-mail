@@ -134,23 +134,9 @@ export function MailboxDetailPage() {
       </section>
 
       <section className="panel">
-          <div className="panel-header">
-            <div>
-              <h2 className="panel-title">Full Mail Activity</h2>
-            </div>
-          </div>
-        <div className="mailbox-activity-filters">
-          <div className="chip-row">
-            <span className="chip active">All Mail</span>
-            <span className="chip">Inbox</span>
-            <span className="chip">Sent</span>
-            <span className="chip">Unread</span>
-            <span className="chip">Thread</span>
-            <span className="chip">Kind</span>
-            <span className="chip">Date Range</span>
-          </div>
-          <div className="button-row">
-            <span className="button subtle">Search</span>
+        <div className="panel-header">
+          <div>
+            <h2 className="panel-title">Full Mail Activity</h2>
           </div>
         </div>
         <table className="table">

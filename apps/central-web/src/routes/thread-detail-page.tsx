@@ -117,21 +117,6 @@ export function ThreadDetailPage() {
           </div>
         </article>
       </section>
-
-      <section className="panel">
-        <div className="panel-header">
-          <div>
-            <h2 className="panel-title">Rendered / Raw / References / Delivery Map</h2>
-          </div>
-        </div>
-        <div className="chip-row">
-          <span className="chip active">Rendered</span>
-          <span className="chip">Raw Headers</span>
-          <span className="chip">References</span>
-          <span className="chip">Delivery Map</span>
-          <span className="chip">Debug Audit</span>
-        </div>
-      </section>
     </>
   );
 }

@@ -66,7 +66,6 @@ export function App() {
                   <NavLink className="button subtle" to="/debug">
                     Debug
                   </NavLink>
-                  <span className="button subtle">Last Sync 12:04:21</span>
                 </>
               }
             >
@@ -77,16 +76,7 @@ export function App() {
         <Route
           path="/mailboxes"
           element={
-            <PageShell
-              breadcrumbCurrent="Mailboxes"
-              toolbar={
-                <>
-                  <span className="button subtle">Status: All</span>
-                  <span className="button subtle">Host: All</span>
-                  <span className="button subtle">Search</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Mailboxes">
               <MailboxesPage />
             </PageShell>
           }
@@ -94,14 +84,7 @@ export function App() {
         <Route
           path="/mailboxes/:mailbox"
           element={
-            <PageShell
-              breadcrumbCurrent="Mailbox Detail"
-              toolbar={
-                <>
-                  <span className="button subtle">Detail</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Mailbox Detail">
               <MailboxDetailPage />
             </PageShell>
           }
@@ -109,16 +92,7 @@ export function App() {
         <Route
           path="/threads"
           element={
-            <PageShell
-              breadcrumbCurrent="Threads"
-              toolbar={
-                <>
-                  <span className="button subtle">Status: All</span>
-                  <span className="button subtle">Mailbox: All</span>
-                  <span className="button subtle">Sort: Latest</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Threads">
               <ThreadsPage />
             </PageShell>
           }
@@ -126,14 +100,7 @@ export function App() {
         <Route
           path="/threads/:threadId"
           element={
-            <PageShell
-              breadcrumbCurrent="Thread Detail"
-              toolbar={
-                <>
-                  <span className="button subtle">Detail</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Thread Detail">
               <ThreadDetailPage />
             </PageShell>
           }
@@ -141,16 +108,7 @@ export function App() {
         <Route
           path="/mails"
           element={
-            <PageShell
-              breadcrumbCurrent="Mails"
-              toolbar={
-                <>
-                  <span className="button subtle">Kind: All</span>
-                  <span className="button subtle">Mailbox: All</span>
-                  <span className="button subtle">Search Headers</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Mails">
               <MailsPage />
             </PageShell>
           }
@@ -158,14 +116,7 @@ export function App() {
         <Route
           path="/mails/:emailId"
           element={
-            <PageShell
-              breadcrumbCurrent="Mail Detail"
-              toolbar={
-                <>
-                  <span className="button subtle">Detail</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Mail Detail">
               <MailDetailPage />
             </PageShell>
           }
@@ -173,16 +124,7 @@ export function App() {
         <Route
           path="/hosts"
           element={
-            <PageShell
-              breadcrumbCurrent="Hosts"
-              toolbar={
-                <>
-                  <span className="button subtle">Status: All</span>
-                  <span className="button subtle">Health Window 30s</span>
-                  <span className="button subtle">Refresh</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Hosts">
               <HostsPage />
             </PageShell>
           }
@@ -190,14 +132,7 @@ export function App() {
         <Route
           path="/hosts/:hostId"
           element={
-            <PageShell
-              breadcrumbCurrent="Host Detail"
-              toolbar={
-                <>
-                  <span className="button subtle">Detail</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Host Detail">
               <HostDetailPage />
             </PageShell>
           }
@@ -205,16 +140,7 @@ export function App() {
         <Route
           path="/tasks"
           element={
-            <PageShell
-              breadcrumbCurrent="Tasks"
-              toolbar={
-                <>
-                  <span className="button subtle">Status: All</span>
-                  <span className="button subtle">Assignee: All</span>
-                  <span className="button subtle">Search</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Tasks">
               <TasksPage />
             </PageShell>
           }
@@ -222,34 +148,14 @@ export function App() {
         <Route
           path="/tasks/:taskId"
           element={
-            <PageShell
-              breadcrumbCurrent="Task Detail"
-              toolbar={
-                <>
-                  <span className="button subtle">Detail</span>
-                </>
-              }
-            >
+            <PageShell breadcrumbCurrent="Task Detail">
               <TaskDetailPage />
             </PageShell>
           }
         />
         <Route
           path="/debug"
-          element={
-            <PageShell
-              breadcrumbCurrent="Debug"
-              toolbar={
-                <>
-                  <span className="button subtle">Central</span>
-                  <span className="button subtle">Last Read</span>
-                  <span className="button subtle">Tail 120</span>
-                </>
-              }
-            >
-              <DebugPage />
-            </PageShell>
-          }
+          element={<PageShell breadcrumbCurrent="Debug"><DebugPage /></PageShell>}
         />
         <Route
           path="/compose"

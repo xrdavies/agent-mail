@@ -148,7 +148,6 @@ export function DebugPage() {
               />
               <span>Auto-scroll</span>
             </label>
-            <span className="button subtle">SSE</span>
           </div>
 
           <div
