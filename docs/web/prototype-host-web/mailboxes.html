@@ -37,23 +37,28 @@
         </header>
 
         <main class="content stack">
-          <section class="panel">
+          <section class="panel mailbox-list-panel">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Roster</p>
-                <h2 class="panel-title">Local Mailbox Management</h2>
-                <p class="panel-copy">Keep filters compact and keep the mailbox roster dominant.</p>
+                <h2 class="panel-title">Mailboxes</h2>
+                <p class="panel-copy">Local mailbox roster on this Host.</p>
               </div>
-              <div class="chip-row">
-                <span class="chip active">All 3</span>
-                <span class="chip">Enabled 2</span>
-                <span class="chip">Disabled 1</span>
-                <span class="chip danger">Failed 1</span>
-                <span class="chip">Has unread 2</span>
+              <div class="button-row">
+                <span class="button subtle">mac-local</span>
+                <button type="button" class="button subtle">refresh</button>
               </div>
             </div>
 
-            <div class="compact-filter-toolbar">
+            <div class="chip-row mailbox-counter-row">
+              <span class="chip active">All 3</span>
+              <span class="chip">Enabled 2</span>
+              <span class="chip">Disabled 1</span>
+              <span class="chip danger">Failed 1</span>
+              <span class="chip">Has unread 2</span>
+            </div>
+
+            <div class="list-header-toolbar">
               <label class="toolbar-search compact-search">
                 <span class="meta">Search</span>
                 <input
@@ -65,7 +70,7 @@
                 />
               </label>
 
-              <div class="filter-toolbar-groups">
+              <div class="filter-toolbar-groups compact-toolbar-groups">
                 <div class="filter-cluster">
                   <span class="filter-inline-label">focus</span>
                   <button type="button" class="button subtle filter-button is-active" data-filter-group="focus" data-filter-value="attention">
@@ -124,15 +129,6 @@
               <div class="button-row">
                 <span class="button subtle" id="filter-summary">focus:attention</span>
                 <button type="button" class="button subtle" id="reset-filters">reset filters</button>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Table</p>
-                <h2 class="panel-title">Mailbox Runtime Table</h2>
               </div>
             </div>
             <table class="table host-mailbox-table">

@@ -838,6 +838,22 @@ button.button:disabled {
   background: rgba(255, 255, 255, 0.46);
 }
 
+.mailbox-list-panel .panel-header {
+  align-items: center;
+}
+
+.mailbox-counter-row {
+  margin-top: 1rem;
+}
+
+.list-header-toolbar {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
 .compact-search {
   max-width: 20rem;
 }
@@ -846,6 +862,10 @@ button.button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
+}
+
+.compact-toolbar-groups {
+  align-items: center;
 }
 
 .filter-cluster {
@@ -1023,6 +1043,10 @@ button.button:disabled {
 
   .compact-search {
     max-width: none;
+  }
+
+  .mailbox-list-panel .panel-header {
+    align-items: start;
   }
 
   .result-bar {
