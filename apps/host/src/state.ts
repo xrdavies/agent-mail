@@ -24,6 +24,7 @@ export interface MailboxLocalState {
   failureCount: number;
   nextResumeAfter: string | null;
   lastError: string | null;
+  lastErrorAt: string | null;
   lastBootstrapAt: string | null;
   bootstrapStatus: "never_started" | "succeeded" | "failed";
   lastBootstrapError: string | null;
@@ -232,6 +233,7 @@ export class HostStateStore {
               failure_count = 0,
               next_resume_after = NULL,
               last_error = NULL,
+              last_error_at = NULL,
               last_bootstrap_at = ?,
               bootstrap_status = 'succeeded',
               last_bootstrap_error = NULL,
@@ -267,6 +269,7 @@ export class HostStateStore {
               binding_status = 'failed',
               runtime_status = 'failed',
               last_error = ?,
+              last_error_at = ?,
               last_bootstrap_at = ?,
               bootstrap_status = 'failed',
               last_bootstrap_error = ?,
@@ -274,7 +277,7 @@ export class HostStateStore {
           WHERE mailbox = ?
         `
       )
-      .run(errorMessage, timestamp, errorMessage, timestamp, mailbox);
+      .run(errorMessage, timestamp, timestamp, errorMessage, timestamp, mailbox);
     return this.requireMailboxState(mailbox);
   }
 
@@ -308,6 +311,7 @@ export class HostStateStore {
               failure_count = 0,
               next_resume_after = NULL,
               last_error = NULL,
+              last_error_at = NULL,
               updated_at = ?
           WHERE mailbox = ?
         `
@@ -338,11 +342,20 @@ export class HostStateStore {
               failure_count = ?,
               next_resume_after = ?,
               last_error = ?,
+              last_error_at = ?,
               updated_at = ?
           WHERE mailbox = ?
         `
       )
-      .run(runtimeStatus, nextFailureCount, nextResumeAfter, input.errorMessage, timestamp, mailbox);
+      .run(
+        runtimeStatus,
+        nextFailureCount,
+        nextResumeAfter,
+        input.errorMessage,
+        timestamp,
+        timestamp,
+        mailbox
+      );
     return this.requireMailboxState(mailbox);
   }
 
@@ -359,6 +372,7 @@ export class HostStateStore {
               failure_count = 0,
               next_resume_after = NULL,
               last_error = NULL,
+              last_error_at = NULL,
               updated_at = ?
           WHERE mailbox = ?
         `
@@ -400,6 +414,7 @@ export class HostStateStore {
               failure_count = 0,
               next_resume_after = NULL,
               last_error = NULL,
+              last_error_at = NULL,
               unbound_at = ?,
               updated_at = ?
           WHERE mailbox = ?
@@ -481,6 +496,7 @@ export class HostStateStore {
     addColumn("last_bootstrap_at", "last_bootstrap_at TEXT");
     addColumn("bootstrap_status", "bootstrap_status TEXT NOT NULL DEFAULT 'never_started'");
     addColumn("last_bootstrap_error", "last_bootstrap_error TEXT");
+    addColumn("last_error_at", "last_error_at TEXT");
     addColumn("bound_at", "bound_at TEXT");
     addColumn("unbound_at", "unbound_at TEXT");
   }
@@ -505,6 +521,7 @@ interface MailboxRow {
   failure_count: number;
   next_resume_after: string | null;
   last_error: string | null;
+  last_error_at: string | null;
   last_bootstrap_at: string | null;
   bootstrap_status: MailboxLocalState["bootstrapStatus"];
   last_bootstrap_error: string | null;
@@ -541,6 +558,7 @@ function mapMailboxRow(row: MailboxRow): MailboxLocalState {
     failureCount: row.failure_count,
     nextResumeAfter: row.next_resume_after,
     lastError: row.last_error,
+    lastErrorAt: row.last_error_at,
     lastBootstrapAt: row.last_bootstrap_at,
     bootstrapStatus: row.bootstrap_status,
     lastBootstrapError: row.last_bootstrap_error,

@@ -59,8 +59,8 @@ export function detailSummary(detail: HostWebMailboxDetailResponse): string {
     `${detail.binding.binding_status} on ${detail.binding.host_id}`,
     `unread ${detail.runtime.pending_unread_count}`
   ];
-  if (detail.runtime.last_error) {
-    parts.push(`last error ${formatShortTimestamp(detail.runtime.updated_at)}`);
+  if (detail.runtime.last_error_at) {
+    parts.push(`last error ${formatShortTimestamp(detail.runtime.last_error_at)}`);
   }
   return parts.join(" · ");
 }

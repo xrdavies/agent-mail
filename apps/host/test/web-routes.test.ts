@@ -130,8 +130,7 @@ function createRuntimeMock(): HostRuntime {
       binding: {
         host_id: "mac-local",
         binding_status: "active",
-        bound_at: "2026-06-16T10:00:04.000Z",
-        unbound_at: null
+        bound_at: "2026-06-16T10:00:04.000Z"
       },
       workspace: {
         workspace_path: "/tmp/backend-coda",
@@ -140,8 +139,7 @@ function createRuntimeMock(): HostRuntime {
       },
       bootstrap: {
         bootstrap_status: "succeeded",
-        last_bootstrap_at: "2026-06-16T10:00:04.000Z",
-        last_bootstrap_error: null
+        last_bootstrap_at: "2026-06-16T10:00:04.000Z"
       },
       runtime: {
         management_status: "enabled",
@@ -151,9 +149,9 @@ function createRuntimeMock(): HostRuntime {
         pending_unread_count: 2,
         last_processed_delivery_id: "del_011",
         latest_summary: null,
-        failure_count: 3,
         next_resume_after: null,
         last_error: "resume command exited with code 1",
+        last_error_at: "2026-06-16T12:01:13.000Z",
         updated_at: "2026-06-16T12:01:13.000Z"
       },
       recovery: {
@@ -233,7 +231,7 @@ describe("Host web routes", () => {
 
     const detailResponse = await app.request(`http://localhost/api/v1/web/mailboxes/${encodeURIComponent(mailbox)}`);
     expect(detailResponse.status).toBe(200);
-    expect((await detailResponse.json()).runtime.failure_count).toBe(3);
+    expect((await detailResponse.json()).runtime.last_error_at).toBe("2026-06-16T12:01:13.000Z");
 
     const resumeResponse = await app.request(
       `http://localhost/api/v1/web/mailboxes/${encodeURIComponent(mailbox)}/resume`,

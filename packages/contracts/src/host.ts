@@ -304,8 +304,7 @@ export const hostWebMailboxDetailResponseSchema = z.object({
   binding: z.object({
     host_id: identifierSchema,
     binding_status: bindingStatusSchema,
-    bound_at: isoTimestampSchema.nullable(),
-    unbound_at: isoTimestampSchema.nullable()
+    bound_at: isoTimestampSchema.nullable()
   }),
   workspace: z.object({
     workspace_path: z.string().min(1),
@@ -314,8 +313,7 @@ export const hostWebMailboxDetailResponseSchema = z.object({
   }),
   bootstrap: z.object({
     bootstrap_status: bootstrapStatusSchema,
-    last_bootstrap_at: isoTimestampSchema.nullable(),
-    last_bootstrap_error: z.string().nullable()
+    last_bootstrap_at: isoTimestampSchema.nullable()
   }),
   runtime: z.object({
     management_status: mailboxManagementStatusSchema,
@@ -325,9 +323,9 @@ export const hostWebMailboxDetailResponseSchema = z.object({
     pending_unread_count: z.number().int().nonnegative(),
     last_processed_delivery_id: identifierSchema.nullable(),
     latest_summary: z.string().nullable(),
-    failure_count: z.number().int().nonnegative(),
     next_resume_after: isoTimestampSchema.nullable(),
     last_error: z.string().nullable(),
+    last_error_at: isoTimestampSchema.nullable(),
     updated_at: isoTimestampSchema
   }),
   recovery: z.object({

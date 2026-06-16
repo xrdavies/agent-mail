@@ -84,8 +84,8 @@
 | 模块 | 展示内容 | 可操作项 | 主要数据来源 |
 | --- | --- | --- | --- |
 | Header Summary | `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、最近错误时间摘要 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
-| Runtime & Recovery | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`failure_count`、`next_resume_after`、`last_error`、恢复建议 | `enable` / `disable`（互斥）、`resume now`、`clear failure/backoff` | `GET /api/v1/web/mailboxes/:mailbox` |
-| Identity & Context | `mailbox`、`name`、`role`、`responsibilities`、`binding_status`、`host_id`、`bound_at`、`unbound_at`、`workspace_path`、`git_user_name`、`git_user_email`、最近一次 bootstrap 状态/时间/错误 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
+| Runtime & Recovery | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`next_resume_after`、`last_error`、恢复建议 | `enable` / `disable`（互斥）、`resume now`、`clear failure/backoff` | `GET /api/v1/web/mailboxes/:mailbox` |
+| Identity & Context | `mailbox`、`name`、`role`、`responsibilities`、`binding_status`、`host_id`、`bound_at`、`workspace_path`、`git_user_name`、`git_user_email`、最近一次 bootstrap 状态/时间 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
 | Recent Host Events | 认证失败、解绑失败、bootstrap 失败、最近状态变更说明 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
 | Danger Zone | 当前 mailbox 的解绑风险和结果说明 | `remove local binding` | `GET /api/v1/web/mailboxes/:mailbox` |
 
@@ -250,8 +250,7 @@
   "binding": {
     "host_id": "mac-local",
     "binding_status": "active",
-    "bound_at": "2026-06-16T10:00:04.000Z",
-    "unbound_at": null
+    "bound_at": "2026-06-16T10:00:04.000Z"
   },
   "workspace": {
     "workspace_path": "/Users/me/worktrees/pm-aster",
@@ -260,8 +259,7 @@
   },
   "bootstrap": {
     "bootstrap_status": "succeeded",
-    "last_bootstrap_at": "2026-06-16T10:00:04.000Z",
-    "last_bootstrap_error": null
+    "last_bootstrap_at": "2026-06-16T10:00:04.000Z"
   },
   "runtime": {
     "management_status": "enabled",
@@ -271,9 +269,9 @@
     "pending_unread_count": 1,
     "last_processed_delivery_id": "del_001",
     "latest_summary": "Processed latest unread and delegated to backend.",
-    "failure_count": 0,
     "next_resume_after": null,
     "last_error": null,
+    "last_error_at": null,
     "updated_at": "2026-06-16T10:04:58.000Z"
   },
   "available_actions": {

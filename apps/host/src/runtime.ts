@@ -666,8 +666,7 @@ export class HostRuntime {
       binding: {
         host_id: this.config.hostId,
         binding_status: state.bindingStatus,
-        bound_at: state.boundAt,
-        unbound_at: state.unboundAt
+        bound_at: state.boundAt
       },
       workspace: {
         workspace_path: state.workspacePath,
@@ -676,8 +675,7 @@ export class HostRuntime {
       },
       bootstrap: {
         bootstrap_status: state.bootstrapStatus,
-        last_bootstrap_at: state.lastBootstrapAt,
-        last_bootstrap_error: state.lastBootstrapError
+        last_bootstrap_at: state.lastBootstrapAt
       },
       runtime: {
         management_status: state.managementStatus,
@@ -687,9 +685,9 @@ export class HostRuntime {
         pending_unread_count: pendingUnreadCount,
         last_processed_delivery_id: state.lastProcessedDeliveryId,
         latest_summary: state.latestSummary,
-        failure_count: state.failureCount,
         next_resume_after: state.nextResumeAfter,
         last_error: state.lastError,
+        last_error_at: state.lastErrorAt,
         updated_at: state.updatedAt
       },
       recovery: {
