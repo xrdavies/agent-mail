@@ -45,7 +45,7 @@
 | Central/Auth Status | `central_base_url`、认证状态、`last_authenticated_at`、`last_heartbeat_at`、最近认证错误 | `re-auth` | `GET /api/v1/web/overview` |
 | MCP Access | MCP URL、`/mcp-config` 的 `command/json/toml` | 复制配置 | `GET /mcp-config` |
 | Runtime Counters | mailbox 总数、`enabled` 数、`disabled` 数、`running` 数、`failed` 数、有未读但卡住的 mailbox 数 | 无 | `GET /api/v1/web/overview` |
-| Attention Mailboxes | 需要人工处理的 mailbox 列表：`bootstrap failed`、`runtime failed`、处于 backoff、`disabled`、解绑异常 | 跳转 detail；必要时快速 `resume now` / `clear failure` | `GET /api/v1/web/overview` |
+| Attention Mailboxes | 需要人工处理的 mailbox 列表：`bootstrap failed`、`runtime failed`、处于 backoff、`disabled`、解绑异常 | 跳转 detail；必要时快速 `resume now` | `GET /api/v1/web/overview` |
 
 说明：
 
@@ -65,7 +65,7 @@
 | --- | --- | --- | --- |
 | List Counters | 全部 mailbox 数、`enabled`、`disabled`、`failed`、有未读数 | 无 | `GET /api/v1/web/mailboxes` |
 | Search | 按 mailbox / name 搜索 | 无 | `GET /api/v1/web/mailboxes` |
-| Mailbox Table | 每行展示 `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、`current_session_id`、`next_resume_after`、`updated_at`、`last_error` 摘要 | `enable`、`disable`、`resume now`、`clear failure`、`remove local binding`、进入详情页 | `GET /api/v1/web/mailboxes` |
+| Mailbox Table | 每行展示 `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、`current_session_id`、`next_resume_after`、`updated_at`、`last_error` 摘要 | `enable` / `disable`（互斥）、`resume now`、进入详情页 | `GET /api/v1/web/mailboxes` |
 
 说明：
 
@@ -86,7 +86,7 @@
 | Identity & Binding | `mailbox`、`name`、`role`、`responsibilities`、`binding_status`、`host_id`、`bound_at`、`unbound_at` | `remove local binding` | `GET /api/v1/web/mailboxes/:mailbox` |
 | Workspace & Git | `workspace_path`、`git_user_name`、`git_user_email` | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
 | Bootstrap Result | 最近一次 bootstrap 状态、时间、错误信息 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
-| Runtime Snapshot | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`latest_summary` | `enable`、`disable`、`resume now` | `GET /api/v1/web/mailboxes/:mailbox` |
+| Runtime Snapshot | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`latest_summary` | `enable` / `disable`（互斥）、`resume now` | `GET /api/v1/web/mailboxes/:mailbox` |
 | Failure & Retry | `failure_count`、`next_resume_after`、`last_error`、最近一次 resume 结果 | `clear failure/backoff` | `GET /api/v1/web/mailboxes/:mailbox` |
 | Local Event Notes | 认证失败、解绑失败、bootstrap 失败、最近状态变更说明 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
 

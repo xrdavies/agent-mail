@@ -33,7 +33,6 @@
             <span class="current">backend.coda@agents.local</span>
           </div>
           <div class="toolbar">
-            <button type="button" class="button subtle">clear failure</button>
             <button type="button" class="button subtle">resume now</button>
             <button type="button" class="button subtle">disable</button>
           </div>
@@ -93,13 +92,12 @@
                 </div>
               </div>
               <div class="button-row host-action-state-row">
-                <button type="button" class="button subtle is-disabled" disabled>enable</button>
                 <button type="button" class="button subtle">disable</button>
                 <button type="button" class="button subtle">resume now</button>
-                <button type="button" class="button subtle">clear failure</button>
               </div>
               <p class="panel-copy">
-                Unavailable actions stay visible but muted, so operators can see why a mailbox cannot move to a given state.
+                State-toggle actions stay mutually exclusive. This mailbox is currently enabled, so only `disable`
+                appears here.
               </p>
             </article>
           </section>
@@ -140,6 +138,9 @@
                   <dt>Suggested Action</dt>
                   <dd>clear failure, inspect agent session, then resume manually.</dd>
                 </div>
+              </div>
+              <div class="button-row host-action-state-row">
+                <button type="button" class="button subtle">clear failure</button>
               </div>
             </article>
           </section>

@@ -92,7 +92,6 @@
                     <div class="button-row table-actions">
                       <button type="button" class="button subtle">disable</button>
                       <button type="button" class="button subtle">resume now</button>
-                      <button type="button" class="button subtle is-disabled" disabled>clear failure</button>
                     </div>
                   </td>
                 </tr>
@@ -108,9 +107,7 @@
                   <td>
                     <div class="button-row table-actions">
                       <button type="button" class="button subtle">disable</button>
-                      <button type="button" class="button subtle">clear failure</button>
                       <button type="button" class="button subtle">resume now</button>
-                      <button type="button" class="button subtle is-disabled" disabled>enable</button>
                     </div>
                   </td>
                 </tr>
@@ -127,15 +124,14 @@
                     <div class="button-row table-actions">
                       <button type="button" class="button subtle">enable</button>
                       <button type="button" class="button subtle is-disabled" disabled>resume now</button>
-                      <button type="button" class="button subtle is-disabled" disabled>disable</button>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
             <p class="table-footnote">
-              Greyed-out actions represent unavailable operations in the current state, for example `resume now` while
-              a mailbox is disabled or `clear failure` when there is no failure to clear.
+              The roster keeps only quick state-toggle and resume actions. `clear failure` lives on the mailbox detail
+              page, and unavailable actions stay muted, for example `resume now` while a mailbox is disabled.
             </p>
           </section>
         </main>
