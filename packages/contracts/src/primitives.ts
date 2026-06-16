@@ -21,6 +21,7 @@ export const profileStatusSchema = z.enum([
   "unavailable"
 ]);
 export const bindingStatusSchema = z.enum(["active", "inactive", "failed"]);
+export const mailboxManagementStatusSchema = z.enum(["enabled", "disabled", "removed"]);
 export const mailboxRuntimeStatusSchema = z.enum([
   "bootstrapping",
   "idle",
@@ -28,6 +29,8 @@ export const mailboxRuntimeStatusSchema = z.enum([
   "failed",
   "cleared"
 ]);
+export const bootstrapStatusSchema = z.enum(["never_started", "succeeded", "failed"]);
+export const hostEventLevelSchema = z.enum(["info", "error"]);
 export const threadStatusSchema = z.enum([
   "open",
   "waiting_human",

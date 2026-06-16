@@ -20,6 +20,7 @@ async function main(): Promise<void> {
     },
     (info) => {
       console.log(`Agent Mail Host listening on http://${info.address}:${info.port}`);
+      console.log(`Host Web available at http://${info.address}:${info.port}/overview`);
       console.log(`MCP config available at http://${info.address}:${info.port}/mcp-config`);
     }
   );

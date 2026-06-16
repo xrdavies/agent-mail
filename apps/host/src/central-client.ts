@@ -16,6 +16,7 @@ import {
   issueIdempotencyKeyResponseSchema,
   markDeliveryReadRequestSchema,
   markDeliveryReadResponseSchema,
+  releaseMailboxBindingResponseSchema,
   registerAgentRequestSchema,
   registerAgentResponseSchema,
   sendEmailRequestSchema,
@@ -89,6 +90,17 @@ export class CentralClient {
         body: registerAgentRequestSchema.parse(input)
       },
       registerAgentResponseSchema
+    );
+  }
+
+  async releaseMailboxBinding(token: string, hostId: string, mailbox: string) {
+    return this.request(
+      `/api/v1/hosts/${encodeURIComponent(hostId)}/mailboxes/${encodeURIComponent(mailbox)}/binding`,
+      {
+        method: "DELETE",
+        token
+      },
+      releaseMailboxBindingResponseSchema
     );
   }
 
@@ -224,7 +236,7 @@ export class CentralClient {
   private async request<T>(
     pathname: string,
     init: {
-      method: "GET" | "POST" | "PATCH";
+      method: "GET" | "POST" | "PATCH" | "DELETE";
       token?: string;
       body?: unknown;
     },

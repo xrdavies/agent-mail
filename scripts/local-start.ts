@@ -77,6 +77,7 @@ async function main(): Promise<void> {
   console.log("Agent Mail local stack started.");
   console.log(`Central: ${manifest.centralBaseUrl} (pid ${centralPid})`);
   console.log(`Host:    ${manifest.hostBaseUrl} (pid ${hostPid})`);
+  console.log(`Host Web:${manifest.hostBaseUrl}/overview`);
   console.log(`MCP:     ${manifest.hostMcpUrl}`);
   for (const mailbox of manifest.mailboxes) {
     console.log(`Workspace ${mailbox.mailbox}: ${mailbox.workspacePath}`);

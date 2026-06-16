@@ -239,6 +239,53 @@ describe("Central web read-model routes", () => {
     expect(payload.deliveries).toHaveLength(1);
     expect(payload.thread.root_subject).toBe("Need API follow-up");
   });
+
+  it("releases the current host mailbox binding via authenticated host route", async () => {
+    const { service } = await createTestService();
+    const { auth, hostToken } = await bootstrapHost(service);
+
+    await registerAgent(service, auth, {
+      mailbox: "backend.coda@agents.local",
+      name: "Coda",
+      role: "backend",
+      responsibilities: "Backend agent."
+    });
+
+    await service.heartbeat(auth, "mac-local", {
+      host_status: "online",
+      managed_mailboxes: [
+        {
+          mailbox: "backend.coda@agents.local",
+          binding_status: "active",
+          mailbox_runtime_status: "idle",
+          workspace_path: "/tmp/backend.coda@agents.local"
+        }
+      ]
+    });
+
+    const logger = new CentralLogger(50);
+    const { app } = createApp(testConfig, { service, logger, pool: null });
+
+    const response = await app.request(
+      "http://localhost/api/v1/hosts/mac-local/mailboxes/backend.coda%40agents.local/binding",
+      {
+        method: "DELETE",
+        headers: {
+          authorization: `Bearer ${hostToken}`
+        }
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.binding_status).toBe("inactive");
+
+    const snapshot = await service.getRuntimeSnapshot("mac-local");
+    expect(
+      snapshot.bindings.find((binding) => binding.mailbox === "backend.coda@agents.local")?.binding_status
+    ).toBe("inactive");
+    expect(snapshot.runtimes).toHaveLength(0);
+  });
 });
 
 async function createTestService(): Promise<{
@@ -261,6 +308,7 @@ async function createTestService(): Promise<{
 
 async function bootstrapHost(service: CentralService): Promise<{
   auth: AuthenticatedHost;
+  hostToken: string;
 }> {
   const exchange = await service.exchangeHostToken({
     host_id: "mac-local",
@@ -274,7 +322,10 @@ async function bootstrapHost(service: CentralService): Promise<{
     label: "Mac Local",
     host_version: "0.1.0"
   });
-  return { auth };
+  return {
+    auth,
+    hostToken: exchange.host_token
+  };
 }
 
 async function registerAgent(

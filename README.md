@@ -8,6 +8,10 @@ Agent Mail 现在包含一套按文档实现的 email-oriented POC 代码基线�
   - Hono + Drizzle + PostgreSQL 的控制面服务
 - `apps/host`
   - Hono + MCP SDK + SQLite 的本地 Host runtime
+- `apps/central-web`
+  - Vite + React 的 Central 管理台前端
+- `apps/host-web`
+  - Vite + React 的 Host 本地管理台前端
 - `docs/*`
   - 架构、数据模型、API、prompt、实现计划与技术栈说明
 
@@ -18,6 +22,7 @@ Agent Mail 现在包含一套按文档实现的 email-oriented POC 代码基线�
 - Agent profile 注册与 mailbox binding
 - Email / Delivery / Thread / Task 主链路
 - Host MCP 12 个 tools
+- Host Web 三页本地运维台：`Overview` / `Mailboxes` / `Mailbox Detail`
 - Host 本地 SQLite 状态与自动轮询 `resume`
 - Drizzle migration
 - Central 关键约束测试
@@ -33,7 +38,9 @@ Agent Mail 现在包含一套按文档实现的 email-oriented POC 代码基线�
 ```text
 apps/
   central/
+  central-web/
   host/
+  host-web/
 packages/
   contracts/
 docs/
@@ -77,10 +84,23 @@ pnpm dev:central
 pnpm dev:host
 ```
 
-7. 查看 Host MCP 配置：
+7. 启动 Host Web：
+
+```bash
+pnpm dev:host-web
+```
+
+8. 查看 Host MCP 配置：
 
 ```bash
 curl http://127.0.0.1:8788/mcp-config
+```
+
+9. 打开 Host Web：
+
+```text
+开发态（Vite）: http://127.0.0.1:5173
+构建后由 Host 托管: http://127.0.0.1:8788/overview
 ```
 
 ## 本地联调脚本

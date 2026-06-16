@@ -15,12 +15,12 @@ import {
   issueIdempotencyKeyRequestSchema,
   listTasksQuerySchema,
   markDeliveryReadRequestSchema,
+  releaseMailboxBindingResponseSchema,
   registerAgentRequestSchema,
   sendEmailRequestSchema,
   threadDetailResponseSchema,
   unreadDeliveriesQuerySchema,
-  updateTaskStatusRequestSchema
-  ,
+  updateTaskStatusRequestSchema,
   runtimeSnapshotSchema,
   taskSchema,
   webTaskDetailResponseSchema,
@@ -310,6 +310,15 @@ export function createApp(
     const request = await parseJson(c, hostHeartbeatRequestSchema);
     const response = await service.heartbeat(c.get("auth"), c.req.param("host_id"), request);
     return c.json(response, 200);
+  });
+
+  app.delete("/api/v1/hosts/:host_id/mailboxes/:mailbox/binding", async (c) => {
+    const response = await service.releaseMailboxBinding(
+      c.get("auth"),
+      c.req.param("host_id"),
+      c.req.param("mailbox")
+    );
+    return c.json(releaseMailboxBindingResponseSchema.parse(response), 200);
   });
 
   app.post("/api/v1/idempotency-keys/issue", async (c) => {

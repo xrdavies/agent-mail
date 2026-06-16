@@ -270,6 +270,49 @@ export class CentralService {
     };
   }
 
+  async releaseMailboxBinding(auth: AuthenticatedHost, hostId: string, mailbox: string): Promise<{
+    ok: true;
+    host_id: string;
+    mailbox: string;
+    binding_status: "inactive";
+    unbound_at: string;
+  }> {
+    if (auth.hostId !== hostId) {
+      throw new HttpError(403, "Host identity mismatch");
+    }
+
+    const timestamp = now();
+
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(mailboxBindings)
+        .set({
+          bindingStatus: "inactive",
+          unboundAt: timestamp,
+          updatedAt: timestamp
+        })
+        .where(
+          and(
+            eq(mailboxBindings.hostId, hostId),
+            eq(mailboxBindings.mailbox, mailbox),
+            eq(mailboxBindings.bindingStatus, "active")
+          )
+        );
+
+      await tx
+        .delete(mailboxRuntimes)
+        .where(and(eq(mailboxRuntimes.hostId, hostId), eq(mailboxRuntimes.mailbox, mailbox)));
+    });
+
+    return {
+      ok: true,
+      host_id: hostId,
+      mailbox,
+      binding_status: "inactive",
+      unbound_at: timestamp.toISOString()
+    };
+  }
+
   async issueIdempotencyKey(auth: AuthenticatedHost, mailbox: string, action: "send_email" | "create_task"): Promise<{
     idempotency_key: string;
   }> {

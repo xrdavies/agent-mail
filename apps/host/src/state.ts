@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -14,6 +15,7 @@ export interface MailboxLocalState {
   responsibilities: string | null;
   bootstrapped: boolean;
   bindingStatus: "active" | "inactive" | "failed";
+  managementStatus: "enabled" | "disabled" | "removed";
   runtimeStatus: "bootstrapping" | "idle" | "running" | "failed" | "cleared";
   currentSessionId: string | null;
   activeTaskId: string | null;
@@ -22,7 +24,20 @@ export interface MailboxLocalState {
   failureCount: number;
   nextResumeAfter: string | null;
   lastError: string | null;
+  lastBootstrapAt: string | null;
+  bootstrapStatus: "never_started" | "succeeded" | "failed";
+  lastBootstrapError: string | null;
+  boundAt: string | null;
+  unboundAt: string | null;
   updatedAt: string;
+}
+
+export interface HostEvent {
+  mailbox: string | null;
+  level: "info" | "error";
+  title: string;
+  message: string | null;
+  at: string;
 }
 
 export class HostStateStore {
@@ -57,7 +72,17 @@ export class HostStateStore {
         last_error TEXT,
         updated_at TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS mailbox_events (
+        event_id TEXT PRIMARY KEY,
+        mailbox TEXT,
+        level TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT,
+        created_at TEXT NOT NULL
+      );
     `);
+    this.ensureMailboxStateColumns();
     this.seedManagedMailboxes(mailboxes);
   }
 
@@ -66,25 +91,19 @@ export class HostStateStore {
   }
 
   getHostToken(): string | null {
-    const row = this.db
-      .prepare("SELECT value FROM kv_state WHERE key = 'host_token'")
-      .get() as { value: string } | undefined;
-    return row?.value ?? null;
+    return this.getKvValue("host_token");
   }
 
   setHostToken(token: string | null): void {
-    if (token === null) {
-      this.db.prepare("DELETE FROM kv_state WHERE key = 'host_token'").run();
-      return;
-    }
-    this.db
-      .prepare(
-        `
-          INSERT INTO kv_state (key, value) VALUES ('host_token', ?)
-          ON CONFLICT(key) DO UPDATE SET value = excluded.value
-        `
-      )
-      .run(token);
+    this.setKvValue("host_token", token);
+  }
+
+  getLastAuthError(): string | null {
+    return this.getKvValue("last_auth_error");
+  }
+
+  setLastAuthError(message: string | null): void {
+    this.setKvValue("last_auth_error", message);
   }
 
   getMailboxState(mailbox: string): MailboxLocalState | null {
@@ -99,6 +118,52 @@ export class HostStateStore {
       .prepare("SELECT * FROM mailbox_state ORDER BY mailbox ASC")
       .all() as unknown as MailboxRow[];
     return rows.map(mapMailboxRow);
+  }
+
+  listEvents(options: {
+    mailbox?: string;
+    limit?: number;
+  } = {}): HostEvent[] {
+    const limit = options.limit ?? 10;
+    const rows = options.mailbox
+      ? (this.db
+          .prepare(
+            `
+              SELECT * FROM mailbox_events
+              WHERE mailbox = ? OR mailbox IS NULL
+              ORDER BY created_at DESC
+              LIMIT ?
+            `
+          )
+          .all(options.mailbox, limit) as unknown as HostEventRow[])
+      : (this.db
+          .prepare("SELECT * FROM mailbox_events ORDER BY created_at DESC LIMIT ?")
+          .all(limit) as unknown as HostEventRow[]);
+    return rows.map(mapHostEventRow);
+  }
+
+  recordEvent(input: HostEvent): void {
+    this.db
+      .prepare(
+        `
+          INSERT INTO mailbox_events (
+            event_id,
+            mailbox,
+            level,
+            title,
+            message,
+            created_at
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        `
+      )
+      .run(
+        `evt_${randomUUID()}`,
+        input.mailbox,
+        input.level,
+        input.title,
+        input.message,
+        input.at
+      );
   }
 
   upsertMailboxConfig(mailbox: ManagedMailboxConfig): void {
@@ -161,11 +226,17 @@ export class HostStateStore {
               responsibilities = ?,
               bootstrapped = 1,
               binding_status = 'active',
+              management_status = 'enabled',
               runtime_status = 'idle',
               current_session_id = ?,
               failure_count = 0,
               next_resume_after = NULL,
               last_error = NULL,
+              last_bootstrap_at = ?,
+              bootstrap_status = 'succeeded',
+              last_bootstrap_error = NULL,
+              bound_at = ?,
+              unbound_at = NULL,
               updated_at = ?
           WHERE mailbox = ?
         `
@@ -179,9 +250,32 @@ export class HostStateStore {
         input.responsibilities,
         input.sessionId,
         timestamp,
+        timestamp,
+        timestamp,
         input.mailbox
       );
     return this.requireMailboxState(input.mailbox);
+  }
+
+  markBootstrapFailed(mailbox: string, errorMessage: string): MailboxLocalState {
+    const timestamp = new Date().toISOString();
+    this.db
+      .prepare(
+        `
+          UPDATE mailbox_state
+          SET bootstrapped = 0,
+              binding_status = 'failed',
+              runtime_status = 'failed',
+              last_error = ?,
+              last_bootstrap_at = ?,
+              bootstrap_status = 'failed',
+              last_bootstrap_error = ?,
+              updated_at = ?
+          WHERE mailbox = ?
+        `
+      )
+      .run(errorMessage, timestamp, errorMessage, timestamp, mailbox);
+    return this.requireMailboxState(mailbox);
   }
 
   markResumeStarted(mailbox: string): MailboxLocalState {
@@ -252,6 +346,69 @@ export class HostStateStore {
     return this.requireMailboxState(mailbox);
   }
 
+  clearFailure(mailbox: string): MailboxLocalState {
+    const current = this.requireMailboxState(mailbox);
+    const timestamp = new Date().toISOString();
+    const runtimeStatus =
+      current.managementStatus === "removed" || !current.bootstrapped ? "cleared" : "idle";
+    this.db
+      .prepare(
+        `
+          UPDATE mailbox_state
+          SET runtime_status = ?,
+              failure_count = 0,
+              next_resume_after = NULL,
+              last_error = NULL,
+              updated_at = ?
+          WHERE mailbox = ?
+        `
+      )
+      .run(runtimeStatus, timestamp, mailbox);
+    return this.requireMailboxState(mailbox);
+  }
+
+  setManagementStatus(
+    mailbox: string,
+    managementStatus: MailboxLocalState["managementStatus"]
+  ): MailboxLocalState {
+    const timestamp = new Date().toISOString();
+    this.db
+      .prepare(
+        `
+          UPDATE mailbox_state
+          SET management_status = ?,
+              updated_at = ?
+          WHERE mailbox = ?
+        `
+      )
+      .run(managementStatus, timestamp, mailbox);
+    return this.requireMailboxState(mailbox);
+  }
+
+  markBindingRemoved(mailbox: string): MailboxLocalState {
+    const timestamp = new Date().toISOString();
+    this.db
+      .prepare(
+        `
+          UPDATE mailbox_state
+          SET bootstrapped = 0,
+              binding_status = 'inactive',
+              management_status = 'removed',
+              runtime_status = 'cleared',
+              current_session_id = NULL,
+              active_task_id = NULL,
+              failure_count = 0,
+              next_resume_after = NULL,
+              last_error = NULL,
+              unbound_at = ?,
+              updated_at = ?
+          WHERE mailbox = ?
+        `
+      )
+      .run(timestamp, timestamp, mailbox);
+    return this.requireMailboxState(mailbox);
+  }
+
   setRuntimeStatus(
     mailbox: string,
     runtimeStatus: MailboxLocalState["runtimeStatus"],
@@ -272,6 +429,28 @@ export class HostStateStore {
     return this.requireMailboxState(mailbox);
   }
 
+  private getKvValue(key: string): string | null {
+    const row = this.db
+      .prepare("SELECT value FROM kv_state WHERE key = ?")
+      .get(key) as { value: string } | undefined;
+    return row?.value ?? null;
+  }
+
+  private setKvValue(key: string, value: string | null): void {
+    if (value === null) {
+      this.db.prepare("DELETE FROM kv_state WHERE key = ?").run(key);
+      return;
+    }
+    this.db
+      .prepare(
+        `
+          INSERT INTO kv_state (key, value) VALUES (?, ?)
+          ON CONFLICT(key) DO UPDATE SET value = excluded.value
+        `
+      )
+      .run(key, value);
+  }
+
   private requireMailboxState(mailbox: string): MailboxLocalState {
     const state = this.getMailboxState(mailbox);
     if (!state) {
@@ -285,6 +464,26 @@ export class HostStateStore {
       this.upsertMailboxConfig(mailbox);
     }
   }
+
+  private ensureMailboxStateColumns(): void {
+    const rows = this.db.prepare("PRAGMA table_info(mailbox_state)").all() as Array<{
+      name: string;
+    }>;
+    const columns = new Set(rows.map((row) => row.name));
+
+    const addColumn = (name: string, definition: string) => {
+      if (!columns.has(name)) {
+        this.db.exec(`ALTER TABLE mailbox_state ADD COLUMN ${definition}`);
+      }
+    };
+
+    addColumn("management_status", "management_status TEXT NOT NULL DEFAULT 'enabled'");
+    addColumn("last_bootstrap_at", "last_bootstrap_at TEXT");
+    addColumn("bootstrap_status", "bootstrap_status TEXT NOT NULL DEFAULT 'never_started'");
+    addColumn("last_bootstrap_error", "last_bootstrap_error TEXT");
+    addColumn("bound_at", "bound_at TEXT");
+    addColumn("unbound_at", "unbound_at TEXT");
+  }
 }
 
 interface MailboxRow {
@@ -297,6 +496,7 @@ interface MailboxRow {
   responsibilities: string | null;
   bootstrapped: number;
   binding_status: MailboxLocalState["bindingStatus"];
+  management_status: MailboxLocalState["managementStatus"];
   runtime_status: MailboxLocalState["runtimeStatus"];
   current_session_id: string | null;
   active_task_id: string | null;
@@ -305,7 +505,20 @@ interface MailboxRow {
   failure_count: number;
   next_resume_after: string | null;
   last_error: string | null;
+  last_bootstrap_at: string | null;
+  bootstrap_status: MailboxLocalState["bootstrapStatus"];
+  last_bootstrap_error: string | null;
+  bound_at: string | null;
+  unbound_at: string | null;
   updated_at: string;
+}
+
+interface HostEventRow {
+  mailbox: string | null;
+  level: HostEvent["level"];
+  title: string;
+  message: string | null;
+  created_at: string;
 }
 
 function mapMailboxRow(row: MailboxRow): MailboxLocalState {
@@ -319,6 +532,7 @@ function mapMailboxRow(row: MailboxRow): MailboxLocalState {
     responsibilities: row.responsibilities,
     bootstrapped: row.bootstrapped === 1,
     bindingStatus: row.binding_status,
+    managementStatus: row.management_status,
     runtimeStatus: row.runtime_status,
     currentSessionId: row.current_session_id,
     activeTaskId: row.active_task_id,
@@ -327,6 +541,21 @@ function mapMailboxRow(row: MailboxRow): MailboxLocalState {
     failureCount: row.failure_count,
     nextResumeAfter: row.next_resume_after,
     lastError: row.last_error,
+    lastBootstrapAt: row.last_bootstrap_at,
+    bootstrapStatus: row.bootstrap_status,
+    lastBootstrapError: row.last_bootstrap_error,
+    boundAt: row.bound_at,
+    unboundAt: row.unbound_at,
     updatedAt: row.updated_at
+  };
+}
+
+function mapHostEventRow(row: HostEventRow): HostEvent {
+  return {
+    mailbox: row.mailbox,
+    level: row.level,
+    title: row.title,
+    message: row.message,
+    at: row.created_at
   };
 }

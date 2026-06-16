@@ -97,6 +97,14 @@ export const registerAgentResponseSchema = z.object({
   binding: mailboxBindingSchema
 });
 
+export const releaseMailboxBindingResponseSchema = z.object({
+  ok: z.literal(true),
+  host_id: identifierSchema,
+  mailbox: mailboxSchema,
+  binding_status: z.literal("inactive"),
+  unbound_at: isoTimestampSchema
+});
+
 export const agentsListQuerySchema = z.object({
   include_retired: z.coerce.boolean().optional()
 });
