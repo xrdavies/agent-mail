@@ -33,7 +33,11 @@ Central Web 原型入口：
 
 Host Web 原型入口：
 
-- `docs/web/prototype-host-web/index.html`
+- `docs/web/prototype-host-web/overview.html`
+
+说明：
+
+- `docs/web/prototype-host-web/index.html` 只保留为跳转壳，会立即跳到 `overview.html`
 
 也可以直接打开具体页面：
 
@@ -98,10 +102,10 @@ docs/web/
     compose.html
     prototype.css
   prototype-host-web/
-    index.html
     overview.html
     mailboxes.html
     mailbox-detail.html
+    index.html
     prototype.css
 ```
 

@@ -3,95 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Host Web Prototype · Agent Mail</title>
-    <link rel="stylesheet" href="./prototype.css" />
+    <title>Redirecting to Overview · Host Web</title>
+    <meta http-equiv="refresh" content="0; url=./overview.html" />
+    <link rel="canonical" href="./overview.html" />
+    <script>
+      window.location.replace("./overview.html");
+    </script>
   </head>
   <body>
-    <div class="prototype-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand-mark">Host Web</span>
-          <h1 class="brand-title">Agent Mail</h1>
-        </div>
-
-        <div class="nav-group">
-          <p class="nav-title">Local Runtime</p>
-          <ul class="nav-list">
-            <li><a class="nav-link" href="./overview.html">Overview</a></li>
-            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
-          </ul>
-        </div>
-      </aside>
-
-      <div class="workspace">
-        <header class="topbar">
-          <div class="breadcrumbs">
-            <span class="current">Host Web</span>
-          </div>
-          <div class="toolbar">
-            <span class="button subtle">mac-local</span>
-            <span class="button subtle">online</span>
-            <span class="button">re-auth</span>
-          </div>
-        </header>
-
-        <main class="content stack">
-          <section class="panel">
-            <h2 class="hero-title">Host runtime supervision, not Central control.</h2>
-            <p class="hero-copy">
-              This prototype focuses only on local mailbox binding, runtime health, manual recovery, and MCP access.
-              Bootstrap stays inside the agent session. Global thread, mail, and debug views stay in Central Web.
-            </p>
-          </section>
-
-          <section class="grid-3">
-            <a class="card-link" href="./overview.html">
-              <h3>Overview</h3>
-              <p>Host summary, auth status, MCP access, and attention mailboxes.</p>
-            </a>
-            <a class="card-link" href="./mailboxes.html">
-              <h3>Mailboxes</h3>
-              <p>Search and operate on the local mailbox roster.</p>
-            </a>
-            <a class="card-link" href="./mailbox-detail.html">
-              <h3>Mailbox Detail</h3>
-              <p>Single-mailbox runtime truth, failure context, and unbind flow.</p>
-            </a>
-          </section>
-
-          <section class="grid-2">
-            <article class="panel">
-              <p class="eyebrow">In Scope</p>
-              <div class="list">
-                <div class="list-row">
-                  <span class="list-row-key">Host health and re-auth</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Mailbox runtime recovery</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Disable / enable / remove local binding</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="panel">
-              <p class="eyebrow">Out Of Scope</p>
-              <div class="list">
-                <div class="list-row">
-                  <span class="list-row-key">Bootstrap or re-bootstrap actions</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Central debug stream and global thread browsing</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Mailbox allocation or approval workflow</span>
-                </div>
-              </div>
-            </article>
-          </section>
-        </main>
-      </div>
-    </div>
+    <p>Redirecting to <a href="./overview.html">Overview</a>...</p>
   </body>
 </html>
