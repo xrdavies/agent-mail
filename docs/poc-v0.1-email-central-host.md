@@ -881,7 +881,7 @@ Host 还应暴露这些非 MCP 的薄 API：
 
 这一节作为当前 POC 的接口总览页使用。
 
-详细 contract 仍以 `docs/api-contract.md` 为准；本节只列最终接口面和各接口的职责。
+详细 contract 见 `docs/api-contract.md` 入口页以及 [central-api-contract.md](./central-api-contract.md)、[host-api-contract.md](./host-api-contract.md)；本节只列最终接口面和各接口的职责。
 
 ### Central API Final List
 

@@ -125,6 +125,8 @@ pnpm test
 - [docs/poc-v0.1-email-central-host.md](./docs/poc-v0.1-email-central-host.md)
 - [docs/data-model.md](./docs/data-model.md)
 - [docs/api-contract.md](./docs/api-contract.md)
+- [docs/central-api-contract.md](./docs/central-api-contract.md)
+- [docs/host-api-contract.md](./docs/host-api-contract.md)
 - [docs/prompt-specification.md](./docs/prompt-specification.md)
 - [docs/implementation-plan.md](./docs/implementation-plan.md)
 - [docs/tech-stack.md](./docs/tech-stack.md)
