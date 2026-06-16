@@ -974,22 +974,10 @@ button.button:disabled {
   background: linear-gradient(180deg, rgba(143, 59, 47, 0.06), transparent 75%), var(--panel);
 }
 
-.compact-danger-grid {
-  margin-top: 1rem;
-}
-
-.compact-note-box {
-  min-height: auto;
-}
-
 .host-action-state-row {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line-soft);
-}
-
-.modal-preview .body-box {
-  min-height: auto;
 }
 
 .confirm-field {

@@ -83,12 +83,11 @@
 
 | 模块 | 展示内容 | 可操作项 | 主要数据来源 |
 | --- | --- | --- | --- |
-| Identity & Binding | `mailbox`、`name`、`role`、`responsibilities`、`binding_status`、`host_id`、`bound_at`、`unbound_at` | `remove local binding` | `GET /api/v1/web/mailboxes/:mailbox` |
-| Workspace & Git | `workspace_path`、`git_user_name`、`git_user_email` | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
-| Bootstrap Result | 最近一次 bootstrap 状态、时间、错误信息 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
-| Runtime Snapshot | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`latest_summary` | `enable` / `disable`（互斥）、`resume now` | `GET /api/v1/web/mailboxes/:mailbox` |
-| Failure & Retry | `failure_count`、`next_resume_after`、`last_error`、最近一次 resume 结果 | `clear failure/backoff` | `GET /api/v1/web/mailboxes/:mailbox` |
-| Local Event Notes | 认证失败、解绑失败、bootstrap 失败、最近状态变更说明 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
+| Header Summary | `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、最近错误时间摘要 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
+| Runtime & Recovery | `management_status`、`runtime_status`、`current_session_id`、`active_task_id`、未读数、最近处理的 `delivery_id`、`failure_count`、`next_resume_after`、`last_error`、恢复建议 | `enable` / `disable`（互斥）、`resume now`、`clear failure/backoff` | `GET /api/v1/web/mailboxes/:mailbox` |
+| Identity & Context | `mailbox`、`name`、`role`、`responsibilities`、`binding_status`、`host_id`、`bound_at`、`unbound_at`、`workspace_path`、`git_user_name`、`git_user_email`、最近一次 bootstrap 状态/时间/错误 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
+| Recent Host Events | 认证失败、解绑失败、bootstrap 失败、最近状态变更说明 | 无 | `GET /api/v1/web/mailboxes/:mailbox` |
+| Danger Zone | 当前 mailbox 的解绑风险和结果说明 | `remove local binding` | `GET /api/v1/web/mailboxes/:mailbox` |
 
 说明：
 

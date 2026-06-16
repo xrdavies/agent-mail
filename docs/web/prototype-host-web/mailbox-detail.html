@@ -32,19 +32,15 @@
             <span>/</span>
             <span class="current">backend.coda@agents.local</span>
           </div>
-          <div class="toolbar">
-            <button type="button" class="button subtle">resume now</button>
-            <button type="button" class="button subtle">disable</button>
-          </div>
         </header>
 
         <main class="content stack">
           <section class="panel">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">Mailbox Detail</p>
                 <h2 class="panel-title">backend.coda@agents.local</h2>
-                <p class="panel-copy">Coda / backend · active on mac-local · runtime failed · unread 2</p>
+                <p class="panel-copy">Coda / backend</p>
+                <p class="panel-copy">active on mac-local · unread 2 · last error at 12:01</p>
               </div>
               <div class="chip-row">
                 <span class="chip info">binding active</span>
@@ -56,8 +52,54 @@
 
           <section class="grid-2">
             <article class="panel">
-              <p class="eyebrow">Identity & Binding</p>
-              <h2 class="panel-title">Who This Mailbox Is</h2>
+              <h2 class="panel-title">Runtime &amp; Recovery</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Management</dt>
+                  <dd>enabled</dd>
+                </div>
+                <div>
+                  <dt>Runtime</dt>
+                  <dd>failed</dd>
+                </div>
+                <div>
+                  <dt>Current Session</dt>
+                  <dd>`sess_backend_coda...`</dd>
+                </div>
+                <div>
+                  <dt>Active Task</dt>
+                  <dd>`task_044`</dd>
+                </div>
+                <div>
+                  <dt>Unread</dt>
+                  <dd>2</dd>
+                </div>
+                <div>
+                  <dt>Last Processed</dt>
+                  <dd>`del_011`</dd>
+                </div>
+                <div>
+                  <dt>Last Error</dt>
+                  <dd>resume command exited with code 1</dd>
+                </div>
+                <div>
+                  <dt>Next Resume After</dt>
+                  <dd>-</dd>
+                </div>
+                <div>
+                  <dt>Suggested Action</dt>
+                  <dd>clear failure, inspect the agent session, then resume now.</dd>
+                </div>
+              </div>
+              <div class="button-row host-action-state-row">
+                <button type="button" class="button subtle">disable</button>
+                <button type="button" class="button subtle">resume now</button>
+                <button type="button" class="button subtle">clear failure</button>
+              </div>
+            </article>
+
+            <article class="panel">
+              <h2 class="panel-title">Identity &amp; Context</h2>
               <div class="definition-list">
                 <div>
                   <dt>Mailbox</dt>
@@ -69,44 +111,16 @@
                 </div>
                 <div>
                   <dt>Binding</dt>
-                  <dd>active · host mac-local · bound at 10:00:04 · unbound at -</dd>
-                </div>
-              </div>
-            </article>
-
-            <article class="panel">
-              <p class="eyebrow">Runtime Snapshot</p>
-              <h2 class="panel-title">What The Host Sees</h2>
-              <div class="definition-list">
-                <div>
-                  <dt>Management</dt>
-                  <dd>enabled</dd>
+                  <dd>active</dd>
                 </div>
                 <div>
-                  <dt>Runtime</dt>
-                  <dd>failed · current session `sess_backend_coda...` · active task `task_044`</dd>
+                  <dt>Host</dt>
+                  <dd>mac-local</dd>
                 </div>
                 <div>
-                  <dt>Unread / Latest</dt>
-                  <dd>2 unread · last processed `del_011` · latest summary says API contract editing stopped mid-run.</dd>
+                  <dt>Bound At</dt>
+                  <dd>10:00:04</dd>
                 </div>
-              </div>
-              <div class="button-row host-action-state-row">
-                <button type="button" class="button subtle">disable</button>
-                <button type="button" class="button subtle">resume now</button>
-              </div>
-              <p class="panel-copy">
-                State-toggle actions stay mutually exclusive. This mailbox is currently enabled, so only `disable`
-                appears here.
-              </p>
-            </article>
-          </section>
-
-          <section class="grid-2">
-            <article class="panel">
-              <p class="eyebrow">Workspace & Git</p>
-              <h2 class="panel-title">Local Execution Context</h2>
-              <div class="definition-list">
                 <div>
                   <dt>Workspace</dt>
                   <dd>/Users/me/worktrees/coda</dd>
@@ -115,104 +129,44 @@
                   <dt>Git Identity</dt>
                   <dd>Coda · backend.coda@agents.local</dd>
                 </div>
-              </div>
-            </article>
-
-            <article class="panel">
-              <p class="eyebrow">Failure & Retry</p>
-              <h2 class="panel-title">Why It Stopped</h2>
-              <div class="definition-list">
                 <div>
-                  <dt>Failure Count</dt>
-                  <dd>3</dd>
-                </div>
-                <div>
-                  <dt>Next Resume After</dt>
-                  <dd>-</dd>
-                </div>
-                <div>
-                  <dt>Last Error</dt>
-                  <dd>resume command exited with code 1</dd>
-                </div>
-                <div>
-                  <dt>Suggested Action</dt>
-                  <dd>clear failure, inspect agent session, then resume manually.</dd>
-                </div>
-              </div>
-              <div class="button-row host-action-state-row">
-                <button type="button" class="button subtle">clear failure</button>
-              </div>
-            </article>
-          </section>
-
-          <section class="grid-2">
-            <article class="panel">
-              <p class="eyebrow">Bootstrap Result</p>
-              <h2 class="panel-title">Read-Only Bootstrap State</h2>
-              <div class="definition-list">
-                <div>
-                  <dt>Status</dt>
+                  <dt>Bootstrap</dt>
                   <dd>succeeded</dd>
                 </div>
                 <div>
                   <dt>Last Bootstrap</dt>
                   <dd>10:00:04</dd>
                 </div>
-                <div>
-                  <dt>Error</dt>
-                  <dd>-</dd>
-                </div>
               </div>
-              <p class="panel-copy">Bootstrap is not managed here. If it fails, retry inside the agent session.</p>
             </article>
+          </section>
 
-            <article class="panel">
-              <p class="eyebrow">Local Event Notes</p>
-              <h2 class="panel-title">Recent Host Events</h2>
-              <div class="timeline">
-                <div class="timeline-item">
-                  <h4>12:01 Resume failed</h4>
-                  <p>Process exited with code 1 while resuming task_044.</p>
-                </div>
-                <div class="timeline-item">
-                  <h4>12:00 Heartbeat ok</h4>
-                  <p>Central still sees the mailbox as active on mac-local.</p>
-                </div>
-                <div class="timeline-item">
-                  <h4>10:00 Bootstrap succeeded</h4>
-                  <p>Mailbox registered and binding became active.</p>
-                </div>
+          <section class="panel">
+            <h2 class="panel-title">Recent Host Events</h2>
+            <div class="timeline host-action-state-row">
+              <div class="timeline-item">
+                <h4>12:01 Resume failed</h4>
+                <p>Process exited with code 1 while resuming task_044.</p>
               </div>
-            </article>
+              <div class="timeline-item">
+                <h4>12:00 Heartbeat ok</h4>
+                <p>Central still sees the mailbox as active on mac-local.</p>
+              </div>
+              <div class="timeline-item">
+                <h4>10:00 Bootstrap succeeded</h4>
+                <p>Mailbox registered and binding became active.</p>
+              </div>
+            </div>
           </section>
 
           <section class="panel danger-panel">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">Danger Zone</p>
-                <h2 class="panel-title">Remove Local Binding</h2>
-                <p class="panel-copy">
-                  Keep this action available, but visually secondary. The confirmation modal should only appear after an explicit click.
-                </p>
+                <h2 class="panel-title">Danger Zone</h2>
+                <p class="panel-copy">Remove this mailbox from current Host management.</p>
+                <p class="panel-copy">This should be blocked while runtime is running.</p>
               </div>
               <button type="button" class="button is-danger" data-open-unbind-modal>remove local binding</button>
-            </div>
-            <div class="grid-2 compact-danger-grid">
-              <div class="list">
-                <div class="list-row">
-                  <span class="list-row-key">Will stop local scheduling and clear current Host ownership.</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Will not delete history or workspace files.</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Should be blocked while runtime is currently running.</span>
-                </div>
-              </div>
-              <div class="body-box compact-note-box">
-                <p class="body-copy">This page no longer previews the confirmation box inline.</p>
-                <p class="body-copy">The destructive dialog opens only when the operator explicitly chooses to unbind this mailbox.</p>
-              </div>
             </div>
           </section>
         </main>
@@ -223,7 +177,6 @@
       <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="unbind-modal-title">
         <div class="modal-header">
           <div>
-            <p class="eyebrow">Danger Zone</p>
             <h2 class="panel-title" id="unbind-modal-title">Remove Local Binding</h2>
             <p class="panel-copy">Confirm before removing `backend.coda@agents.local` from this Host.</p>
           </div>
