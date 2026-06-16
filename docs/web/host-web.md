@@ -65,7 +65,7 @@
 | --- | --- | --- | --- |
 | List Counters | 全部 mailbox 数、`enabled`、`disabled`、`failed`、有未读数 | 无 | `GET /api/v1/web/mailboxes` |
 | Search | 按 mailbox / name 搜索 | 无 | `GET /api/v1/web/mailboxes` |
-| Mailbox Table | 每行展示 `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、`current_session_id`、`next_resume_after`、`updated_at`、`last_error` 摘要 | `enable` / `disable`（互斥）、`resume now`、进入详情页 | `GET /api/v1/web/mailboxes` |
+| Mailbox Table | 每行展示 `mailbox`、`name`、`role`、`binding_status`、`management_status`、`runtime_status`、未读数、`current_session_id`、`updated_at` | `enable` / `disable`（互斥）、`resume now`、进入详情页 | `GET /api/v1/web/mailboxes` |
 
 说明：
 
@@ -224,10 +224,8 @@
       "runtime_status": "idle",
       "pending_unread_count": 1,
       "current_session_id": "sess_pm_aster_agents_local",
-      "next_resume_after": null,
       "bootstrap_status": "succeeded",
-      "updated_at": "2026-06-16T10:04:58.000Z",
-      "last_error": null
+      "updated_at": "2026-06-16T10:04:58.000Z"
     }
   ]
 }

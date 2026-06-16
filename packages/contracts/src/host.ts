@@ -271,10 +271,8 @@ export const hostWebMailboxSummarySchema = z.object({
   runtime_status: mailboxRuntimeStatusSchema,
   pending_unread_count: z.number().int().nonnegative(),
   current_session_id: identifierSchema.nullable(),
-  next_resume_after: isoTimestampSchema.nullable(),
   bootstrap_status: bootstrapStatusSchema,
   updated_at: isoTimestampSchema,
-  last_error: z.string().nullable(),
   available_actions: hostWebAvailableActionsSchema
 });
 

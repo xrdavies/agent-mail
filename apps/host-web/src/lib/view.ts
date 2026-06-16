@@ -1,7 +1,8 @@
 import type {
   HostWebAvailableActions,
   HostWebMailboxDetailResponse,
-  HostWebMailboxSummary
+  HostWebMailboxSummary,
+  HostWebOverviewResponse
 } from "./api.js";
 
 export function formatTimestamp(input: string | null): string {
@@ -34,7 +35,11 @@ export function mailboxDetailPath(mailbox: string): string {
 }
 
 export function summarizeMailboxCopy(
-  mailbox: Pick<HostWebMailboxSummary, "management_status" | "runtime_status" | "pending_unread_count" | "last_error">
+  mailbox: Pick<
+    HostWebMailboxSummary,
+    "management_status" | "runtime_status" | "pending_unread_count"
+  > &
+    Pick<HostWebOverviewResponse["attention_mailboxes"][number], "last_error">
 ): string {
   const parts = [
     mailbox.runtime_status,

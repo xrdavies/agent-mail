@@ -49,7 +49,7 @@ export function MailboxesPage() {
               <input
                 className="toolbar-input"
                 aria-label="Search mailboxes"
-                placeholder="search mailbox / role"
+                placeholder="search mailbox / name"
                 type="text"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -66,6 +66,7 @@ export function MailboxesPage() {
             <thead>
               <tr>
                 <th>Mailbox</th>
+                <th>Name</th>
                 <th>Role</th>
                 <th>Binding</th>
                 <th>Mgmt</th>
@@ -79,7 +80,7 @@ export function MailboxesPage() {
             <tbody>
               {data.mailboxes.length === 0 ? (
                 <tr>
-                  <td colSpan={9}>No mailboxes matched this search.</td>
+                  <td colSpan={10}>No mailboxes matched this search.</td>
                 </tr>
               ) : (
                 data.mailboxes.map((mailbox) => (
@@ -87,6 +88,7 @@ export function MailboxesPage() {
                     <td>
                       <Link to={mailboxDetailPath(mailbox.mailbox)}>{mailbox.mailbox}</Link>
                     </td>
+                    <td>{mailbox.name ?? "-"}</td>
                     <td>{mailbox.role ?? "-"}</td>
                     <td>
                       <span className={`chip ${statusChipClass(mailbox.binding_status)}`}>{mailbox.binding_status}</span>

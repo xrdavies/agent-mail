@@ -630,7 +630,7 @@ export class HostRuntime {
       if (search.length === 0) {
         return true;
       }
-      return [state.mailbox, state.name ?? "", state.role ?? ""].some((value) =>
+      return [state.mailbox, state.name ?? ""].some((value) =>
         value.toLowerCase().includes(search)
       );
     });
@@ -1106,10 +1106,8 @@ export class HostRuntime {
       runtime_status: state.runtimeStatus,
       pending_unread_count: pendingUnreadCount,
       current_session_id: state.currentSessionId,
-      next_resume_after: state.nextResumeAfter,
       bootstrap_status: state.bootstrapStatus,
       updated_at: state.updatedAt,
-      last_error: state.lastError,
       available_actions: this.buildAvailableActions(state)
     };
   }
