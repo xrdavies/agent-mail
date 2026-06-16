@@ -59,6 +59,14 @@ export function OverviewPage() {
           <p className="stat-value">{data.counters.enabled_mailboxes}</p>
         </article>
         <article className="stat-card overview-stat-card">
+          <p className="stat-label">Disabled</p>
+          <p className="stat-value">{data.counters.disabled_mailboxes}</p>
+        </article>
+        <article className="stat-card overview-stat-card">
+          <p className="stat-label">Running</p>
+          <p className="stat-value">{data.counters.running_mailboxes}</p>
+        </article>
+        <article className="stat-card overview-stat-card">
           <p className="stat-label">Failed</p>
           <p className="stat-value">{data.counters.failed_mailboxes}</p>
         </article>
