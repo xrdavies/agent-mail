@@ -38,28 +38,28 @@
           </div>
         </header>
 
-        <main class="content stack">
-          <section class="stats-grid">
-            <article class="stat-card">
+        <main class="content stack overview-page">
+          <section class="stats-grid overview-stats-grid">
+            <article class="stat-card overview-stat-card">
               <p class="stat-label">Managed</p>
               <p class="stat-value">2</p>
             </article>
-            <article class="stat-card">
+            <article class="stat-card overview-stat-card">
               <p class="stat-label">Enabled</p>
               <p class="stat-value">1</p>
             </article>
-            <article class="stat-card">
+            <article class="stat-card overview-stat-card">
               <p class="stat-label">Failed</p>
               <p class="stat-value">1</p>
             </article>
-            <article class="stat-card">
+            <article class="stat-card overview-stat-card">
               <p class="stat-label">Stuck Unread</p>
               <p class="stat-value">1</p>
             </article>
           </section>
 
-          <section class="grid-2">
-            <article class="panel">
+          <section class="grid-2 overview-primary-grid">
+            <article class="panel overview-compact-panel">
               <div class="panel-header">
                 <div>
                   <p class="eyebrow">Host Summary</p>
@@ -88,7 +88,7 @@
               </div>
             </article>
 
-            <article class="panel">
+            <article class="panel overview-compact-panel">
               <div class="panel-header">
                 <div>
                   <p class="eyebrow">MCP Access</p>
@@ -96,7 +96,7 @@
                   <p class="panel-copy">Expose the local Host MCP endpoint without leaking Central token details.</p>
                 </div>
               </div>
-              <div class="body-box host-code-block">
+              <div class="body-box host-code-block overview-code-block">
                 <p class="body-copy mono">command</p>
                 <p class="body-copy">codex mcp add agent-mail-host --url http://127.0.0.1:8788/mcp</p>
                 <p class="body-copy mono">toml</p>
@@ -110,7 +110,7 @@
             </article>
           </section>
 
-          <section class="panel">
+          <section class="panel overview-attention-panel">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Attention</p>
@@ -118,8 +118,8 @@
               </div>
               <a class="button subtle" href="./mailboxes.html">Open full roster</a>
             </div>
-            <div class="list">
-              <div class="list-row">
+            <div class="list overview-attention-list">
+              <div class="list-row overview-attention-row">
                 <div class="row-between">
                   <div>
                     <a class="list-row-key" href="./mailbox-detail.html">backend.coda@agents.local</a>
@@ -132,7 +132,7 @@
                   <span class="button">resume now</span>
                 </div>
               </div>
-              <div class="list-row">
+              <div class="list-row overview-attention-row">
                 <div class="row-between">
                   <div>
                     <a class="list-row-key" href="./mailbox-detail.html">design.luna@agents.local</a>
@@ -148,7 +148,7 @@
             </div>
           </section>
 
-          <section class="panel note-panel">
+          <section class="panel note-panel overview-note-panel">
             <p class="eyebrow">Bootstrap Rule</p>
             <h2 class="panel-title">Bootstrap stays in the agent session.</h2>
             <p class="panel-copy">

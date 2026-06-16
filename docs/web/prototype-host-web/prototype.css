@@ -560,6 +560,65 @@ button.button:disabled {
   line-height: 1.35;
 }
 
+.overview-page {
+  gap: var(--space-3);
+}
+
+.overview-stats-grid,
+.overview-primary-grid {
+  gap: var(--space-3);
+}
+
+.overview-stat-card {
+  padding: 0.95rem 1rem;
+}
+
+.overview-stat-card .stat-value {
+  margin-top: 0.35rem;
+  font-size: 1.35rem;
+}
+
+.overview-compact-panel,
+.overview-attention-panel,
+.overview-note-panel {
+  padding: 1.1rem 1.25rem;
+}
+
+.overview-compact-panel .definition-list {
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.overview-compact-panel .definition-list div {
+  padding-bottom: 0.55rem;
+}
+
+.overview-code-block {
+  min-height: auto;
+  padding: 1rem 1.05rem;
+}
+
+.overview-code-block .body-copy {
+  margin-top: 0.4rem;
+}
+
+.overview-attention-list {
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.overview-attention-row {
+  padding-bottom: 0.55rem;
+}
+
+.overview-attention-row .button-row {
+  gap: 0.35rem;
+}
+
+.overview-note-panel .panel-copy {
+  margin-top: 0.3rem;
+}
+
 .body-box {
   min-height: 14rem;
   padding: var(--space-4);
