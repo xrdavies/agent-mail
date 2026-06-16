@@ -43,7 +43,16 @@
 
 ```json
 {
-  "host": "Host",
+  "host": {
+    "host_id": "mac-local",
+    "label": "Mac Local",
+    "host_version": "0.1.0",
+    "host_status": "online",
+    "last_heartbeat_at": "2026-06-16T10:04:58.000Z",
+    "last_authenticated_at": "2026-06-16T10:00:03.000Z",
+    "created_at": "2026-06-16T10:00:00.000Z",
+    "updated_at": "2026-06-16T10:04:58.000Z"
+  },
   "managed_mailboxes": ["pm.aster@agents.local", "backend.coda@agents.local"],
   "mailbox_status": [
     {
@@ -66,6 +75,7 @@
 
 ```json
 {
+  "url": "http://localhost:8788/mcp",
   "command": "codex mcp add agent-mail-host --url http://localhost:8788/mcp",
   "json": {
     "mcpServers": {

@@ -407,7 +407,7 @@
 | `management_status` | 区分 `enabled` / `disabled` / `removed`，避免把本地调度开关混进 `binding_status` |
 | `last_bootstrap_at` | 展示最近一次 bootstrap 时间 |
 | `bootstrap_status` | 展示 `never_started` / `succeeded` / `failed` |
-| `last_bootstrap_error` | 展示 bootstrap 失败原因 |
+| `last_error_at` | 为 detail header 的“最近错误时间摘要”提供独立时间点，避免误用 `updated_at` |
 | `last_auth_error` | 展示 Host 最近一次认证失败原因 |
 
 说明：

@@ -79,6 +79,10 @@
               </div>
               <div class="definition-list">
                 <div>
+                  <dt>Label</dt>
+                  <dd>Mac Local</dd>
+                </div>
+                <div>
                   <dt>Central</dt>
                   <dd>http://127.0.0.1:3000</dd>
                 </div>
@@ -105,10 +109,21 @@
                 </div>
               </div>
               <div class="body-box host-code-block overview-code-block">
+                <p class="body-copy mono">url</p>
+                <p class="body-copy">http://127.0.0.1:8788/mcp</p>
                 <p class="body-copy mono">command</p>
                 <p class="body-copy">codex mcp add agent-mail-host --url http://127.0.0.1:8788/mcp</p>
+                <p class="body-copy mono">json</p>
+                <pre class="body-copy preformatted">{
+  "mcpServers": {
+    "agent-mail-host": {
+      "url": "http://127.0.0.1:8788/mcp"
+    }
+  }
+}</pre>
                 <p class="body-copy mono">toml</p>
-                <p class="body-copy">[mcp_servers.agent-mail-host] url = "http://127.0.0.1:8788/mcp"</p>
+                <pre class="body-copy preformatted">[mcp_servers.agent-mail-host]
+url = "http://127.0.0.1:8788/mcp"</pre>
               </div>
               <div class="button-row">
                 <span class="button subtle">copy command</span>

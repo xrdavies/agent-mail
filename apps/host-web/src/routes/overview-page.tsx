@@ -94,6 +94,10 @@ export function OverviewPage() {
           </div>
           <div className="definition-list">
             <div>
+              <dt>Label</dt>
+              <dd>{data.host.label}</dd>
+            </div>
+            <div>
               <dt>Central</dt>
               <dd>{data.auth.central_base_url}</dd>
             </div>
@@ -125,10 +129,14 @@ export function OverviewPage() {
             </div>
           </div>
           <div className="body-box host-code-block overview-code-block">
+            <p className="body-copy mono">url</p>
+            <p className="body-copy">{data.mcp.url}</p>
             <p className="body-copy mono">command</p>
             <p className="body-copy">{data.mcp.command}</p>
+            <p className="body-copy mono">json</p>
+            <pre className="body-copy preformatted">{JSON.stringify(data.mcp.json, null, 2)}</pre>
             <p className="body-copy mono">toml</p>
-            <p className="body-copy">{data.mcp.toml}</p>
+            <pre className="body-copy preformatted">{data.mcp.toml}</pre>
           </div>
           <div className="button-row">
             <button className="button subtle" type="button" onClick={() => void copyToClipboard(data.mcp.command)}>

@@ -34,6 +34,10 @@ export function MailboxesPage() {
           <p className="stat-value">{data?.counters.disabled ?? "-"}</p>
         </article>
         <article className="stat-card">
+          <p className="stat-label">Failed</p>
+          <p className="stat-value">{data?.counters.failed ?? "-"}</p>
+        </article>
+        <article className="stat-card">
           <p className="stat-label">With Unread</p>
           <p className="stat-value">{data?.counters.with_unread ?? "-"}</p>
         </article>

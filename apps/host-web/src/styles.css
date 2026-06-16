@@ -248,7 +248,7 @@ button {
 }
 
 .stats-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
 }
 
 .panel,
@@ -291,6 +291,12 @@ button {
 .panel-copy + .panel-copy,
 .body-copy + .body-copy {
   margin-top: var(--space-1);
+}
+
+.preformatted {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .chip-row,
