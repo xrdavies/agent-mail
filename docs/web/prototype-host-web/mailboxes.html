@@ -40,22 +40,19 @@
           <section class="panel mailbox-list-panel">
             <div class="panel-header">
               <div>
-                <p class="eyebrow">Roster</p>
                 <h2 class="panel-title">Mailboxes</h2>
-                <p class="panel-copy">Local mailbox roster on this Host.</p>
               </div>
               <div class="panel-header-tools">
                 <label class="toolbar-search header-search">
-                  <span class="meta">Search</span>
                   <input
                     class="toolbar-input"
                     id="mailbox-search"
                     type="text"
                     value=""
+                    aria-label="Search mailboxes"
                     placeholder="search mailbox / role"
                   />
                 </label>
-                <button type="button" class="button subtle">refresh</button>
               </div>
             </div>
 
@@ -129,10 +126,6 @@
                 </tr>
               </tbody>
             </table>
-            <p class="table-footnote">
-              The roster keeps only quick state-toggle and resume actions. `clear failure` lives on the mailbox detail
-              page, and unavailable actions stay muted, for example `resume now` while a mailbox is disabled.
-            </p>
           </section>
         </main>
       </div>
