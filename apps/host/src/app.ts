@@ -18,6 +18,7 @@ import {
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { Hono } from "hono";
 
+import { HostHttpError } from "./errors.js";
 import { createMcpServer } from "./mcp.js";
 import type { HostRuntime } from "./runtime.js";
 
@@ -26,6 +27,29 @@ const hostRoutePrefixes = ["/api/", "/mcp", "/health", "/status", "/mcp-config"]
 
 export function createHostApp(runtime: HostRuntime) {
   const app = new Hono();
+
+  app.onError((error, c) => {
+    if (error instanceof HostHttpError) {
+      return c.json(
+        {
+          error: {
+            message: error.message
+          }
+        },
+        error.status
+      );
+    }
+
+    console.error(error);
+    return c.json(
+      {
+        error: {
+          message: "Internal server error"
+        }
+      },
+      500
+    );
+  });
 
   app.get("/health", (c) => c.json(hostHealthResponseSchema.parse({ ok: true })));
 

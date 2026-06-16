@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createHostApp } from "../src/app.js";
+import { HostHttpError } from "../src/errors.js";
 import type { HostRuntime } from "../src/runtime.js";
 
 const mailbox = "backend.coda@agents.local";
@@ -247,5 +248,28 @@ describe("Host web routes", () => {
     );
     expect(removeBindingResponse.status).toBe(200);
     expect((await removeBindingResponse.json()).management_status).toBe("removed");
+  });
+
+  it("returns 409 when remove local binding hits a running mailbox conflict", async () => {
+    const runtime = createRuntimeMock();
+    runtime.removeLocalBinding = async () => {
+      throw new HostHttpError(
+        409,
+        "Cannot remove local binding while mailbox runtime is running"
+      );
+    };
+
+    const app = createHostApp(runtime);
+    const response = await app.request(
+      `http://localhost/api/v1/web/mailboxes/${encodeURIComponent(mailbox)}/binding`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    expect(response.status).toBe(409);
+    expect((await response.json()).error.message).toBe(
+      "Cannot remove local binding while mailbox runtime is running"
+    );
   });
 });

@@ -8,6 +8,7 @@ import type { AgentProfile, Delivery, Task } from "@agent-mail/contracts";
 import { CentralAuthError, CentralClient } from "./central-client.js";
 import type { HostConfig, ManagedMailboxConfig } from "./config.js";
 import { buildCodexMcpConfigArgs } from "./codex.js";
+import { HostHttpError } from "./errors.js";
 import { buildResumePrompt, createSyntheticSessionId } from "./prompt.js";
 import { HostStateStore, type MailboxLocalState } from "./state.js";
 
@@ -524,7 +525,10 @@ export class HostRuntime {
       throw new Error(`Mailbox ${mailbox} is not configured`);
     }
     if (state.runtimeStatus === "running") {
-      throw new Error("Cannot remove local binding while mailbox runtime is running");
+      throw new HostHttpError(
+        409,
+        "Cannot remove local binding while mailbox runtime is running"
+      );
     }
 
     if (state.managementStatus !== "removed" && state.bindingStatus === "active" && state.bootstrapped) {
