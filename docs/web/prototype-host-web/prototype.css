@@ -965,11 +965,19 @@ button.button:disabled {
 .table-filter-head {
   min-width: 9rem;
   position: relative;
+  vertical-align: middle;
+}
+
+.table-filter-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
 }
 
 .table-head-label {
-  display: block;
-  margin-bottom: 0.45rem;
+  display: inline-block;
+  margin-bottom: 0;
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -977,23 +985,20 @@ button.button:disabled {
   letter-spacing: 0.08em;
 }
 
-.table-filter-control {
-  position: relative;
-}
-
 .table-filter-trigger {
-  width: 100%;
+  min-width: 5.5rem;
   display: inline-flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.55rem;
-  padding: 0.52rem 0.78rem;
+  padding: 0.42rem 0.68rem;
   border: 1px solid var(--line-soft);
   border-radius: 999px;
   background: var(--panel);
   color: var(--ink);
   font: inherit;
   cursor: pointer;
+  position: relative;
 }
 
 .table-filter-trigger:hover {
