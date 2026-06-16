@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { Bug, CheckSquare2, FileText, Home, Inbox, Layers, Server } from "lucide-react";
+import { Bug, CheckSquare2, FileText, Home, Inbox, Layers, PenSquare, Server } from "lucide-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 
+import { ComposePage } from "./routes/compose-page.js";
 import { DebugPage } from "./routes/debug-page.js";
 import { HostDetailPage } from "./routes/host-detail-page.js";
 import { HostsPage } from "./routes/hosts-page.js";
@@ -22,7 +23,8 @@ const navItems = [
   { to: "/mails", label: "Mails", icon: FileText },
   { to: "/hosts", label: "Hosts", icon: Server },
   { to: "/tasks", label: "Tasks", icon: CheckSquare2 },
-  { to: "/debug", label: "Debug", icon: Bug }
+  { to: "/debug", label: "Debug", icon: Bug },
+  { to: "/compose", label: "Compose", icon: PenSquare }
 ] as const;
 
 export function App() {
@@ -246,6 +248,23 @@ export function App() {
               }
             >
               <DebugPage />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/compose"
+          element={
+            <PageShell
+              breadcrumbCurrent="Compose"
+              toolbar={
+                <>
+                  <NavLink className="button subtle" to="/overview">
+                    Back to Overview
+                  </NavLink>
+                </>
+              }
+            >
+              <ComposePage />
             </PageShell>
           }
         />

@@ -2,6 +2,7 @@ import {
   debugLogsResponseSchema,
   emailSchema,
   hostsListResponseSchema,
+  humanSendEmailResponseSchema,
   runtimeSnapshotSchema,
   threadDetailResponseSchema,
   webTaskDetailResponseSchema,
@@ -12,7 +13,8 @@ import {
   webThreadsResponseSchema,
   webOverviewResponseSchema,
   type CentralLogEvent,
-  type Host
+  type Host,
+  type HumanSendEmailRequest
 } from "@agent-mail/contracts";
 
 export interface DebugLogsQuery {
@@ -98,6 +100,7 @@ export type MailboxDetailResponse = ReturnType<typeof webMailboxDetailResponseSc
 export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
 export type WebTasksResponse = ReturnType<typeof webTasksResponseSchema.parse>;
 export type WebTaskDetailResponse = ReturnType<typeof webTaskDetailResponseSchema.parse>;
+export type HumanSendEmailResponse = ReturnType<typeof humanSendEmailResponseSchema.parse>;
 
 export async function getWebOverview(): Promise<WebOverviewResponse> {
   const response = await fetch("/api/v1/web/overview");
@@ -185,4 +188,20 @@ export async function getTaskDetail(taskId: string): Promise<WebTaskDetailRespon
     throw new Error(`Failed to load task detail: ${response.status}`);
   }
   return webTaskDetailResponseSchema.parse(await response.json());
+}
+
+export async function sendHumanEmail(
+  request: HumanSendEmailRequest
+): Promise<HumanSendEmailResponse> {
+  const response = await fetch("/api/v1/web/emails/human-send", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(request)
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to send email: ${response.status}`);
+  }
+  return humanSendEmailResponseSchema.parse(await response.json());
 }

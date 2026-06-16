@@ -625,6 +625,145 @@ button.button {
   margin: 0;
 }
 
+.compose-form-page {
+  max-width: 64rem;
+  padding: 1.75rem 1.9rem 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.18)),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 0 0 1px rgba(31, 27, 23, 0.08);
+}
+
+.field-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.compose-row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.compose-label {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field {
+  min-width: 0;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field .input,
+.field .textarea,
+.compose-row .input {
+  width: 100%;
+  padding: 0.88rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font: inherit;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.field .textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.compose-row .input {
+  padding-top: 0.44rem;
+  padding-bottom: 0.44rem;
+}
+
+.field select.input,
+.compose-row select.input {
+  appearance: auto;
+}
+
+.field .textarea.textarea-body {
+  min-height: 22rem;
+}
+
+.textarea-plain {
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  padding: 1.1rem 1.15rem;
+  font-size: 1.04rem;
+  line-height: 1.78;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.input-mono {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+}
+
+.field .input:hover,
+.field .textarea:hover,
+.compose-row .input:hover {
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.field .input:focus-visible,
+.field .textarea:focus-visible,
+.compose-row .input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(54, 95, 115, 0.15);
+  background: #ffffff;
+}
+
+.button-primary {
+  border-color: var(--line);
+  background: var(--accent-soft);
+}
+
+.button-primary:hover {
+  background: rgba(54, 95, 115, 0.2);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.compose-actions {
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+}
+
 @media (max-width: 1100px) {
   .grid-4,
   .stats-grid {
@@ -654,6 +793,11 @@ button.button {
     gap: 0.75rem;
     justify-content: start;
   }
+
+  .compose-row {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
 }
 
 @media (max-width: 640px) {
@@ -666,5 +810,9 @@ button.button {
   .grid-4,
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .compose-form-page {
+    padding: 1.25rem;
   }
 }
