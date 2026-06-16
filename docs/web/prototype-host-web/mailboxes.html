@@ -72,27 +72,57 @@
                   <th>Binding</th>
                   <th class="table-filter-head">
                     <span class="table-head-label">Mgmt</span>
-                    <select class="toolbar-select table-select" id="management-filter">
-                      <option value="all" selected>All</option>
-                      <option value="enabled">Enabled</option>
-                      <option value="disabled">Disabled</option>
-                    </select>
+                    <div class="table-filter-control">
+                      <button
+                        type="button"
+                        class="table-filter-trigger"
+                        data-filter-trigger="management"
+                      >
+                        <span id="management-label">All</span>
+                        <span class="table-filter-caret">▾</span>
+                      </button>
+                      <div class="filter-popover" id="management-popover" hidden>
+                        <button type="button" class="filter-option is-active" data-filter-group="management" data-filter-value="all">All</button>
+                        <button type="button" class="filter-option" data-filter-group="management" data-filter-value="enabled">Enabled</button>
+                        <button type="button" class="filter-option" data-filter-group="management" data-filter-value="disabled">Disabled</button>
+                      </div>
+                    </div>
                   </th>
                   <th class="table-filter-head">
                     <span class="table-head-label">Runtime</span>
-                    <select class="toolbar-select table-select" id="runtime-filter">
-                      <option value="all" selected>All</option>
-                      <option value="failed">Failed</option>
-                      <option value="idle">Idle</option>
-                    </select>
+                    <div class="table-filter-control">
+                      <button
+                        type="button"
+                        class="table-filter-trigger"
+                        data-filter-trigger="runtime"
+                      >
+                        <span id="runtime-label">All</span>
+                        <span class="table-filter-caret">▾</span>
+                      </button>
+                      <div class="filter-popover" id="runtime-popover" hidden>
+                        <button type="button" class="filter-option is-active" data-filter-group="runtime" data-filter-value="all">All</button>
+                        <button type="button" class="filter-option" data-filter-group="runtime" data-filter-value="failed">Failed</button>
+                        <button type="button" class="filter-option" data-filter-group="runtime" data-filter-value="idle">Idle</button>
+                      </div>
+                    </div>
                   </th>
                   <th class="table-filter-head">
                     <span class="table-head-label">Unread</span>
-                    <select class="toolbar-select table-select" id="unread-filter">
-                      <option value="all" selected>All</option>
-                      <option value="has_unread">Has unread</option>
-                      <option value="empty">Empty</option>
-                    </select>
+                    <div class="table-filter-control">
+                      <button
+                        type="button"
+                        class="table-filter-trigger"
+                        data-filter-trigger="unread"
+                      >
+                        <span id="unread-label">All</span>
+                        <span class="table-filter-caret">▾</span>
+                      </button>
+                      <div class="filter-popover" id="unread-popover" hidden>
+                        <button type="button" class="filter-option is-active" data-filter-group="unread" data-filter-value="all">All</button>
+                        <button type="button" class="filter-option" data-filter-group="unread" data-filter-value="has_unread">Has unread</button>
+                        <button type="button" class="filter-option" data-filter-group="unread" data-filter-value="empty">Empty</button>
+                      </div>
+                    </div>
                   </th>
                   <th>Session</th>
                   <th>Updated</th>
@@ -205,9 +235,18 @@
         const visibleCount = document.getElementById("visible-count");
         const totalCount = document.getElementById("total-count");
         const searchInput = document.getElementById("mailbox-search");
-        const managementFilter = document.getElementById("management-filter");
-        const runtimeFilter = document.getElementById("runtime-filter");
-        const unreadFilter = document.getElementById("unread-filter");
+        const filterOptions = Array.from(document.querySelectorAll(".filter-option"));
+        const filterTriggers = Array.from(document.querySelectorAll("[data-filter-trigger]"));
+        const filterLabels = {
+          management: document.getElementById("management-label"),
+          runtime: document.getElementById("runtime-label"),
+          unread: document.getElementById("unread-label")
+        };
+        const filterTexts = {
+          management: { all: "All", enabled: "Enabled", disabled: "Disabled" },
+          runtime: { all: "All", failed: "Failed", idle: "Idle" },
+          unread: { all: "All", has_unread: "Has unread", empty: "Empty" }
+        };
 
         totalCount.textContent = String(rows.length);
 
@@ -228,6 +267,22 @@
           });
 
           visibleCount.textContent = String(count);
+
+          filterOptions.forEach((option) => {
+            const group = option.dataset.filterGroup;
+            const value = option.dataset.filterValue;
+            option.classList.toggle("is-active", state[group] === value);
+          });
+
+          Object.keys(filterLabels).forEach((group) => {
+            filterLabels[group].textContent = filterTexts[group][state[group]];
+          });
+        }
+
+        function closePopovers() {
+          document.querySelectorAll(".filter-popover").forEach((popover) => {
+            popover.hidden = true;
+          });
         }
 
         searchInput.addEventListener("input", () => {
@@ -235,19 +290,27 @@
           render();
         });
 
-        managementFilter.addEventListener("change", () => {
-          state.management = managementFilter.value;
-          render();
+        filterTriggers.forEach((trigger) => {
+          trigger.addEventListener("click", (event) => {
+            const group = trigger.dataset.filterTrigger;
+            const popover = document.getElementById(`${group}-popover`);
+            const nextState = popover.hidden;
+            closePopovers();
+            popover.hidden = !nextState;
+            event.stopPropagation();
+          });
         });
 
-        runtimeFilter.addEventListener("change", () => {
-          state.runtime = runtimeFilter.value;
-          render();
+        filterOptions.forEach((option) => {
+          option.addEventListener("click", () => {
+            state[option.dataset.filterGroup] = option.dataset.filterValue;
+            closePopovers();
+            render();
+          });
         });
 
-        unreadFilter.addEventListener("change", () => {
-          state.unread = unreadFilter.value;
-          render();
+        document.addEventListener("click", () => {
+          closePopovers();
         });
 
         render();

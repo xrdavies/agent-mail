@@ -964,6 +964,7 @@ button.button:disabled {
 
 .table-filter-head {
   min-width: 9rem;
+  position: relative;
 }
 
 .table-head-label {
@@ -976,9 +977,81 @@ button.button:disabled {
   letter-spacing: 0.08em;
 }
 
-.table-select {
-  min-width: 0;
+.table-filter-control {
+  position: relative;
+}
+
+.table-filter-trigger {
   width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.52rem 0.78rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.table-filter-trigger:hover {
+  border-color: var(--line);
+}
+
+.table-filter-trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(54, 95, 115, 0.15);
+}
+
+.table-filter-caret {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 20;
+  min-width: 100%;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 16px 30px rgba(23, 21, 18, 0.14);
+}
+
+.filter-popover[hidden] {
+  display: none;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-option:hover {
+  border-color: var(--line-soft);
+  background: rgba(54, 95, 115, 0.06);
+}
+
+.filter-option.is-active {
+  border-color: var(--line-soft);
+  background: var(--accent-soft);
 }
 
 .host-code-block {
