@@ -828,6 +828,41 @@ button.button:disabled {
   margin-top: 1rem;
 }
 
+.compact-filter-toolbar {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.compact-search {
+  max-width: 20rem;
+}
+
+.filter-toolbar-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.filter-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.filter-inline-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .interactive-filter-stack {
   display: grid;
   gap: 0.9rem;
@@ -862,6 +897,10 @@ button.button:disabled {
   margin-top: 1.15rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line-soft);
+}
+
+.compact-result-bar {
+  padding-top: 0.8rem;
 }
 
 .result-summary {
@@ -905,6 +944,14 @@ button.button:disabled {
 .danger-panel {
   border-color: rgba(143, 59, 47, 0.35);
   background: linear-gradient(180deg, rgba(143, 59, 47, 0.06), transparent 75%), var(--panel);
+}
+
+.compact-danger-grid {
+  margin-top: 1rem;
+}
+
+.compact-note-box {
+  min-height: auto;
 }
 
 .host-action-state-row {
@@ -968,6 +1015,10 @@ button.button:disabled {
   .toolbar-input {
     min-width: 0;
     width: 100%;
+  }
+
+  .compact-search {
+    max-width: none;
   }
 
   .result-bar {

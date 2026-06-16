@@ -36,7 +36,6 @@
             <button type="button" class="button subtle">clear failure</button>
             <button type="button" class="button subtle">resume now</button>
             <button type="button" class="button subtle">disable</button>
-            <button type="button" class="button is-danger" data-open-unbind-modal>remove local binding</button>
           </div>
         </header>
 
@@ -186,13 +185,18 @@
             </article>
           </section>
 
-          <section class="grid-2">
-            <article class="panel danger-panel">
-              <p class="eyebrow">Danger Zone</p>
-              <h2 class="panel-title">Remove Local Binding</h2>
-              <p class="panel-copy">
-                Use this only when the mailbox should stop being managed by this Host. This is heavier than disable.
-              </p>
+          <section class="panel danger-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Danger Zone</p>
+                <h2 class="panel-title">Remove Local Binding</h2>
+                <p class="panel-copy">
+                  Keep this action available, but visually secondary. The confirmation modal should only appear after an explicit click.
+                </p>
+              </div>
+              <button type="button" class="button is-danger" data-open-unbind-modal>remove local binding</button>
+            </div>
+            <div class="grid-2 compact-danger-grid">
               <div class="list">
                 <div class="list-row">
                   <span class="list-row-key">Will stop local scheduling and clear current Host ownership.</span>
@@ -204,31 +208,16 @@
                   <span class="list-row-key">Should be blocked while runtime is currently running.</span>
                 </div>
               </div>
-              <div class="button-row">
-                <button type="button" class="button subtle" data-open-unbind-modal>open confirmation</button>
-                <span class="button subtle is-disabled" aria-disabled="true">remove blocked while running</span>
+              <div class="body-box compact-note-box">
+                <p class="body-copy">This page no longer previews the confirmation box inline.</p>
+                <p class="body-copy">The destructive dialog opens only when the operator explicitly chooses to unbind this mailbox.</p>
               </div>
-            </article>
-
-            <article class="panel modal-preview">
-              <p class="eyebrow">Interaction Notes</p>
-              <h2 class="panel-title">Prototype Behaviors</h2>
-              <div class="list">
-                <div class="list-row">
-                  <span class="list-row-key">Click `remove local binding` to open a real modal overlay.</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">The destructive confirm button stays disabled until mailbox text matches exactly.</span>
-                </div>
-                <div class="list-row">
-                  <span class="list-row-key">Use `#unbind-modal` in the URL to load the page directly in modal-open state.</span>
-                </div>
-              </div>
-            </article>
+            </div>
           </section>
         </main>
       </div>
     </div>
+
     <div class="modal-overlay" id="unbind-modal" hidden>
       <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="unbind-modal-title">
         <div class="modal-header">
@@ -265,6 +254,7 @@
         </div>
       </div>
     </div>
+
     <script>
       (function() {
         const body = document.body;
@@ -286,13 +276,11 @@
           body.classList.add("modal-open");
           syncConfirmState();
           confirmInput.focus();
-          window.history.replaceState(null, "", "#unbind-modal");
         }
 
         function closeModal() {
           overlay.hidden = true;
           body.classList.remove("modal-open");
-          window.history.replaceState(null, "", window.location.pathname);
         }
 
         openButtons.forEach((button) => {
@@ -317,10 +305,6 @@
 
         confirmInput.addEventListener("input", syncConfirmState);
         syncConfirmState();
-
-        if (window.location.hash === "#unbind-modal") {
-          openModal();
-        }
       })();
     </script>
   </body>

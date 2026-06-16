@@ -31,16 +31,6 @@
             <span class="current">Mailboxes</span>
           </div>
           <div class="toolbar">
-            <label class="toolbar-search">
-              <span class="meta">Search</span>
-              <input
-                class="toolbar-input"
-                id="mailbox-search"
-                type="text"
-                value=""
-                placeholder="search mailbox / role / error"
-              />
-            </label>
             <span class="button subtle">mac-local</span>
             <span class="button">re-auth</span>
           </div>
@@ -52,6 +42,7 @@
               <div>
                 <p class="eyebrow">Roster</p>
                 <h2 class="panel-title">Local Mailbox Management</h2>
+                <p class="panel-copy">Keep filters compact and keep the mailbox roster dominant.</p>
               </div>
               <div class="chip-row">
                 <span class="chip active">All 3</span>
@@ -61,22 +52,32 @@
                 <span class="chip">Has unread 2</span>
               </div>
             </div>
-            <div class="interactive-filter-stack">
-              <div class="filter-group-block">
-                <p class="filter-label">Focus</p>
-                <div class="button-row">
+
+            <div class="compact-filter-toolbar">
+              <label class="toolbar-search compact-search">
+                <span class="meta">Search</span>
+                <input
+                  class="toolbar-input"
+                  id="mailbox-search"
+                  type="text"
+                  value=""
+                  placeholder="search mailbox / role / error"
+                />
+              </label>
+
+              <div class="filter-toolbar-groups">
+                <div class="filter-cluster">
+                  <span class="filter-inline-label">focus</span>
                   <button type="button" class="button subtle filter-button is-active" data-filter-group="focus" data-filter-value="attention">
-                    attention only
+                    attention
                   </button>
                   <button type="button" class="button subtle filter-button" data-filter-group="focus" data-filter-value="all">
-                    full roster
+                    all
                   </button>
                 </div>
-              </div>
 
-              <div class="filter-group-block">
-                <p class="filter-label">Management</p>
-                <div class="button-row">
+                <div class="filter-cluster">
+                  <span class="filter-inline-label">mgmt</span>
                   <button type="button" class="button subtle filter-button is-active" data-filter-group="management" data-filter-value="all">
                     all
                   </button>
@@ -87,11 +88,9 @@
                     disabled
                   </button>
                 </div>
-              </div>
 
-              <div class="filter-group-block">
-                <p class="filter-label">Runtime</p>
-                <div class="button-row">
+                <div class="filter-cluster">
+                  <span class="filter-inline-label">runtime</span>
                   <button type="button" class="button subtle filter-button is-active" data-filter-group="runtime" data-filter-value="all">
                     all
                   </button>
@@ -102,30 +101,28 @@
                     idle
                   </button>
                 </div>
-              </div>
 
-              <div class="filter-group-block">
-                <p class="filter-label">Unread</p>
-                <div class="button-row">
+                <div class="filter-cluster">
+                  <span class="filter-inline-label">unread</span>
                   <button type="button" class="button subtle filter-button is-active" data-filter-group="unread" data-filter-value="all">
                     all
                   </button>
                   <button type="button" class="button subtle filter-button" data-filter-group="unread" data-filter-value="has_unread">
-                    has unread
+                    >0
                   </button>
                   <button type="button" class="button subtle filter-button" data-filter-group="unread" data-filter-value="empty">
-                    empty
+                    0
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="result-bar">
+            <div class="result-bar compact-result-bar">
               <p class="result-summary">
                 Showing <strong id="visible-count">2</strong> of <strong id="total-count">3</strong> mailboxes
               </p>
               <div class="button-row">
-                <span class="button subtle" id="filter-summary">attention only</span>
+                <span class="button subtle" id="filter-summary">focus:attention</span>
                 <button type="button" class="button subtle" id="reset-filters">reset filters</button>
               </div>
             </div>
@@ -273,8 +270,8 @@
 
         function activeSummary() {
           const parts = [];
-          if (state.focus === "attention") parts.push("attention only");
-          if (state.management !== "all") parts.push(`management:${state.management}`);
+          if (state.focus === "attention") parts.push("focus:attention");
+          if (state.management !== "all") parts.push(`mgmt:${state.management}`);
           if (state.runtime !== "all") parts.push(`runtime:${state.runtime}`);
           if (state.unread !== "all") parts.push(`unread:${state.unread}`);
           if (state.search) parts.push(`search:${state.search}`);
