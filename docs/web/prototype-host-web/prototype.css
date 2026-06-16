@@ -858,6 +858,40 @@ button.button:disabled {
   max-width: 20rem;
 }
 
+.droplist-toolbar {
+  align-items: end;
+}
+
+.filter-select-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.toolbar-select {
+  min-width: 8.5rem;
+  padding: 0.62rem 2rem 0.62rem 0.8rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1rem) calc(50% - 0.12rem),
+    calc(100% - 0.72rem) calc(50% - 0.12rem);
+  background-size: 0.4rem 0.4rem, 0.4rem 0.4rem;
+  background-repeat: no-repeat;
+}
+
+.toolbar-select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(54, 95, 115, 0.15);
+}
+
 .filter-toolbar-groups {
   display: flex;
   flex-wrap: wrap;
@@ -1043,6 +1077,11 @@ button.button:disabled {
 
   .compact-search {
     max-width: none;
+  }
+
+  .toolbar-select {
+    min-width: 0;
+    width: 100%;
   }
 
   .mailbox-list-panel .panel-header {

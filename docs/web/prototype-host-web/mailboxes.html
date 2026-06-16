@@ -59,77 +59,51 @@
             </div>
 
             <div class="list-header-toolbar">
-              <label class="toolbar-search compact-search">
-                <span class="meta">Search</span>
-                <input
-                  class="toolbar-input"
-                  id="mailbox-search"
-                  type="text"
-                  value=""
-                  placeholder="search mailbox / role / error"
-                />
-              </label>
+              <div class="filter-toolbar-groups compact-toolbar-groups droplist-toolbar">
+                <label class="toolbar-search compact-search">
+                  <span class="meta">Search</span>
+                  <input
+                    class="toolbar-input"
+                    id="mailbox-search"
+                    type="text"
+                    value=""
+                    placeholder="search mailbox / role / error"
+                  />
+                </label>
 
-              <div class="filter-toolbar-groups compact-toolbar-groups">
-                <div class="filter-cluster">
-                  <span class="filter-inline-label">focus</span>
-                  <button type="button" class="button subtle filter-button is-active" data-filter-group="focus" data-filter-value="attention">
-                    attention
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="focus" data-filter-value="all">
-                    all
-                  </button>
-                </div>
+                <label class="filter-select-field">
+                  <span class="filter-inline-label">Mgmt</span>
+                  <select class="toolbar-select" id="management-filter">
+                    <option value="all" selected>All</option>
+                    <option value="enabled">Enabled</option>
+                    <option value="disabled">Disabled</option>
+                  </select>
+                </label>
 
-                <div class="filter-cluster">
-                  <span class="filter-inline-label">mgmt</span>
-                  <button type="button" class="button subtle filter-button is-active" data-filter-group="management" data-filter-value="all">
-                    all
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="management" data-filter-value="enabled">
-                    enabled
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="management" data-filter-value="disabled">
-                    disabled
-                  </button>
-                </div>
+                <label class="filter-select-field">
+                  <span class="filter-inline-label">Runtime</span>
+                  <select class="toolbar-select" id="runtime-filter">
+                    <option value="all" selected>All</option>
+                    <option value="failed">Failed</option>
+                    <option value="idle">Idle</option>
+                  </select>
+                </label>
 
-                <div class="filter-cluster">
-                  <span class="filter-inline-label">runtime</span>
-                  <button type="button" class="button subtle filter-button is-active" data-filter-group="runtime" data-filter-value="all">
-                    all
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="runtime" data-filter-value="failed">
-                    failed
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="runtime" data-filter-value="idle">
-                    idle
-                  </button>
-                </div>
-
-                <div class="filter-cluster">
-                  <span class="filter-inline-label">unread</span>
-                  <button type="button" class="button subtle filter-button is-active" data-filter-group="unread" data-filter-value="all">
-                    all
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="unread" data-filter-value="has_unread">
-                    >0
-                  </button>
-                  <button type="button" class="button subtle filter-button" data-filter-group="unread" data-filter-value="empty">
-                    0
-                  </button>
-                </div>
+                <label class="filter-select-field">
+                  <span class="filter-inline-label">Unread</span>
+                  <select class="toolbar-select" id="unread-filter">
+                    <option value="all" selected>All</option>
+                    <option value="has_unread">Has unread</option>
+                    <option value="empty">Empty</option>
+                  </select>
+                </label>
               </div>
             </div>
 
             <div class="result-bar compact-result-bar">
               <p class="result-summary">
-                Showing <strong id="visible-count">2</strong> of <strong id="total-count">3</strong> mailboxes
+                Showing <strong id="visible-count">3</strong> of <strong id="total-count">3</strong> mailboxes
               </p>
-              <div class="button-row">
-                <span class="button subtle" id="filter-summary">focus:attention</span>
-                <button type="button" class="button subtle" id="reset-filters">reset filters</button>
-              </div>
             </div>
             <table class="table host-mailbox-table">
               <thead>
@@ -147,7 +121,6 @@
               </thead>
               <tbody id="mailbox-table-body">
                 <tr
-                  data-focus="normal"
                   data-management="enabled"
                   data-runtime="idle"
                   data-unread="has_unread"
@@ -176,7 +149,6 @@
                   </td>
                 </tr>
                 <tr
-                  data-focus="attention"
                   data-management="enabled"
                   data-runtime="failed"
                   data-unread="has_unread"
@@ -206,7 +178,6 @@
                   </td>
                 </tr>
                 <tr
-                  data-focus="attention"
                   data-management="disabled"
                   data-runtime="idle"
                   data-unread="empty"
@@ -247,7 +218,6 @@
     <script>
       (function() {
         const state = {
-          focus: "attention",
           management: "all",
           runtime: "all",
           unread: "all",
@@ -255,27 +225,16 @@
         };
 
         const rows = Array.from(document.querySelectorAll("#mailbox-table-body tr"));
-        const filterButtons = Array.from(document.querySelectorAll(".filter-button"));
         const visibleCount = document.getElementById("visible-count");
         const totalCount = document.getElementById("total-count");
-        const filterSummary = document.getElementById("filter-summary");
         const searchInput = document.getElementById("mailbox-search");
-        const resetButton = document.getElementById("reset-filters");
+        const managementFilter = document.getElementById("management-filter");
+        const runtimeFilter = document.getElementById("runtime-filter");
+        const unreadFilter = document.getElementById("unread-filter");
 
         totalCount.textContent = String(rows.length);
 
-        function activeSummary() {
-          const parts = [];
-          if (state.focus === "attention") parts.push("focus:attention");
-          if (state.management !== "all") parts.push(`mgmt:${state.management}`);
-          if (state.runtime !== "all") parts.push(`runtime:${state.runtime}`);
-          if (state.unread !== "all") parts.push(`unread:${state.unread}`);
-          if (state.search) parts.push(`search:${state.search}`);
-          return parts.length ? parts.join(" · ") : "full roster";
-        }
-
         function rowMatches(row) {
-          if (state.focus === "attention" && row.dataset.focus !== "attention") return false;
           if (state.management !== "all" && row.dataset.management !== state.management) return false;
           if (state.runtime !== "all" && row.dataset.runtime !== state.runtime) return false;
           if (state.unread !== "all" && row.dataset.unread !== state.unread) return false;
@@ -292,36 +251,25 @@
           });
 
           visibleCount.textContent = String(count);
-          filterSummary.textContent = activeSummary();
-
-          filterButtons.forEach((button) => {
-            const group = button.dataset.filterGroup;
-            const value = button.dataset.filterValue;
-            const active = state[group] === value;
-            button.classList.toggle("is-active", active);
-            button.classList.toggle("active", active);
-          });
         }
-
-        filterButtons.forEach((button) => {
-          button.addEventListener("click", () => {
-            state[button.dataset.filterGroup] = button.dataset.filterValue;
-            render();
-          });
-        });
 
         searchInput.addEventListener("input", () => {
           state.search = searchInput.value.trim().toLowerCase();
           render();
         });
 
-        resetButton.addEventListener("click", () => {
-          state.focus = "attention";
-          state.management = "all";
-          state.runtime = "all";
-          state.unread = "all";
-          state.search = "";
-          searchInput.value = "";
+        managementFilter.addEventListener("change", () => {
+          state.management = managementFilter.value;
+          render();
+        });
+
+        runtimeFilter.addEventListener("change", () => {
+          state.runtime = runtimeFilter.value;
+          render();
+        });
+
+        unreadFilter.addEventListener("change", () => {
+          state.unread = unreadFilter.value;
           render();
         });
 
