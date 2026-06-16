@@ -55,12 +55,6 @@
                 </label>
               </div>
             </div>
-
-            <div class="result-bar compact-result-bar">
-              <p class="result-summary">
-                Showing <strong id="visible-count">3</strong> of <strong id="total-count">3</strong> mailboxes
-              </p>
-            </div>
             <table class="table host-mailbox-table">
               <thead>
                 <tr>
@@ -137,11 +131,7 @@
         };
 
         const rows = Array.from(document.querySelectorAll("#mailbox-table-body tr"));
-        const visibleCount = document.getElementById("visible-count");
-        const totalCount = document.getElementById("total-count");
         const searchInput = document.getElementById("mailbox-search");
-
-        totalCount.textContent = String(rows.length);
 
         function rowMatches(row) {
           if (state.search && !row.dataset.search.includes(state.search.toLowerCase())) return false;
@@ -149,14 +139,10 @@
         }
 
         function render() {
-          let count = 0;
           rows.forEach((row) => {
             const visible = rowMatches(row);
             row.hidden = !visible;
-            if (visible) count += 1;
           });
-
-          visibleCount.textContent = String(count);
         }
 
         searchInput.addEventListener("input", () => {

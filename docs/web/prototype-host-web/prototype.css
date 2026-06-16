@@ -942,26 +942,6 @@ button.button:disabled {
   background: var(--accent-soft);
 }
 
-.result-bar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.8rem;
-  align-items: center;
-  margin-top: 1.15rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line-soft);
-}
-
-.compact-result-bar {
-  padding-top: 0.8rem;
-}
-
-.result-summary {
-  margin: 0;
-  color: var(--muted);
-}
-
 .host-code-block {
   min-height: auto;
 }
@@ -978,12 +958,6 @@ button.button:disabled {
 .table-copy {
   color: var(--muted);
   font-size: 0.82rem;
-}
-
-.table-footnote {
-  margin: 1rem 0 0;
-  color: var(--muted);
-  font-size: 0.88rem;
 }
 
 .table-actions .button {
@@ -1090,10 +1064,6 @@ button.button:disabled {
   }
 
   .mailbox-list-panel .panel-header {
-    align-items: start;
-  }
-
-  .result-bar {
     align-items: start;
   }
 
