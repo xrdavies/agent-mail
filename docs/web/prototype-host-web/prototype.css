@@ -529,6 +529,37 @@ button.button:disabled {
   color: var(--muted);
 }
 
+.mailbox-detail-primary-grid {
+  gap: var(--space-3);
+}
+
+.mailbox-detail-compact-panel {
+  padding: 1.1rem 1.25rem;
+}
+
+.mailbox-detail-compact-panel .definition-list {
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.mailbox-detail-compact-panel .definition-list div {
+  display: grid;
+  grid-template-columns: 8.75rem minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  padding-bottom: 0.55rem;
+}
+
+.mailbox-detail-compact-panel .definition-list dt {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.mailbox-detail-compact-panel .definition-list dd {
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
 .body-box {
   min-height: 14rem;
   padding: var(--space-4);
@@ -1053,6 +1084,11 @@ button.button:disabled {
 
   .mailbox-list-panel .panel-header {
     align-items: start;
+  }
+
+  .mailbox-detail-compact-panel .definition-list div {
+    grid-template-columns: 1fr;
+    gap: 0.18rem;
   }
 
   .modal-dialog {
