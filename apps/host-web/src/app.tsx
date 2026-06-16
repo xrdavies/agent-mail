@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, NavLink, Navigate, Outlet, Route, Routes, useLocation, useParams } from "react-router-dom";
 
-import { getHostWebOverview, reauthenticateHost } from "./lib/api.js";
+import { getHostWebOverview } from "./lib/api.js";
 import { formatShortTimestamp } from "./lib/view.js";
 import { MailboxDetailPage } from "./routes/mailbox-detail-page.js";
 import { MailboxesPage } from "./routes/mailboxes-page.js";
@@ -24,22 +23,9 @@ export function App() {
 function Shell() {
   const { mailbox } = useParams();
   const location = useLocation();
-  const queryClient = useQueryClient();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { data } = useQuery({
     queryKey: ["host-web", "overview"],
     queryFn: getHostWebOverview
-  });
-
-  const reauth = useMutation({
-    mutationFn: reauthenticateHost,
-    onSuccess: async () => {
-      setErrorMessage(null);
-      await queryClient.invalidateQueries({ queryKey: ["host-web"] });
-    },
-    onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
-    }
   });
 
   const breadcrumbs = location.pathname.startsWith("/mailboxes/")
@@ -92,16 +78,10 @@ function Shell() {
             <span className="button subtle">{data?.host.host_id ?? "host"}</span>
             <span className="button subtle">{data?.host.host_status ?? "loading"}</span>
             <span className="button subtle">last heartbeat {formatShortTimestamp(data?.auth.last_heartbeat_at ?? null)}</span>
-            <button className="button" disabled={reauth.isPending} type="button" onClick={() => reauth.mutate()}>
-              re-auth
-            </button>
           </div>
         </header>
 
-        <main className="content stack">
-          {errorMessage ? <p className="meta error-text">{errorMessage}</p> : null}
-          <Outlet />
-        </main>
+        <main className="content stack"><Outlet /></main>
       </div>
     </div>
   );

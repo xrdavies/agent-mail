@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { MailboxActions } from "../components/mailbox-actions.js";
-import { getHostWebOverview } from "../lib/api.js";
+import { getHostWebOverview, reauthenticateHost } from "../lib/api.js";
 import { formatShortTimestamp, mailboxDetailPath, statusChipClass, summarizeMailboxCopy } from "../lib/view.js";
 
 async function copyToClipboard(value: string): Promise<void> {
@@ -10,9 +11,22 @@ async function copyToClipboard(value: string): Promise<void> {
 }
 
 export function OverviewPage() {
+  const queryClient = useQueryClient();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { data, isLoading, isError } = useQuery({
     queryKey: ["host-web", "overview"],
     queryFn: getHostWebOverview
+  });
+
+  const reauth = useMutation({
+    mutationFn: reauthenticateHost,
+    onSuccess: async () => {
+      setErrorMessage(null);
+      await queryClient.invalidateQueries({ queryKey: ["host-web"] });
+    },
+    onError: (error) => {
+      setErrorMessage(error instanceof Error ? error.message : String(error));
+    }
   });
 
   if (isLoading) {
@@ -86,6 +100,12 @@ export function OverviewPage() {
               <dd>{formatShortTimestamp(data.auth.last_heartbeat_at)} · interval 5s</dd>
             </div>
           </div>
+          <div className="button-row">
+            <button className="button" disabled={reauth.isPending} type="button" onClick={() => reauth.mutate()}>
+              re-auth
+            </button>
+          </div>
+          {errorMessage ? <p className="meta error-text">{errorMessage}</p> : null}
         </article>
 
         <article className="panel overview-compact-panel">
