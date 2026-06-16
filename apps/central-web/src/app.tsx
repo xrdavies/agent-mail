@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Bug, FileText, Home, Inbox, Layers, Server } from "lucide-react";
+import { Bug, CheckSquare2, FileText, Home, Inbox, Layers, Server } from "lucide-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 
 import { DebugPage } from "./routes/debug-page.js";
@@ -10,7 +10,8 @@ import { MailboxDetailPage } from "./routes/mailbox-detail-page.js";
 import { MailboxesPage } from "./routes/mailboxes-page.js";
 import { MailsPage } from "./routes/mails-page.js";
 import { OverviewPage } from "./routes/overview-page.js";
-import { PlaceholderPage } from "./routes/placeholder-page.js";
+import { TaskDetailPage } from "./routes/task-detail-page.js";
+import { TasksPage } from "./routes/tasks-page.js";
 import { ThreadDetailPage } from "./routes/thread-detail-page.js";
 import { ThreadsPage } from "./routes/threads-page.js";
 
@@ -20,6 +21,7 @@ const navItems = [
   { to: "/threads", label: "Threads", icon: Layers },
   { to: "/mails", label: "Mails", icon: FileText },
   { to: "/hosts", label: "Hosts", icon: Server },
+  { to: "/tasks", label: "Tasks", icon: CheckSquare2 },
   { to: "/debug", label: "Debug", icon: Bug }
 ] as const;
 
@@ -195,6 +197,38 @@ export function App() {
               }
             >
               <HostDetailPage />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <PageShell
+              breadcrumbCurrent="Tasks"
+              toolbar={
+                <>
+                  <span className="button subtle">Status: All</span>
+                  <span className="button subtle">Assignee: All</span>
+                  <span className="button subtle">Search</span>
+                </>
+              }
+            >
+              <TasksPage />
+            </PageShell>
+          }
+        />
+        <Route
+          path="/tasks/:taskId"
+          element={
+            <PageShell
+              breadcrumbCurrent="Task Detail"
+              toolbar={
+                <>
+                  <span className="button subtle">Detail</span>
+                </>
+              }
+            >
+              <TaskDetailPage />
             </PageShell>
           }
         />

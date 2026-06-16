@@ -4,6 +4,8 @@ import {
   hostsListResponseSchema,
   runtimeSnapshotSchema,
   threadDetailResponseSchema,
+  webTaskDetailResponseSchema,
+  webTasksResponseSchema,
   webMailboxDetailResponseSchema,
   webMailboxesResponseSchema,
   webEmailsResponseSchema,
@@ -93,8 +95,9 @@ export type WebEmailsResponse = ReturnType<typeof webEmailsResponseSchema.parse>
 export type MailDetailResponse = ReturnType<typeof emailSchema.parse>;
 export type WebMailboxesResponse = ReturnType<typeof webMailboxesResponseSchema.parse>;
 export type MailboxDetailResponse = ReturnType<typeof webMailboxDetailResponseSchema.parse>;
-
 export type WebOverviewResponse = ReturnType<typeof webOverviewResponseSchema.parse>;
+export type WebTasksResponse = ReturnType<typeof webTasksResponseSchema.parse>;
+export type WebTaskDetailResponse = ReturnType<typeof webTaskDetailResponseSchema.parse>;
 
 export async function getWebOverview(): Promise<WebOverviewResponse> {
   const response = await fetch("/api/v1/web/overview");
@@ -166,4 +169,20 @@ export async function getMailboxDetail(mailbox: string): Promise<MailboxDetailRe
     throw new Error(`Failed to load mailbox detail: ${response.status}`);
   }
   return webMailboxDetailResponseSchema.parse(await response.json());
+}
+
+export async function getTasks(): Promise<WebTasksResponse> {
+  const response = await fetch("/api/v1/web/tasks?limit=50");
+  if (!response.ok) {
+    throw new Error(`Failed to load tasks: ${response.status}`);
+  }
+  return webTasksResponseSchema.parse(await response.json());
+}
+
+export async function getTaskDetail(taskId: string): Promise<WebTaskDetailResponse> {
+  const response = await fetch(`/api/v1/web/tasks/${encodeURIComponent(taskId)}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load task detail: ${response.status}`);
+  }
+  return webTaskDetailResponseSchema.parse(await response.json());
 }
