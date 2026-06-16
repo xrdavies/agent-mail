@@ -842,16 +842,16 @@ button.button:disabled {
   align-items: center;
 }
 
-.mailbox-counter-row {
-  margin-top: 1rem;
+.panel-header-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  align-items: flex-end;
 }
 
-.list-header-toolbar {
-  display: grid;
-  gap: 0.8rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line-soft);
+.header-search {
+  min-width: 22rem;
 }
 
 .compact-search {
@@ -960,6 +960,28 @@ button.button:disabled {
 .result-summary {
   margin: 0;
   color: var(--muted);
+}
+
+.table-filter-row th {
+  padding-top: 0.6rem;
+  padding-bottom: 0.8rem;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: inherit;
+  vertical-align: bottom;
+}
+
+.table-filter-cell {
+  min-width: 8.5rem;
+}
+
+.table-filter-spacer {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.table-select {
+  min-width: 0;
+  width: 100%;
 }
 
 .host-code-block {
@@ -1077,6 +1099,11 @@ button.button:disabled {
 
   .compact-search {
     max-width: none;
+  }
+
+  .header-search {
+    min-width: 0;
+    width: 100%;
   }
 
   .toolbar-select {
