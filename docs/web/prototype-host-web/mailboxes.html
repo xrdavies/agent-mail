@@ -70,48 +70,33 @@
                   <th>Mailbox</th>
                   <th>Role</th>
                   <th>Binding</th>
-                  <th>Mgmt</th>
-                  <th>Runtime</th>
-                  <th>Unread</th>
+                  <th class="table-filter-head">
+                    <span class="table-head-label">Mgmt</span>
+                    <select class="toolbar-select table-select" id="management-filter">
+                      <option value="all" selected>All</option>
+                      <option value="enabled">Enabled</option>
+                      <option value="disabled">Disabled</option>
+                    </select>
+                  </th>
+                  <th class="table-filter-head">
+                    <span class="table-head-label">Runtime</span>
+                    <select class="toolbar-select table-select" id="runtime-filter">
+                      <option value="all" selected>All</option>
+                      <option value="failed">Failed</option>
+                      <option value="idle">Idle</option>
+                    </select>
+                  </th>
+                  <th class="table-filter-head">
+                    <span class="table-head-label">Unread</span>
+                    <select class="toolbar-select table-select" id="unread-filter">
+                      <option value="all" selected>All</option>
+                      <option value="has_unread">Has unread</option>
+                      <option value="empty">Empty</option>
+                    </select>
+                  </th>
                   <th>Session</th>
                   <th>Updated</th>
                   <th>Actions</th>
-                </tr>
-                <tr class="table-filter-row">
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th class="table-filter-cell">
-                    <label class="filter-select-field">
-                      <span class="filter-inline-label">Mgmt</span>
-                      <select class="toolbar-select table-select" id="management-filter">
-                        <option value="all" selected>All</option>
-                        <option value="enabled">Enabled</option>
-                        <option value="disabled">Disabled</option>
-                      </select>
-                    </label>
-                  </th>
-                  <th class="table-filter-cell">
-                    <label class="filter-select-field">
-                      <span class="filter-inline-label">Runtime</span>
-                      <select class="toolbar-select table-select" id="runtime-filter">
-                        <option value="all" selected>All</option>
-                        <option value="failed">Failed</option>
-                        <option value="idle">Idle</option>
-                      </select>
-                    </label>
-                  </th>
-                  <th class="table-filter-cell">
-                    <label class="filter-select-field">
-                      <span class="filter-inline-label">Unread</span>
-                      <select class="toolbar-select table-select" id="unread-filter">
-                        <option value="all" selected>All</option>
-                        <option value="has_unread">Has unread</option>
-                        <option value="empty">Empty</option>
-                      </select>
-                    </label>
-                  </th>
-                  <th colspan="3" class="table-filter-spacer"></th>
                 </tr>
               </thead>
               <tbody id="mailbox-table-body">

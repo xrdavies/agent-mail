@@ -962,21 +962,18 @@ button.button:disabled {
   color: var(--muted);
 }
 
-.table-filter-row th {
-  padding-top: 0.6rem;
-  padding-bottom: 0.8rem;
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: inherit;
-  vertical-align: bottom;
+.table-filter-head {
+  min-width: 9rem;
 }
 
-.table-filter-cell {
-  min-width: 8.5rem;
-}
-
-.table-filter-spacer {
-  border-bottom: 1px solid var(--line-soft);
+.table-head-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .table-select {
