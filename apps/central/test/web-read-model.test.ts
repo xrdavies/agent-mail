@@ -32,7 +32,7 @@ afterEach(async () => {
 });
 
 describe("Central web read-model routes", () => {
-  it("serves hosts, mailbox summaries, overview, and task detail without host auth", async () => {
+  it("serves hosts, mailbox summaries, overview, and web task routes without host auth", async () => {
     const { service } = await createTestService();
     const { auth } = await bootstrapHost(service);
 
@@ -170,10 +170,74 @@ describe("Central web read-model routes", () => {
     const webEmailPayload = await webEmailResponse.json();
     expect(webEmailPayload.email_id).toBe(sent.email.email_id);
 
-    const taskResponse = await app.request(`http://localhost/api/v1/tasks/${task.task_id}`);
-    expect(taskResponse.status).toBe(200);
-    const taskPayload = await taskResponse.json();
-    expect(taskPayload.task_id).toBe(task.task_id);
+    const webTasksResponse = await app.request(
+      "http://localhost/api/v1/web/tasks?status=new&limit=10"
+    );
+    expect(webTasksResponse.status).toBe(200);
+    const webTasksPayload = await webTasksResponse.json();
+    expect(webTasksPayload.tasks).toHaveLength(1);
+    expect(webTasksPayload.tasks[0]?.task.task_id).toBe(task.task_id);
+    expect(webTasksPayload.tasks[0]?.thread.thread_id).toBe(sent.thread.thread_id);
+    expect(webTasksPayload.tasks[0]?.trigger_email.email_id).toBe(sent.email.email_id);
+    expect(webTasksPayload.tasks[0]?.artifact_count).toBe(0);
+
+    const webTaskResponse = await app.request(
+      `http://localhost/api/v1/web/tasks/${task.task_id}`
+    );
+    expect(webTaskResponse.status).toBe(200);
+    const webTaskPayload = await webTaskResponse.json();
+    expect(webTaskPayload.task.task_id).toBe(task.task_id);
+    expect(webTaskPayload.thread.thread_id).toBe(sent.thread.thread_id);
+    expect(webTaskPayload.trigger_email.email_id).toBe(sent.email.email_id);
+    expect(webTaskPayload.artifacts).toHaveLength(0);
+  });
+
+  it("accepts operator compose writes via human-send without host auth", async () => {
+    const { service } = await createTestService();
+    const { auth } = await bootstrapHost(service);
+
+    await registerAgent(service, auth, {
+      mailbox: "pm.aster@agents.local",
+      name: "Aster",
+      role: "pm",
+      responsibilities: "PM agent."
+    });
+
+    const logger = new CentralLogger(50);
+    const { app } = createApp(testConfig, { service, logger, pool: null });
+
+    const response = await app.request("http://localhost/api/v1/web/emails/human-send", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        from: {
+          display_name: "Human Operator",
+          address: "human.operator@example.com"
+        },
+        to: [
+          {
+            display_name: "Aster",
+            address: "pm.aster@agents.local"
+          }
+        ],
+        cc: [],
+        subject: "Need API follow-up",
+        body_text: "Please review the backend constraints."
+      })
+    });
+
+    expect(response.status).toBe(201);
+    const payload = await response.json();
+    expect(payload.email.email_kind).toBe("human_inbound");
+    expect(payload.email.created_by_host_id).toBeNull();
+    expect(payload.email.created_by_mailbox).toBeNull();
+    expect(payload.email.raw_body).toBe("Please review the backend constraints.");
+    expect(payload.email.raw_headers.from).toBe("Human Operator <human.operator@example.com>");
+    expect(payload.email.raw_headers.to).toBe("Aster <pm.aster@agents.local>");
+    expect(payload.deliveries).toHaveLength(1);
+    expect(payload.thread.root_subject).toBe("Need API follow-up");
   });
 });
 

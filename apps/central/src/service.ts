@@ -1132,6 +1132,143 @@ export class CentralService {
     };
   }
 
+  async listWebTasks(options: {
+    status?: Task["status"];
+    assigneeMailbox?: string;
+    createdByMailbox?: string;
+    threadId?: string;
+    requiresArtifact?: boolean;
+    limit?: number;
+  }): Promise<{
+    tasks: Array<{
+      task: Task;
+      thread: Thread;
+      trigger_email: Email;
+      completed_by_email: Email | null;
+      artifact_count: number;
+    }>;
+  }> {
+    const conditions = [];
+    if (options.status) {
+      conditions.push(eq(tasks.status, options.status));
+    }
+    if (options.assigneeMailbox) {
+      conditions.push(eq(tasks.assigneeMailbox, options.assigneeMailbox));
+    }
+    if (options.createdByMailbox) {
+      conditions.push(eq(tasks.createdByMailbox, options.createdByMailbox));
+    }
+    if (options.threadId) {
+      conditions.push(eq(tasks.threadId, options.threadId));
+    }
+    if (options.requiresArtifact !== undefined) {
+      conditions.push(eq(tasks.requiresArtifact, options.requiresArtifact));
+    }
+
+    const baseQuery = this.db
+      .select()
+      .from(tasks)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(tasks.updatedAt));
+    const taskRows = options.limit ? await baseQuery.limit(options.limit) : await baseQuery;
+    if (taskRows.length === 0) {
+      return { tasks: [] };
+    }
+
+    const threadIds = [...new Set(taskRows.map((row) => row.threadId))];
+    const emailIds = [
+      ...new Set(
+        taskRows.flatMap((row) =>
+          row.completedByEmailId ? [row.triggerEmailId, row.completedByEmailId] : [row.triggerEmailId]
+        )
+      )
+    ];
+    const taskIds = taskRows.map((row) => row.taskId);
+
+    const [threadRows, emailRows, artifactRows] = await Promise.all([
+      this.db.select().from(threads).where(inArray(threads.threadId, threadIds)),
+      this.db.select().from(emails).where(inArray(emails.emailId, emailIds)),
+      this.db.select().from(artifacts).where(inArray(artifacts.taskId, taskIds))
+    ]);
+
+    const threadById = new Map(threadRows.map((row) => [row.threadId, row]));
+    const emailById = new Map(emailRows.map((row) => [row.emailId, row]));
+    const artifactCountByTask = countArtifactsByTask(artifactRows);
+
+    return {
+      tasks: taskRows.map((row) => {
+        const threadRow = threadById.get(row.threadId);
+        const triggerEmailRow = emailById.get(row.triggerEmailId);
+        const completedByEmailRow = row.completedByEmailId
+          ? emailById.get(row.completedByEmailId) ?? null
+          : null;
+        if (!threadRow || !triggerEmailRow) {
+          throw new HttpError(500, "Task references are inconsistent");
+        }
+        return {
+          task: mapTask(row),
+          thread: mapThread(threadRow),
+          trigger_email: mapEmail(triggerEmailRow),
+          completed_by_email: completedByEmailRow ? mapEmail(completedByEmailRow) : null,
+          artifact_count: artifactCountByTask.get(row.taskId) ?? 0
+        };
+      })
+    };
+  }
+
+  async getWebTaskDetail(taskId: string): Promise<{
+    task: Task;
+    thread: Thread;
+    trigger_email: Email;
+    completed_by_email: Email | null;
+    artifacts: Artifact[];
+  }> {
+    const [taskRow] = await this.db.select().from(tasks).where(eq(tasks.taskId, taskId)).limit(1);
+    if (!taskRow) {
+      throw new HttpError(404, "Task not found");
+    }
+
+    const [threadRow, triggerEmailRow, completedByEmailRow, artifactRows] = await Promise.all([
+      this.db
+        .select()
+        .from(threads)
+        .where(eq(threads.threadId, taskRow.threadId))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      this.db
+        .select()
+        .from(emails)
+        .where(eq(emails.emailId, taskRow.triggerEmailId))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      taskRow.completedByEmailId
+        ? this.db
+            .select()
+            .from(emails)
+            .where(eq(emails.emailId, taskRow.completedByEmailId))
+            .limit(1)
+            .then((rows) => rows[0] ?? null)
+        : Promise.resolve(null),
+      this.db
+        .select()
+        .from(artifacts)
+        .where(eq(artifacts.taskId, taskId))
+        .orderBy(asc(artifacts.createdAt))
+    ]);
+
+    if (!threadRow || !triggerEmailRow) {
+      throw new HttpError(500, "Task references are inconsistent");
+    }
+
+    return {
+      task: mapTask(taskRow),
+      thread: mapThread(threadRow),
+      trigger_email: mapEmail(triggerEmailRow),
+      completed_by_email: completedByEmailRow ? mapEmail(completedByEmailRow) : null,
+      artifacts: artifactRows.map(mapArtifact)
+    };
+  }
+
   async listWebMailboxes(options: {
     hostId?: string;
     runtimeStatus?: "bootstrapping" | "idle" | "running" | "failed" | "cleared";
@@ -2036,6 +2173,20 @@ function mapLinkedResource(row: LinkedResourceRow): LinkedResource {
   };
 }
 
+function mapArtifact(row: ArtifactRow): Artifact {
+  return {
+    artifact_id: row.artifactId,
+    task_id: row.taskId,
+    produced_by_mailbox: row.producedByMailbox,
+    repository: row.repository ?? null,
+    path: row.path,
+    branch: row.branch ?? null,
+    commit_sha: row.commitSha ?? null,
+    pr_link: row.prLink ?? null,
+    created_at: row.createdAt.toISOString()
+  };
+}
+
 function latestByMailbox<T extends { mailbox: string; createdAt: Date }>(rows: T[]): Map<string, T> {
   const map = new Map<string, T>();
   for (const row of rows) {
@@ -2089,6 +2240,14 @@ function countOpenTasksByMailbox(rows: TaskRow[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const row of rows) {
     counts.set(row.assigneeMailbox, (counts.get(row.assigneeMailbox) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function countArtifactsByTask(rows: ArtifactRow[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    counts.set(row.taskId, (counts.get(row.taskId) ?? 0) + 1);
   }
   return counts;
 }

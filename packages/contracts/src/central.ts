@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  addressObjectSchema,
   artifactInputSchema,
   emailKindSchema,
   hostStatusSchema,
@@ -9,6 +10,7 @@ import {
   linkedResourceInputSchema,
   mailboxRuntimeStatusSchema,
   mailboxSchema,
+  rawHeadersSchema,
   taskMutableStatusSchema,
   threadStatusSchema
 } from "./primitives.js";
@@ -284,6 +286,35 @@ export const webEmailsResponseSchema = z.object({
   emails: z.array(webEmailSummarySchema)
 });
 
+export const webTasksQuerySchema = z.object({
+  status: z.enum(["new", "in_progress", "paused", "done", "blocked"]).optional(),
+  assignee_mailbox: mailboxSchema.optional(),
+  created_by_mailbox: mailboxSchema.optional(),
+  thread_id: identifierSchema.optional(),
+  requires_artifact: z.coerce.boolean().optional(),
+  limit: z.coerce.number().int().positive().max(200).optional()
+});
+
+export const webTaskSummarySchema = z.object({
+  task: taskSchema,
+  thread: threadSchema,
+  trigger_email: emailSchema,
+  completed_by_email: emailSchema.nullable(),
+  artifact_count: z.number().int().nonnegative()
+});
+
+export const webTasksResponseSchema = z.object({
+  tasks: z.array(webTaskSummarySchema)
+});
+
+export const webTaskDetailResponseSchema = z.object({
+  task: taskSchema,
+  thread: threadSchema,
+  trigger_email: emailSchema,
+  completed_by_email: emailSchema.nullable(),
+  artifacts: z.array(artifactSchema)
+});
+
 export const webMailboxesQuerySchema = z.object({
   host_id: identifierSchema.optional(),
   runtime_status: mailboxRuntimeStatusSchema.optional(),
@@ -355,11 +386,27 @@ export const webOverviewResponseSchema = z.object({
   recent_activity: z.array(webRecentActivityItemSchema)
 });
 
+export const humanSendEmailRequestSchema = z.object({
+  from: addressObjectSchema,
+  to: z.array(addressObjectSchema).min(1).max(1),
+  cc: z.array(addressObjectSchema).default([]),
+  subject: z.string().min(1),
+  body_text: z.string().min(1),
+  raw_body: z.string().min(1).optional(),
+  raw_headers: rawHeadersSchema.nullable().optional(),
+  in_reply_to: z.string().min(1).nullable().optional(),
+  references: z.array(z.string().min(1)).default([]),
+  linked_resources: z.array(linkedResourceInputSchema).default([])
+});
+
+export const humanSendEmailResponseSchema = sendEmailResponseSchema;
+
 export type HostAuthExchangeRequest = z.infer<typeof hostAuthExchangeRequestSchema>;
 export type HostRegisterRequest = z.infer<typeof hostRegisterRequestSchema>;
 export type HostHeartbeatRequest = z.infer<typeof hostHeartbeatRequestSchema>;
 export type RegisterAgentRequest = z.infer<typeof registerAgentRequestSchema>;
 export type SendEmailRequest = z.infer<typeof sendEmailRequestSchema>;
+export type HumanSendEmailRequest = z.infer<typeof humanSendEmailRequestSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
 export type UpdateTaskStatusRequest = z.infer<typeof updateTaskStatusRequestSchema>;
 export type CentralLogEvent = z.infer<typeof centralLogEventSchema>;

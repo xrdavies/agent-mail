@@ -318,15 +318,14 @@
 - `GET /api/v1/web/overview`
   - `Overview` 聚合页
 
-#### 单独后置，不放入本轮 P0/P1
+#### P2：补执行面与 operator 写路径
 
+- `GET /api/v1/web/tasks`
+  - `Tasks` 列表页
+- `GET /api/v1/web/tasks/:task_id`
+  - `Task Detail` 页
 - `POST /api/v1/web/emails/human-send`
-
-原因：
-
-- 这是写接口，不是只读聚合接口
-- 它需要单独定义 human/operator 身份与 auth 语义
-- 不应与本轮 `central-web` 首批只读页面的实现混在一起
+  - `Compose` 页真实提交
 
 ### 产物
 

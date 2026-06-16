@@ -6,6 +6,8 @@ import {
   debugLogsResponseSchema,
   emailSchema,
   healthResponseSchema,
+  humanSendEmailRequestSchema,
+  humanSendEmailResponseSchema,
   hostsListResponseSchema,
   hostAuthExchangeRequestSchema,
   hostHeartbeatRequestSchema,
@@ -21,6 +23,9 @@ import {
   ,
   runtimeSnapshotSchema,
   taskSchema,
+  webTaskDetailResponseSchema,
+  webTasksQuerySchema,
+  webTasksResponseSchema,
   webEmailsQuerySchema,
   webEmailsResponseSchema,
   webMailboxDetailQuerySchema,
@@ -85,6 +90,10 @@ function formatSseEvent(input: {
     `data: ${JSON.stringify(input.data)}`
   ];
   return `${lines.join("\n")}\n\n`;
+}
+
+function formatAddressHeader(displayName: string, address: string): string {
+  return `${displayName} <${address}>`;
 }
 
 async function parseJson<T>(
@@ -266,10 +275,10 @@ export function createApp(
       c.req.path === "/api/v1/host-auth/exchange" ||
       c.req.path === "/api/v1/debug/logs" ||
       c.req.path === "/api/v1/debug/logs/stream" ||
+      (c.req.method === "POST" && c.req.path === "/api/v1/web/emails/human-send") ||
       (c.req.method === "GET" && c.req.path === "/api/v1/hosts") ||
       (c.req.method === "GET" && /^\/api\/v1\/hosts\/[^/]+$/.test(c.req.path)) ||
-      (c.req.method === "GET" && c.req.path.startsWith("/api/v1/web/")) ||
-      (c.req.method === "GET" && /^\/api\/v1\/tasks\/[^/]+$/.test(c.req.path))
+      (c.req.method === "GET" && c.req.path.startsWith("/api/v1/web/"))
     ) {
       return next();
     }
@@ -403,6 +412,32 @@ export function createApp(
     return c.json(emailSchema.parse(response), 200);
   });
 
+  app.post("/api/v1/web/emails/human-send", async (c) => {
+    const request = await parseJson(c, humanSendEmailRequestSchema);
+    const response = await service.ingestHumanEmail({
+      from: request.from,
+      to: request.to,
+      subject: request.subject,
+      body_text: request.body_text,
+      cc: request.cc ?? [],
+      raw_body: request.raw_body ?? request.body_text,
+      raw_headers:
+        request.raw_headers ??
+        {
+          from: formatAddressHeader(request.from.display_name, request.from.address),
+          to: request.to.map((item) => formatAddressHeader(item.display_name, item.address)).join(", "),
+          cc: (request.cc ?? [])
+            .map((item) => formatAddressHeader(item.display_name, item.address))
+            .join(", "),
+          subject: request.subject
+        },
+      ...(request.in_reply_to !== undefined ? { in_reply_to: request.in_reply_to } : {}),
+      references: request.references ?? [],
+      linked_resources: request.linked_resources ?? []
+    });
+    return c.json(humanSendEmailResponseSchema.parse(response), 201);
+  });
+
   app.get("/api/v1/web/threads", async (c) => {
     const query = parseQuery(c, webThreadsQuerySchema);
     const response = await service.listWebThreads({
@@ -423,6 +458,24 @@ export function createApp(
       ...(query.limit ? { limit: query.limit } : {})
     });
     return c.json(webEmailsResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/tasks/:task_id", async (c) => {
+    const response = await service.getWebTaskDetail(c.req.param("task_id"));
+    return c.json(webTaskDetailResponseSchema.parse(response), 200);
+  });
+
+  app.get("/api/v1/web/tasks", async (c) => {
+    const query = parseQuery(c, webTasksQuerySchema);
+    const response = await service.listWebTasks({
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.assignee_mailbox ? { assigneeMailbox: query.assignee_mailbox } : {}),
+      ...(query.created_by_mailbox ? { createdByMailbox: query.created_by_mailbox } : {}),
+      ...(query.thread_id ? { threadId: query.thread_id } : {}),
+      ...(query.requires_artifact !== undefined ? { requiresArtifact: query.requires_artifact } : {}),
+      ...(query.limit ? { limit: query.limit } : {})
+    });
+    return c.json(webTasksResponseSchema.parse(response), 200);
   });
 
   app.get("/api/v1/web/mailboxes", async (c) => {

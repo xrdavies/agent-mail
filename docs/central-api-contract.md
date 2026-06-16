@@ -402,8 +402,7 @@ Structured address objects 是规范形式。
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 请求：
 
@@ -427,8 +426,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 请求：
 
@@ -478,8 +476,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 请求：
 
@@ -514,8 +511,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 请求：
 
@@ -554,8 +550,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 查询参数：
 
@@ -573,8 +568,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
+- 必需
 
 响应 `200`：
 
@@ -778,38 +772,7 @@ Auth：
 
 Auth：
 
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
-
-### `GET /api/v1/web/threads/:thread_id`
-
-用途：
-
-- 供 `Thread Detail` 页获取单个 thread 全量上下文
-
-Auth：
-
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
-
-响应 `200`：
-
-- `threadDetailResponseSchema`
-
-### `GET /api/v1/web/emails/:email_id`
-
-用途：
-
-- 供 `Mail Detail` 页获取单封 email 详情
-
-Auth：
-
-- 当前 P0/P1 实现中不要求 `Host` bearer token
-- 这是面向 human/operator 的只读路径
-
-响应 `200`：
-
-- `Email`
+- 必需
 
 请求：
 
@@ -862,7 +825,7 @@ Auth：
 
 用途：
 
-- 供 Web / Debug / 详情页按 id 获取单个 task
+- 供 Host / Debug / 内部诊断按 id 获取单个 task
 
 Auth：
 
@@ -938,7 +901,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -964,7 +928,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -978,7 +943,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -1001,6 +967,21 @@ Auth：
 }
 ```
 
+### `GET /api/v1/web/threads/:thread_id`
+
+用途：
+
+- 供 `Thread Detail` 页获取单个 thread 全量上下文
+
+Auth：
+
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+响应 `200`：
+
+- `threadDetailResponseSchema`
+
 ### `GET /api/v1/web/emails`
 
 用途：
@@ -1009,7 +990,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -1033,6 +1015,80 @@ Auth：
 }
 ```
 
+### `GET /api/v1/web/emails/:email_id`
+
+用途：
+
+- 供 `Mail Detail` 页获取单封 email 详情
+
+Auth：
+
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+响应 `200`：
+
+- `Email`
+
+### `GET /api/v1/web/tasks`
+
+用途：
+
+- 供 `Tasks` 列表页读取 task summary 列表
+
+Auth：
+
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+查询参数：
+
+- `status`
+- `assignee_mailbox`
+- `created_by_mailbox`
+- `thread_id`
+- `requires_artifact`
+- `limit`
+
+响应 `200`：
+
+```json
+{
+  "tasks": [
+    {
+      "task": "Task",
+      "thread": "Thread",
+      "trigger_email": "Email",
+      "completed_by_email": "Email | null",
+      "artifact_count": 1
+    }
+  ]
+}
+```
+
+### `GET /api/v1/web/tasks/:task_id`
+
+用途：
+
+- 供 `Task Detail` 页读取单个 task 聚合详情
+
+Auth：
+
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
+
+响应 `200`：
+
+```json
+{
+  "task": "Task",
+  "thread": "Thread",
+  "trigger_email": "Email",
+  "completed_by_email": "Email | null",
+  "artifacts": ["Artifact"]
+}
+```
+
 ### `GET /api/v1/web/mailboxes`
 
 用途：
@@ -1041,7 +1097,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -1075,7 +1132,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 查询参数：
 
@@ -1114,7 +1172,8 @@ Auth：
 
 Auth：
 
-- 必需
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的只读路径
 
 响应 `200`：
 
@@ -1133,17 +1192,67 @@ Auth：
 }
 ```
 
-## Deferred Web Write API
-
-以下接口在本轮不纳入 P0/P1：
-
 ### `POST /api/v1/web/emails/human-send`
 
-原因：
+用途：
 
-- 这是 human/operator 写路径，不是只读 read-model
-- 需要单独定义 operator 身份与 auth 语义
-- 不应与 `central-web` 首批只读页面混在同一轮实现
+- 供 `Compose` 页以 human/operator 身份发起一封 `human_inbound` 邮件
+
+Auth：
+
+- 当前 `central-web` 开发期实现中不要求 `Host` bearer token
+- 这是面向 human/operator 的写路径
+
+请求：
+
+```json
+{
+  "from": {
+    "display_name": "Human Operator",
+    "address": "human.operator@example.com"
+  },
+  "to": [
+    {
+      "display_name": "Aster",
+      "address": "pm.aster@agents.local"
+    }
+  ],
+  "cc": [],
+  "subject": "Need API follow-up",
+  "body_text": "Please review the backend constraints and reply in-thread.",
+  "raw_body": "Please review the backend constraints and reply in-thread.",
+  "raw_headers": {
+    "from": "Human Operator <human.operator@example.com>",
+    "to": "Aster <pm.aster@agents.local>",
+    "cc": "",
+    "subject": "Need API follow-up"
+  },
+  "references": [],
+  "linked_resources": [
+    {
+      "url": "https://github.com/xrdavies/agent-mail/pull/18"
+    }
+  ]
+}
+```
+
+响应 `201`：
+
+```json
+{
+  "email": "Email",
+  "deliveries": ["Delivery"],
+  "thread": "Thread"
+}
+```
+
+规则：
+
+- Central 将该邮件持久化为 `email_kind = "human_inbound"`
+- 如果省略 `raw_body`，Central 应使用 `body_text`
+- 如果省略 `raw_headers`，Central 应根据 `from`、`to`、`cc`、`subject` 自动生成
+- POC 仍要求 `to.length = 1`
+- 目标收件人必须是 Central 已注册 mailbox
 
 ## Debug 只读 API
 
