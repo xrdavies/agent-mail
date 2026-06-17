@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailbox Detail · Host Web</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">Host Web</span>
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Local Runtime</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./overview.html">Overview</a>
+            <span>/</span>
+            <a href="./mailboxes.html">Mailboxes</a>
+            <span>/</span>
+            <span class="current">backend.coda@agents.local</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">backend.coda@agents.local</h2>
+                <p class="panel-copy">Coda / backend</p>
+                <p class="panel-copy">active on mac-local · unread 2 · last error at 12:01</p>
+              </div>
+              <div class="chip-row">
+                <span class="chip info">binding active</span>
+                <span class="chip success">management enabled</span>
+                <span class="chip danger">runtime failed</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2 mailbox-detail-primary-grid">
+            <article class="panel mailbox-detail-compact-panel">
+              <h2 class="panel-title">Runtime &amp; Recovery</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Management</dt>
+                  <dd>enabled</dd>
+                </div>
+                <div>
+                  <dt>Runtime</dt>
+                  <dd>failed</dd>
+                </div>
+                <div>
+                  <dt>Current Session</dt>
+                  <dd>`sess_backend_coda...`</dd>
+                </div>
+                <div>
+                  <dt>Active Task</dt>
+                  <dd>`task_044`</dd>
+                </div>
+                <div>
+                  <dt>Unread</dt>
+                  <dd>2</dd>
+                </div>
+                <div>
+                  <dt>Last Processed</dt>
+                  <dd>`del_011`</dd>
+                </div>
+                <div>
+                  <dt>Last Error</dt>
+                  <dd>resume command exited with code 1</dd>
+                </div>
+                <div>
+                  <dt>Next Resume After</dt>
+                  <dd>-</dd>
+                </div>
+                <div>
+                  <dt>Suggested Action</dt>
+                  <dd>clear failure, inspect the agent session, then resume now.</dd>
+                </div>
+              </div>
+              <div class="button-row host-action-state-row">
+                <button type="button" class="button subtle">disable</button>
+                <button type="button" class="button subtle">resume now</button>
+                <button type="button" class="button subtle">clear failure</button>
+              </div>
+            </article>
+
+            <article class="panel mailbox-detail-compact-panel">
+              <h2 class="panel-title">Identity &amp; Context</h2>
+              <div class="definition-list">
+                <div>
+                  <dt>Mailbox</dt>
+                  <dd>backend.coda@agents.local</dd>
+                </div>
+                <div>
+                  <dt>Name / Role</dt>
+                  <dd>Coda · backend specialist responsible for API and implementation changes.</dd>
+                </div>
+                <div>
+                  <dt>Binding</dt>
+                  <dd>active</dd>
+                </div>
+                <div>
+                  <dt>Host</dt>
+                  <dd>mac-local</dd>
+                </div>
+                <div>
+                  <dt>Bound At</dt>
+                  <dd>10:00:04</dd>
+                </div>
+                <div>
+                  <dt>Workspace</dt>
+                  <dd>/Users/me/worktrees/coda</dd>
+                </div>
+                <div>
+                  <dt>Git Identity</dt>
+                  <dd>Coda · backend.coda@agents.local</dd>
+                </div>
+                <div>
+                  <dt>Bootstrap</dt>
+                  <dd>succeeded</dd>
+                </div>
+                <div>
+                  <dt>Last Bootstrap</dt>
+                  <dd>10:00:04</dd>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Recent Host Events</h2>
+            <div class="timeline host-action-state-row">
+              <div class="timeline-item">
+                <h4>12:01 Resume failed</h4>
+                <p>Process exited with code 1 while resuming task_044.</p>
+              </div>
+              <div class="timeline-item">
+                <h4>12:00 Heartbeat ok</h4>
+                <p>Central still sees the mailbox as active on mac-local.</p>
+              </div>
+              <div class="timeline-item">
+                <h4>10:00 Bootstrap succeeded</h4>
+                <p>Mailbox registered and binding became active.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel danger-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Danger Zone</h2>
+                <p class="panel-copy">Remove this mailbox from current Host management.</p>
+                <p class="panel-copy">This should be blocked while runtime is running.</p>
+              </div>
+              <button type="button" class="button is-danger" data-open-unbind-modal>remove local binding</button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="unbind-modal" hidden>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="unbind-modal-title">
+        <div class="modal-header">
+          <div>
+            <h2 class="panel-title" id="unbind-modal-title">Remove Local Binding</h2>
+            <p class="panel-copy">Confirm before removing `backend.coda@agents.local` from this Host.</p>
+          </div>
+          <button type="button" class="button subtle" data-close-unbind-modal>close</button>
+        </div>
+
+        <div class="body-box modal-body">
+          <p class="body-copy">mailbox: backend.coda@agents.local</p>
+          <p class="body-copy">host: mac-local</p>
+          <p class="body-copy">This will stop Host management and release the current Host binding if Central still points here.</p>
+          <p class="body-copy">This will not re-bootstrap the agent and will not delete workspace files.</p>
+          <label class="confirm-field">
+            <span class="meta">Type mailbox to confirm</span>
+            <input
+              class="toolbar-input"
+              id="unbind-confirm-input"
+              type="text"
+              value=""
+              placeholder="backend.coda@agents.local"
+            />
+          </label>
+        </div>
+
+        <div class="button-row modal-actions">
+          <button type="button" class="button subtle" data-close-unbind-modal>cancel</button>
+          <button type="button" class="button is-danger is-disabled" id="unbind-confirm-button" disabled>
+            remove local binding
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const body = document.body;
+        const overlay = document.getElementById("unbind-modal");
+        const openButtons = Array.from(document.querySelectorAll("[data-open-unbind-modal]"));
+        const closeButtons = Array.from(document.querySelectorAll("[data-close-unbind-modal]"));
+        const confirmInput = document.getElementById("unbind-confirm-input");
+        const confirmButton = document.getElementById("unbind-confirm-button");
+        const expected = "backend.coda@agents.local";
+
+        function syncConfirmState() {
+          const ready = confirmInput.value.trim() === expected;
+          confirmButton.disabled = !ready;
+          confirmButton.classList.toggle("is-disabled", !ready);
+        }
+
+        function openModal() {
+          overlay.hidden = false;
+          body.classList.add("modal-open");
+          syncConfirmState();
+          confirmInput.focus();
+        }
+
+        function closeModal() {
+          overlay.hidden = true;
+          body.classList.remove("modal-open");
+        }
+
+        openButtons.forEach((button) => {
+          button.addEventListener("click", openModal);
+        });
+
+        closeButtons.forEach((button) => {
+          button.addEventListener("click", closeModal);
+        });
+
+        overlay.addEventListener("click", (event) => {
+          if (event.target === overlay) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && !overlay.hidden) {
+            closeModal();
+          }
+        });
+
+        confirmInput.addEventListener("input", syncConfirmState);
+        syncConfirmState();
+      })();
+    </script>
+  </body>
+</html>

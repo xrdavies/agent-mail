@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mailboxes · Host Web</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">Host Web</span>
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Local Runtime</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html" aria-current="page">Mailboxes</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <a href="./overview.html">Overview</a>
+            <span>/</span>
+            <span class="current">Mailboxes</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">mac-local</span>
+          </div>
+        </header>
+
+        <main class="content stack">
+          <section class="stats-grid mailbox-stats-grid">
+            <article class="stat-card">
+              <p class="stat-label">Total</p>
+              <p class="stat-value">3</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Enabled</p>
+              <p class="stat-value">2</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Disabled</p>
+              <p class="stat-value">1</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">Failed</p>
+              <p class="stat-value">1</p>
+            </article>
+            <article class="stat-card">
+              <p class="stat-label">With Unread</p>
+              <p class="stat-value">2</p>
+            </article>
+          </section>
+
+          <section class="panel mailbox-list-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Mailboxes</h2>
+              </div>
+              <div class="panel-header-tools">
+                <label class="toolbar-search header-search">
+                  <input
+                    class="toolbar-input"
+                    id="mailbox-search"
+                    type="text"
+                    value=""
+                    aria-label="Search mailboxes"
+                    placeholder="search mailbox / name"
+                  />
+                </label>
+              </div>
+            </div>
+            <table class="table host-mailbox-table">
+              <thead>
+                <tr>
+                  <th>Mailbox</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Binding</th>
+                  <th>Mgmt</th>
+                  <th>Runtime</th>
+                  <th>Unread</th>
+                  <th>Session</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="mailbox-table-body">
+                <tr data-search="pm.aster@agents.local aster">
+                  <td><a href="./mailbox-detail.html">pm.aster@agents.local</a></td>
+                  <td>Aster</td>
+                  <td>pm</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip success">enabled</span></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>1</td>
+                  <td>sess_pm_aster...</td>
+                  <td>12:04:58</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <button type="button" class="button subtle">disable</button>
+                      <button type="button" class="button subtle">resume now</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr data-search="backend.coda@agents.local coda">
+                  <td><a href="./mailbox-detail.html">backend.coda@agents.local</a></td>
+                  <td>Coda</td>
+                  <td>backend</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip success">enabled</span></td>
+                  <td><span class="chip danger">failed</span></td>
+                  <td>2</td>
+                  <td>sess_backend...</td>
+                  <td>12:01:13</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <button type="button" class="button subtle">disable</button>
+                      <button type="button" class="button subtle">resume now</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr data-search="design.luna@agents.local luna">
+                  <td><a href="./mailbox-detail.html">design.luna@agents.local</a></td>
+                  <td>Luna</td>
+                  <td>design</td>
+                  <td><span class="chip info">active</span></td>
+                  <td><span class="chip warning">disabled</span></td>
+                  <td><span class="chip info">idle</span></td>
+                  <td>0</td>
+                  <td>sess_design...</td>
+                  <td>11:50:22</td>
+                  <td>
+                    <div class="button-row table-actions">
+                      <button type="button" class="button subtle">enable</button>
+                      <button type="button" class="button subtle is-disabled" disabled>resume now</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script>
+      (function() {
+        const state = {
+          search: ""
+        };
+
+        const rows = Array.from(document.querySelectorAll("#mailbox-table-body tr"));
+        const searchInput = document.getElementById("mailbox-search");
+
+        function rowMatches(row) {
+          if (state.search && !row.dataset.search.includes(state.search.toLowerCase())) return false;
+          return true;
+        }
+
+        function render() {
+          rows.forEach((row) => {
+            const visible = rowMatches(row);
+            row.hidden = !visible;
+          });
+        }
+
+        searchInput.addEventListener("input", () => {
+          state.search = searchInput.value.trim().toLowerCase();
+          render();
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

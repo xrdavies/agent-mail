@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview · Host Web</title>
+    <link rel="stylesheet" href="./prototype.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">Host Web</span>
+          <h1 class="brand-title">Agent Mail</h1>
+        </div>
+
+        <div class="nav-group">
+          <p class="nav-title">Local Runtime</p>
+          <ul class="nav-list">
+            <li><a class="nav-link" href="./overview.html" aria-current="page">Overview</a></li>
+            <li><a class="nav-link" href="./mailboxes.html">Mailboxes</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <span class="current">Overview</span>
+          </div>
+          <div class="toolbar">
+            <span class="button subtle">mac-local</span>
+            <span class="button subtle">online</span>
+            <span class="button subtle">last heartbeat 12:04:58</span>
+          </div>
+        </header>
+
+        <main class="content stack overview-page">
+          <section class="stats-grid overview-stats-grid">
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Managed</p>
+              <p class="stat-value">2</p>
+            </article>
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Enabled</p>
+              <p class="stat-value">1</p>
+            </article>
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Disabled</p>
+              <p class="stat-value">1</p>
+            </article>
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Running</p>
+              <p class="stat-value">0</p>
+            </article>
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Failed</p>
+              <p class="stat-value">1</p>
+            </article>
+            <article class="stat-card overview-stat-card">
+              <p class="stat-label">Stuck Unread</p>
+              <p class="stat-value">1</p>
+            </article>
+          </section>
+
+          <section class="grid-2 overview-primary-grid">
+            <article class="panel overview-compact-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Host Summary</p>
+                  <h2 class="panel-title">mac-local</h2>
+                  <p class="panel-copy">online · v0.1.0 · started 10:00 · local runtime console</p>
+                </div>
+                <div class="chip-row">
+                  <span class="chip success">online</span>
+                  <span class="chip">node 24</span>
+                  <span class="chip">mcp enabled</span>
+                </div>
+              </div>
+              <div class="definition-list">
+                <div>
+                  <dt>Label</dt>
+                  <dd>Mac Local</dd>
+                </div>
+                <div>
+                  <dt>Central</dt>
+                  <dd>http://127.0.0.1:3000</dd>
+                </div>
+                <div>
+                  <dt>Authenticated</dt>
+                  <dd>yes · last auth 12:00:03 · last auth error -</dd>
+                </div>
+                <div>
+                  <dt>Heartbeat</dt>
+                  <dd>12:04:58 · interval 5s · drift 0.8s</dd>
+                </div>
+              </div>
+              <div class="button-row">
+                <span class="button">re-auth</span>
+              </div>
+            </article>
+
+            <article class="panel overview-compact-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">MCP Access</p>
+                  <h2 class="panel-title">Connection Handoff</h2>
+                  <p class="panel-copy">Expose the local Host MCP endpoint without leaking Central token details.</p>
+                </div>
+              </div>
+              <div class="body-box host-code-block overview-code-block">
+                <p class="body-copy mono">url</p>
+                <p class="body-copy">http://127.0.0.1:8788/mcp</p>
+                <p class="body-copy mono">command</p>
+                <p class="body-copy">codex mcp add agent-mail-host --url http://127.0.0.1:8788/mcp</p>
+                <p class="body-copy mono">json</p>
+                <pre class="body-copy preformatted">{
+  "mcpServers": {
+    "agent-mail-host": {
+      "url": "http://127.0.0.1:8788/mcp"
+    }
+  }
+}</pre>
+                <p class="body-copy mono">toml</p>
+                <pre class="body-copy preformatted">[mcp_servers.agent-mail-host]
+url = "http://127.0.0.1:8788/mcp"</pre>
+              </div>
+              <div class="button-row">
+                <span class="button subtle">copy command</span>
+                <span class="button subtle">copy json</span>
+                <span class="button subtle">copy toml</span>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel overview-attention-panel">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title">Mailboxes That Need Human Attention</h2>
+              </div>
+              <a class="button subtle" href="./mailboxes.html">Open full roster</a>
+            </div>
+            <div class="list overview-attention-list">
+              <div class="list-row overview-attention-row">
+                <div class="row-between">
+                  <div>
+                    <a class="list-row-key" href="./mailbox-detail.html">backend.coda@agents.local</a>
+                    <p class="list-row-copy">failed · unread 2 · error: resume command exited with code 1</p>
+                  </div>
+                  <span class="chip danger">failed</span>
+                </div>
+                <div class="button-row">
+                  <a class="button subtle" href="./mailbox-detail.html">detail</a>
+                  <span class="button">resume now</span>
+                </div>
+              </div>
+              <div class="list-row overview-attention-row">
+                <div class="row-between">
+                  <div>
+                    <a class="list-row-key" href="./mailbox-detail.html">design.luna@agents.local</a>
+                    <p class="list-row-copy">disabled · unread 0 · manually paused before local workspace maintenance</p>
+                  </div>
+                  <span class="chip warning">disabled</span>
+                </div>
+                <div class="button-row">
+                  <a class="button subtle" href="./mailbox-detail.html">detail</a>
+                  <span class="button">enable</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel note-panel overview-note-panel">
+            <h2 class="panel-title">Bootstrap stays in the agent session.</h2>
+            <p class="panel-copy">
+              If a mailbox failed during bootstrap, Host Web only shows the error state. The user must return to the
+              agent workspace or session and retry bootstrap there.
+            </p>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

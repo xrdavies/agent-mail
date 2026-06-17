@@ -1,181 +1,314 @@
+import { relations, sql } from "drizzle-orm";
 import {
-  ACTOR_TYPES,
-  ARTIFACT_TYPES,
-  HOST_STATUSES,
-  MAILBOX_STATUSES,
-  MESSAGE_KINDS,
-  SESSION_STATUSES,
-  TASK_STATUSES,
-  THREAD_STATUSES
-} from "../../../../packages/shared/src/index";
-import { boolean, index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import type { InferSelectModel } from "drizzle-orm";
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp
+} from "drizzle-orm/pg-core";
 
-const timestamptz = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
+import type { AddressObject } from "@agent-mail/contracts";
 
-export const actorTypeEnum = pgEnum("actor_type", ACTOR_TYPES);
-export const hostStatusEnum = pgEnum("host_status", HOST_STATUSES);
-export const mailboxStatusEnum = pgEnum("mailbox_status", MAILBOX_STATUSES);
-export const sessionStatusEnum = pgEnum("session_status", SESSION_STATUSES);
-export const threadStatusEnum = pgEnum("thread_status", THREAD_STATUSES);
-export const taskStatusEnum = pgEnum("task_status", TASK_STATUSES);
-export const messageKindEnum = pgEnum("message_kind", MESSAGE_KINDS);
-export const artifactTypeEnum = pgEnum("artifact_type", ARTIFACT_TYPES);
-
-export const machines = pgTable(
-  "machines",
+export const hosts = pgTable(
+  "hosts",
   {
-    machine_id: text("machine_id").primaryKey(),
+    hostId: text("host_id").primaryKey(),
     label: text("label").notNull(),
-    host_version: text("host_version"),
-    host_status: hostStatusEnum("host_status").notNull().default("online"),
-    last_heartbeat_at: timestamptz("last_heartbeat_at").notNull().defaultNow(),
-    created_at: timestamptz("created_at").notNull().defaultNow(),
-    updated_at: timestamptz("updated_at").notNull().defaultNow()
+    hostVersion: text("host_version"),
+    hostStatus: text("host_status").notNull(),
+    lastHeartbeatAt: timestamp("last_heartbeat_at", { withTimezone: true }),
+    lastAuthenticatedAt: timestamp("last_authenticated_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [index("machines_host_status_idx").on(table.host_status)]
+  (table) => ({
+    heartbeatIdx: index("hosts_last_heartbeat_idx").on(table.lastHeartbeatAt)
+  })
 );
 
-export const mailboxes = pgTable(
-  "mailboxes",
+export const hostTokens = pgTable(
+  "host_tokens",
   {
-    mailbox: text("mailbox").primaryKey(),
+    tokenId: text("token_id").primaryKey(),
+    hostId: text("host_id")
+      .notNull()
+      .references(() => hosts.hostId, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenStatus: text("token_status").notNull(),
+    issuedAt: timestamp("issued_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    hostStatusIdx: index("host_tokens_host_status_idx").on(table.hostId, table.tokenStatus)
+  })
+);
+
+export const agentProfiles = pgTable(
+  "agent_profiles",
+  {
+    agentId: text("agent_id").primaryKey(),
+    mailbox: text("mailbox").notNull(),
     name: text("name").notNull(),
     role: text("role").notNull(),
-    machine_id: text("machine_id").references(() => machines.machine_id, { onDelete: "set null" }),
-    workspace_path: text("workspace_path").notNull(),
-    git_user_name: text("git_user_name").notNull(),
-    git_user_email: text("git_user_email").notNull(),
-    mailbox_status: mailboxStatusEnum("mailbox_status").notNull().default("active"),
-    created_at: timestamptz("created_at").notNull().defaultNow(),
-    updated_at: timestamptz("updated_at").notNull().defaultNow()
+    responsibilities: text("responsibilities").notNull(),
+    profileStatus: text("profile_status").notNull(),
+    registeredByHostId: text("registered_by_host_id")
+      .notNull()
+      .references(() => hosts.hostId),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    retiredAt: timestamp("retired_at", { withTimezone: true })
   },
-  (table) => [index("mailboxes_machine_id_idx").on(table.machine_id)]
+  (table) => ({
+    mailboxStatusIdx: index("agent_profiles_mailbox_status_idx").on(
+      table.mailbox,
+      table.profileStatus
+    )
+  })
 );
 
-export const sessions = pgTable(
-  "sessions",
+export const mailboxBindings = pgTable(
+  "mailbox_bindings",
   {
-    session_id: text("session_id").primaryKey(),
-    mailbox: text("mailbox")
+    bindingId: text("binding_id").primaryKey(),
+    agentId: text("agent_id")
       .notNull()
-      .references(() => mailboxes.mailbox, { onDelete: "restrict" }),
-    machine_id: text("machine_id")
+      .references(() => agentProfiles.agentId),
+    mailbox: text("mailbox").notNull(),
+    hostId: text("host_id")
       .notNull()
-      .references(() => machines.machine_id, { onDelete: "restrict" }),
-    workspace_path: text("workspace_path").notNull(),
-    session_status: sessionStatusEnum("session_status").notNull(),
-    active_task_id: text("active_task_id"),
-    last_processed_message_id: text("last_processed_message_id"),
-    latest_summary: text("latest_summary"),
-    last_heartbeat_at: timestamptz("last_heartbeat_at").notNull().defaultNow(),
-    started_at: timestamptz("started_at").notNull().defaultNow(),
-    cleared_at: timestamptz("cleared_at"),
-    created_at: timestamptz("created_at").notNull().defaultNow(),
-    updated_at: timestamptz("updated_at").notNull().defaultNow()
+      .references(() => hosts.hostId),
+    workspacePath: text("workspace_path").notNull(),
+    gitUserName: text("git_user_name").notNull(),
+    gitUserEmail: text("git_user_email").notNull(),
+    bindingStatus: text("binding_status").notNull(),
+    boundAt: timestamp("bound_at", { withTimezone: true }).notNull(),
+    unboundAt: timestamp("unbound_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [
-    index("sessions_mailbox_idx").on(table.mailbox),
-    index("sessions_machine_id_idx").on(table.machine_id),
-    index("sessions_status_idx").on(table.session_status)
-  ]
+  (table) => ({
+    hostStatusIdx: index("mailbox_bindings_host_status_idx").on(
+      table.hostId,
+      table.bindingStatus
+    ),
+    mailboxStatusIdx: index("mailbox_bindings_mailbox_status_idx").on(
+      table.mailbox,
+      table.bindingStatus
+    )
+  })
+);
+
+export const mailboxRuntimes = pgTable(
+  "mailbox_runtimes",
+  {
+    mailbox: text("mailbox").primaryKey(),
+    hostId: text("host_id")
+      .notNull()
+      .references(() => hosts.hostId),
+    workspacePath: text("workspace_path").notNull(),
+    currentSessionId: text("current_session_id"),
+    mailboxRuntimeStatus: text("mailbox_runtime_status").notNull(),
+    activeTaskId: text("active_task_id"),
+    lastProcessedDeliveryId: text("last_processed_delivery_id"),
+    latestSummary: text("latest_summary"),
+    lastHeartbeatAt: timestamp("last_heartbeat_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    mailboxStatusIdx: index("mailbox_runtimes_mailbox_status_idx").on(
+      table.mailbox,
+      table.mailboxRuntimeStatus
+    )
+  })
 );
 
 export const threads = pgTable(
   "threads",
   {
-    thread_id: text("thread_id").primaryKey(),
-    subject: text("subject").notNull(),
-    created_by_type: actorTypeEnum("created_by_type").notNull(),
-    created_by_id: text("created_by_id").notNull(),
-    assigned_mailbox: text("assigned_mailbox")
-      .notNull()
-      .references(() => mailboxes.mailbox, { onDelete: "restrict" }),
-    thread_status: threadStatusEnum("thread_status").notNull().default("open"),
-    created_at: timestamptz("created_at").notNull().defaultNow(),
-    updated_at: timestamptz("updated_at").notNull().defaultNow()
+    threadId: text("thread_id").primaryKey(),
+    rootEmailId: text("root_email_id"),
+    rootMessageId: text("root_message_id").notNull().unique(),
+    rootSubject: text("root_subject").notNull(),
+    latestEmailId: text("latest_email_id"),
+    threadStatus: text("thread_status").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [
-    index("threads_assigned_mailbox_idx").on(table.assigned_mailbox),
-    index("threads_updated_at_idx").on(table.updated_at)
-  ]
+  (table) => ({
+    rootMessageIdx: index("threads_root_message_idx").on(table.rootMessageId)
+  })
 );
 
-export const messages = pgTable(
-  "messages",
+export const emails = pgTable(
+  "emails",
   {
-    message_id: text("message_id").primaryKey(),
-    thread_id: text("thread_id")
+    emailId: text("email_id").primaryKey(),
+    messageId: text("message_id").notNull().unique(),
+    threadId: text("thread_id")
       .notNull()
-      .references(() => threads.thread_id, { onDelete: "cascade" }),
-    from_type: actorTypeEnum("from_type").notNull(),
-    from_id: text("from_id").notNull(),
-    to_type: actorTypeEnum("to_type"),
-    to_id: text("to_id"),
-    body: text("body").notNull(),
-    message_kind: messageKindEnum("message_kind").notNull(),
-    created_at: timestamptz("created_at").notNull().defaultNow()
+      .references(() => threads.threadId),
+    fromJson: jsonb("from_json").$type<AddressObject>().notNull(),
+    toJson: jsonb("to_json").$type<AddressObject[]>().notNull(),
+    ccJson: jsonb("cc_json").$type<AddressObject[]>().notNull(),
+    subject: text("subject").notNull(),
+    bodyText: text("body_text").notNull(),
+    rawBody: text("raw_body").notNull(),
+    rawHeadersJson: jsonb("raw_headers_json").$type<Record<string, string> | null>(),
+    inReplyTo: text("in_reply_to"),
+    referencesJson: jsonb("references_json").$type<string[]>().notNull(),
+    emailKind: text("email_kind").notNull(),
+    sendState: text("send_state").notNull(),
+    createdByHostId: text("created_by_host_id").references(() => hosts.hostId),
+    createdByMailbox: text("created_by_mailbox"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [index("messages_thread_created_idx").on(table.thread_id, table.created_at)]
+  (table) => ({
+    messageIdx: index("emails_message_idx").on(table.messageId),
+    threadCreatedIdx: index("emails_thread_created_idx").on(table.threadId, table.createdAt)
+  })
+);
+
+export const deliveries = pgTable(
+  "deliveries",
+  {
+    deliveryId: text("delivery_id").primaryKey(),
+    emailId: text("email_id")
+      .notNull()
+      .references(() => emails.emailId, { onDelete: "cascade" }),
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => threads.threadId, { onDelete: "cascade" }),
+    recipientAddress: text("recipient_address").notNull(),
+    recipientMailbox: text("recipient_mailbox"),
+    deliveryKind: text("delivery_kind").notNull(),
+    readStatus: text("read_status").notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    mailboxReadCreatedIdx: index("deliveries_mailbox_read_created_idx").on(
+      table.recipientMailbox,
+      table.readStatus,
+      table.createdAt
+    )
+  })
 );
 
 export const tasks = pgTable(
   "tasks",
   {
-    task_id: text("task_id").primaryKey(),
-    title: text("title").notNull(),
-    thread_id: text("thread_id")
+    taskId: text("task_id").primaryKey(),
+    threadId: text("thread_id")
       .notNull()
-      .references(() => threads.thread_id, { onDelete: "cascade" }),
-    parent_task_id: text("parent_task_id"),
-    created_by_type: actorTypeEnum("created_by_type").notNull(),
-    created_by_id: text("created_by_id").notNull(),
-    assignee_type: actorTypeEnum("assignee_type").notNull(),
-    assignee_mailbox: text("assignee_mailbox").references(() => mailboxes.mailbox, {
-      onDelete: "set null"
-    }),
-    status: taskStatusEnum("status").notNull().default("new"),
-    requires_artifact: boolean("requires_artifact").notNull().default(false),
-    body: text("body"),
-    created_at: timestamptz("created_at").notNull().defaultNow(),
-    updated_at: timestamptz("updated_at").notNull().defaultNow()
+      .references(() => threads.threadId),
+    triggerEmailId: text("trigger_email_id")
+      .notNull()
+      .references(() => emails.emailId),
+    parentTaskId: text("parent_task_id"),
+    createdByEmailId: text("created_by_email_id").references(() => emails.emailId),
+    createdByMailbox: text("created_by_mailbox").notNull(),
+    assigneeMailbox: text("assignee_mailbox").notNull(),
+    title: text("title").notNull(),
+    instructions: text("instructions"),
+    requiresArtifact: boolean("requires_artifact").notNull(),
+    status: text("status").notNull(),
+    completedByEmailId: text("completed_by_email_id").references(() => emails.emailId),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [
-    index("tasks_assignee_status_updated_idx").on(
-      table.assignee_mailbox,
+  (table) => ({
+    assigneeStatusUpdatedIdx: index("tasks_assignee_status_updated_idx").on(
+      table.assigneeMailbox,
       table.status,
-      table.updated_at
+      table.updatedAt
     ),
-    index("tasks_parent_task_idx").on(table.parent_task_id),
-    index("tasks_thread_idx").on(table.thread_id)
-  ]
+    threadIdx: index("tasks_thread_idx").on(table.threadId),
+    triggerEmailIdx: index("tasks_trigger_email_idx").on(table.triggerEmailId)
+  })
+);
+
+export const linkedResources = pgTable(
+  "linked_resources",
+  {
+    linkedResourceId: text("linked_resource_id").primaryKey(),
+    emailId: text("email_id")
+      .notNull()
+      .references(() => emails.emailId, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    title: text("title"),
+    mimeType: text("mime_type"),
+    sizeBytes: integer("size_bytes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    emailIdx: index("linked_resources_email_idx").on(table.emailId)
+  })
 );
 
 export const artifacts = pgTable(
   "artifacts",
   {
-    artifact_id: text("artifact_id").primaryKey(),
-    task_id: text("task_id")
+    artifactId: text("artifact_id").primaryKey(),
+    taskId: text("task_id")
       .notNull()
-      .references(() => tasks.task_id, { onDelete: "cascade" }),
-    mailbox: text("mailbox")
-      .notNull()
-      .references(() => mailboxes.mailbox, { onDelete: "restrict" }),
+      .references(() => tasks.taskId, { onDelete: "cascade" }),
+    producedByMailbox: text("produced_by_mailbox").notNull(),
     repository: text("repository"),
-    artifact_type: artifactTypeEnum("artifact_type").notNull(),
     path: text("path").notNull(),
     branch: text("branch"),
-    commit_sha: text("commit_sha"),
-    pr_link: text("pr_link"),
-    created_at: timestamptz("created_at").notNull().defaultNow()
+    commitSha: text("commit_sha"),
+    prLink: text("pr_link"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },
-  (table) => [index("artifacts_task_idx").on(table.task_id)]
+  (table) => ({
+    taskIdx: index("artifacts_task_idx").on(table.taskId)
+  })
 );
 
-export type MachineRow = InferSelectModel<typeof machines>;
-export type MailboxRow = InferSelectModel<typeof mailboxes>;
-export type SessionRow = InferSelectModel<typeof sessions>;
-export type ThreadRow = InferSelectModel<typeof threads>;
-export type MessageRow = InferSelectModel<typeof messages>;
-export type TaskRow = InferSelectModel<typeof tasks>;
-export type ArtifactRow = InferSelectModel<typeof artifacts>;
+export const idempotencyKeys = pgTable("idempotency_keys", {
+  idempotencyKey: text("idempotency_key").primaryKey(),
+  hostId: text("host_id")
+    .notNull()
+    .references(() => hosts.hostId, { onDelete: "cascade" }),
+  mailbox: text("mailbox").notNull(),
+  action: text("action").notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const hostRelations = relations(hosts, ({ many }) => ({
+  tokens: many(hostTokens),
+  profiles: many(agentProfiles),
+  bindings: many(mailboxBindings),
+  runtimes: many(mailboxRuntimes),
+  emails: many(emails)
+}));
+
+export const schema = {
+  hosts,
+  hostTokens,
+  agentProfiles,
+  mailboxBindings,
+  mailboxRuntimes,
+  threads,
+  emails,
+  deliveries,
+  tasks,
+  linkedResources,
+  artifacts,
+  idempotencyKeys
+};
+
+export const updateNow = sql`now()`;
